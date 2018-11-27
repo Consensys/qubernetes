@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# create the output directory if
+# it doesn't exist
+mkdir -p out
+
+# generate the keygen script
+# to generate nodekey, account keys, and
+# quorum transaction manger (tm.pub,tm.key) keys.
+./quorum-keygen
+
+# generate the appropriate config files:
+#   permissioned-nodes.json
+#   genesis.json 
+./quorum-config

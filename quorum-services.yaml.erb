@@ -1,0 +1,52 @@
+<%
+def set_node_template_vars(values)
+    @Node_UserIdent = values["Node_UserIdent"]
+    return
+end
+-%>
+
+<%- @nodes.each do |node| -%>
+    <%= set_node_template_vars(node.values.first) -%>
+
+<%
+    @Service_Prefix        = (@Node_UserIdent.upcase).gsub("-", "_")
+    @TM_Port               = @config["quorum"]["tm"]["Port"]
+    @Node_WSPort           = @config["geth"]["Node_WSPort"]
+    @NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
+%>
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: <%= @config["namespace"]["name"] %>
+  name: <%= @Node_UserIdent %>
+  labels:
+    app: qubernetes
+    tier: backend
+    name: <%= @Node_UserIdent %>
+spec:
+  selector:
+    app: qubernetes
+    tier: backend
+    name: <%= @Node_UserIdent %>-deployment
+  type: ClusterIP
+  ports:
+    - name: constellation
+      protocol: TCP
+      port: <%= @TM_Port %>
+      targetPort: <%= @TM_Port %>
+    # default 8545
+    - name: wsrpc-listener
+      protocol: TCP
+      port: <%= @Node_WSPort %>
+      targetPort: <%= @Node_WSPort %>
+    - name: quorum-listener
+      protocol: TCP
+      port: <%= @NodeP2P_ListenAddr %>
+      targetPort: <%= @NodeP2P_ListenAddr %>
+    - name: raft
+      protocol: TCP
+      targetPort: <%= @Raft_Port %>
+      port: <%= @Raft_Port %>
+<% end -%>

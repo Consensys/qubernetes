@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+
+require "yaml"
+require "erb"
+
+# generic variables
+@config     = YAML.load_file("qubernetes.yaml")
+@nodes      = @config["nodes"]
+
+@Raft_Port                  = @config["quorum"]["quorum"]["Raft_Port"]
+@Permissioned_Nodes_File    = @config["quorum"]["Permissioned_Nodes_File"]
+@Genesis_File               = @config["quorum"]["Genesis_File"]
+@Node_WSPort                = @config["geth"]["Node_WSPort"]
+@NodeP2P_ListenAddr         = @config["geth"]["NodeP2P_ListenAddr"]
+
+#####################################################
+# Generate genesis.json and permissioned-nodes.json
+#####################################################
+
+# create genesis files with all discovered keystore accounts pre alloc with funds.
+puts(@Genesis_File)
+File.open(@Genesis_File, "w") do |f|
+  f.puts (ERB.new(File.read("genesis.json.erb"), nil, "-").result)
+end
+
+# create permission nodes file containing all the nodes.
+puts(@Permissioned_Nodes_File)
+File.open(@Permissioned_Nodes_File , "w") do |f|
+  f.puts (ERB.new(File.read("permissioned-nodes.json.erb"), nil, "-").result)
+end

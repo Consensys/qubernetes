@@ -1,0 +1,231 @@
+<%
+def set_node_template_vars(values)
+    @Node_UserIdent        = values["Node_UserIdent"]
+    return
+end
+-%>
+---
+
+<%- @nodes.each do |node| -%>
+<%= set_node_template_vars(node.values.first) -%>
+
+<%
+@Service_Prefix = (@Node_UserIdent.upcase).gsub("-", "_")
+@Geth_Verbosity        = @config["geth"]["verbosity"]
+@Geth_Network_Id       = @config["geth"]["network"]["id"]
+@Node_WSPort           = @config["geth"]["Node_WSPort"]
+@NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
+
+@Node_DataDir          = @config["quorum"]["Node_DataDir"]
+@Quorum_Version        = @config["quorum"]["quorum"]["Quorum_Version"]
+@Tm_Version            = @config["quorum"]["tm"]["Tm_Version"]
+@Constellation_port    = @config["quorum"]["tm"]["Port"]
+%>
+
+# The quorum deployment consists of
+# 1. the transaction manager / private tx container (constellation or tessera)
+# 2. the quorum node container
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: <%= @Node_UserIdent %>-deployment
+  namespace: <%= @config["namespace"]["name"] %>
+spec:
+  strategy:
+    type: RollingUpdate
+  replicas: 1
+  template:
+    metadata:
+      name:  <%= @Node_UserIdent %>-deployment
+      labels:
+        app: qubernetes
+        tier: backend
+        name: <%= @Node_UserIdent %>-deployment
+    spec:
+      initContainers:
+      - name: quorum-genesis-init-container
+        image: quorumengineering/quorum:<%= @Quorum_Version %>
+        command: [ "sh" ]
+        args:
+        - "-cx"
+        - "if [ ! -f $QUORUM_DATA_DIR/genesis_created ]; then
+              /usr/local/bin/geth --datadir $QUORUM_DATA_DIR init /etc/geth/genesis/genesis-geth.json;
+              touch $QUORUM_DATA_DIR/genesis_created;
+           fi;
+           cp -r <%= @Node_DataDir %>/contracts-tmp <%= @Node_DataDir %>/contracts;
+           chmod 755  <%= @Node_DataDir %>/contracts/runscript.sh;
+          "
+        env:
+          - name: QUORUM_DATA_DIR
+            value: <%= @Node_DataDir %>/dd
+        volumeMounts:
+        - name: quorum-persistent-storage
+          mountPath:  <%= @Node_DataDir %>
+        - name: genesis-config-persistent-storage
+          mountPath: /etc/geth/genesis/genesis-geth.json
+          subPath: genesis-geth.json
+        - name: contracts-config
+          mountPath: <%= @Node_DataDir%>/contracts-tmp
+          readOnly: false
+      containers:
+      - name: constellation
+        image: quorumengineering/constellation:<%= @Tm_Version %>
+        command: ["sh"]
+        args:
+        - "-cx"
+        - "chmod 600 $QUORUM_HOME/tm/tm.key;
+           DDIR=$QUORUM_HOME/tm;
+           printenv;
+           args=\" --url=https://$<%= @Service_Prefix %>_SERVICE_HOST:<%= @Constellation_port %>/  \
+           --port=<%= @Constellation_port %> \
+           --workdir=$DDIR \
+           --socket=$DDIR/tm.ipc \
+           --publickeys=$QUORUM_HOME/tm/tm.pub \
+           --privatekeys=$QUORUM_HOME/tm/tm.key \
+           --verbosity=<%= @Geth_Verbosity%> \
+           --othernodes=https://$QUORUM_NODE04_SERVICE_HOST:<%= @Constellation_port %>/ \";
+           /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
+        ports:
+          - containerPort: <%= @Constellation_port %>
+        env:
+          - name: QUORUM_HOME
+            value: <%= @Node_DataDir %>
+        volumeMounts:
+        - name: quorum-logs-persistent-storage
+          mountPath: <%= @Node_DataDir %>/logs
+        - name: constellation-persistent-storage
+          mountPath: <%= @Node_DataDir %>/tm
+        - name: quorum-persistent-storage
+          mountPath: <%= @Node_DataDir %>
+        - name: keystore-constellation
+          mountPath: <%= @Node_DataDir %>/tm/tm.pub
+          subPath: tm.pub
+        - name: keystore-constellation
+          mountPath: <%= @Node_DataDir %>/tm/tm.key
+          subPath: tm.key
+      - name: quorum
+        image: quorumengineering/quorum:<%= @Quorum_Version %>
+        command: [ "sh" ]
+        # TODO: have to generate sed files
+        #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
+        # sleep to give constellation some time to start up and discover the other nodes.
+        args:
+        - "-cx"
+        - "
+           sleep 5;
+           PERM_NODE_TMPL=$(cat $QUORUM_DATA_DIR/permissioned-nodes.json.tmpl);
+           PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | <%= @Sed_Set_Node_Service_Host %>);
+           echo $PERM_NODE_JSON >  $QUORUM_DATA_DIR/permissioned-nodes.json;
+           cp $QUORUM_DATA_DIR/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
+
+           rm -r <%= @Node_DataDir %>/contracts-tmp;
+
+           echo what in this dir;
+           ls  $QUORUM_DATA_DIR;
+           cat /etc/geth/genesis/genesis-geth.json;
+
+           mkdir -p /etc/geth/qdata;
+           chmod 644 $QUORUM_DATA_DIR/keystore/key;
+           touch $QUORUM_DATA_DIR/password.txt;
+           NETWORK_ID=<%= @Geth_Network_Id %>
+           raft_args=\" --raft --raftport <%= @Raft_Port %> --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
+           args=\"--rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum \";
+           /usr/local/bin/geth \
+           --datadir $QUORUM_DATA_DIR \
+           $raft_args \
+           --permissioned \
+           --nodiscover \
+           --nat=none \
+           --verbosity <%= @Geth_Verbosity %> \
+           --networkid $NETWORK_ID \
+           --unlock 0 \
+           --emitcheckpoints \
+           --rpc \
+           --rpcaddr 0.0.0.0 \
+           --rpcport <%= @Node_WSPort %> \
+           --port <%= @NodeP2P_ListenAddr %> \
+           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a <%= @Node_DataDir%>/logs/quorum.log; " 
+        ports:
+          - containerPort: <%= @Raft_Port %>
+          - containerPort: <%= @Node_WSPort %>
+          - containerPort: <%= @NodeP2P_ListenAddr %>
+        env:
+        - name: PRIVATE_CONFIG
+          value: <%= @Node_DataDir %>/tm/tm.ipc
+        - name: QUORUM_DATA_DIR
+          value: <%= @Node_DataDir %>/dd
+        - name: QUORUM_HOME
+          value: <%= @Node_DataDir %>
+        - name: TM_HOME
+          value: <%= @Node_DataDir %>/tm/
+        volumeMounts:
+        - name: genesis-config-persistent-storage
+          mountPath: /etc/geth/genesis/genesis-geth.json
+          subPath: genesis-geth.json
+        - name: quorum-persistent-storage
+          mountPath: <%= @Node_DataDir%>
+        - name: constellation-persistent-storage
+          mountPath: <%= @Node_DataDir%>/tm
+        - name: quorum-key-config-persistent-storage
+          mountPath: <%= @Node_DataDir%>/dd/keystore/key
+          subPath: key
+        - name: quorum-logs-persistent-storage
+          mountPath: <%= @Node_DataDir %>/logs
+        - name: quorum-nodekey
+          mountPath: <%= @Node_DataDir%>/dd/geth/nodekey
+          subPath: nodekey
+        - name: quorum-permissioned-config
+          mountPath: <%= @Node_DataDir%>/dd/permissioned-nodes.json.tmpl
+          subPath: permissioned-nodes.json
+        - name: quorum-permissioned-config
+          mountPath: <%= @Node_DataDir%>/dd/static-nodes.json.tmpl
+          subPath: permissioned-nodes.json
+      volumes:
+      - name: quorum-permissioned-config
+        configMap:
+          name: quorum-permissioned-config
+          items:
+          - key: permissioned-nodes.json
+            path: permissioned-nodes.json
+      - name: genesis-config-persistent-storage
+        configMap:
+          name: genesis-config
+          items:
+          - key: genesis-geth.json
+            path: genesis-geth.json
+      - name: contracts-config
+        configMap:
+          name: contracts-config
+      - name: keystore-constellation
+        configMap:
+          name: <%= @Node_UserIdent %>-constellation-key-config
+          items:
+          - key: tm.pub
+            path: tm.pub
+          - key: tm.key
+            path: tm.key
+      - name: quorum-key-config-persistent-storage
+        configMap:
+          name: <%= @Node_UserIdent %>-account-key-config
+          items:
+          - key: key
+            path: key
+      - name: quorum-nodekey
+        configMap:
+          name: <%= @Node_UserIdent %>-nodekey-config
+          items:
+          - key: nodekey
+            path: nodekey
+      - name: quorum-persistent-storage
+        hostPath:
+          path: /var/lib/docker/geth-storage/<%= @Node_UserIdent %>
+      - name: constellation-persistent-storage
+        hostPath:
+          path: /var/lib/docker/geth-storage/tm-<%= @Node_UserIdent %>
+      - name: quorum-logs-persistent-storage
+        hostPath:
+          path: /var/lib/docker/geth-storage/<%= @Node_UserIdent %>-logs
+
+<% end -%>

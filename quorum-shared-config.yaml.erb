@@ -1,0 +1,66 @@
+<%-
+ @Permissioned_Nodes_File    = @config["quorum"]["Permissioned_Nodes_File"]
+ @Genesis_File               = @config["quorum"]["Genesis_File"]
+%>
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: <%= @config["namespace"]["name"] %>
+  labels:
+    name: <%= @config["namespace"]["name"] %>
+
+---
+# kubectl create configmap game-config --from-file=configure-pod-container/dd1/key
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-permissioned-config
+  namespace: <%= @config["namespace"]["name"] %>
+  labels:
+    app: qubernetes
+    name: quorum-permissioned-config
+data:
+  permissioned-nodes.json: |
+
+<%- File.readlines(@Permissioned_Nodes_File).each do |line| -%>
+    <%= line -%>
+<% end -%>
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: genesis-config
+  namespace: <%= @config["namespace"]["name"] %>
+  labels:
+    app: qubernetes
+    name: genesis-config
+data:
+  genesis-geth.json: |-
+<%- File.readlines(@Genesis_File).each do |line| -%>
+    <%= line -%>
+<% end -%>
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: contracts-config
+  namespace: <%= @config["namespace"]["name"] %>
+  labels:
+    app: qubernetes
+    name: contracts-config
+data:
+  runscript.sh: |-
+<%- File.readlines("contracts/runscript.sh").each do |line| -%>
+    <%= line -%>
+<% end -%>
+  private_contract.js: |-
+<%- File.readlines("contracts/private_contract.js").each do |line| -%>
+    <%= line -%>
+<% end -%>
+  public_contract.js: |-
+<%- File.readlines("contracts/public_contract.js").each do |line| -%>
+    <%= line -%>
+<% end -%>

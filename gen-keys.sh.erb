@@ -1,0 +1,43 @@
+#!/bin/bash
+
+
+<%
+def set_node_template_vars(values)
+    @Node_Key_Dir          = values["Key_Dir"]
+    return
+end
+-%>
+
+<% @Key_Dir_Base = @config["quorum"]["Key_Dir_Base"] %>
+<% @Node_Dirs = "" %>
+
+<%- @nodes.each do |node|
+      set_node_template_vars(node.values.first)
+      @Node_Dirs=@Node_Dirs + "," + @Node_Key_Dir
+    end
+    @Node_Dirs[0]=''
+-%>
+
+NODE_DIRS=<%= @Node_Dirs %>
+
+<%- if @Key_Dir_Base[0] == '/' %>
+BASE_DIR=<%= @Key_Dir_Base %>
+<%- else %>
+BASE_DIR=$(pwd)/<%= @Key_Dir_Base %>
+<%- end %>
+
+mkdir -p $BASE_DIR
+IFS=', ' read -r -a array <<< "$NODE_DIRS"
+
+for node_key_dir in "${array[@]}"; do
+  pushd .
+  KEY_DIR=$BASE_DIR/$node_key_dir
+  mkdir -p $KEY_DIR
+  cd $KEY_DIR
+  echo | constellation-node --generatekeys=tm
+  touch password.txt
+  geth --keystore $KEY_DIR  account new --password password.txt
+  bootnode -genkey nodekey.key
+  bootnode  -nodekeyhex $(cat nodekey.key) -writeaddress > enode
+  popd
+done

@@ -5,10 +5,7 @@ require "erb"
 
 # generic variables
 @config     = YAML.load_file("qubernetes.yaml")
-@nodes      = @config["nodes"]
-#@Raft_Port             = @config["quorum"]["quorum"]["Raft_Port"]
-#@Node_WSPort           = @config["geth"]["Node_WSPort"]
-#@NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
+@nodes      = YAML.load_file("nodes.yaml")["nodes"]
 
 File.open("gen-node-keys.sh", "w") do |f|
   f.puts (ERB.new(File.read("gen-keys.sh.erb"), nil, "-").result)

@@ -4,6 +4,11 @@
 # it doesn't exist
 mkdir -p out
 
+# generate the nodes.yaml
+# file for the set number of
+# nodes.
+./quorum-create-nodes
+
 # generate the keygen script
 # to generate nodekey, account keys, and
 # quorum transaction manger (tm.pub,tm.key) keys.

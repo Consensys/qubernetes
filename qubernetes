@@ -6,7 +6,7 @@ require 'colorize'
 
 # generic variables
 @config                = YAML.load_file("qubernetes.yaml")
-@nodes                 = @config["nodes"]
+@nodes                 = YAML.load_file("nodes.yaml")["nodes"]
 @Raft_Port             = @config["quorum"]["quorum"]["Raft_Port"]
 @Node_WSPort           = @config["geth"]["Node_WSPort"]
 @NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]

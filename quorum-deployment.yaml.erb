@@ -85,7 +85,7 @@ spec:
            --publickeys=$QUORUM_HOME/tm/tm.pub \
            --privatekeys=$QUORUM_HOME/tm/tm.key \
            --verbosity=<%= @Geth_Verbosity%> \
-           --othernodes=https://$QUORUM_NODE04_SERVICE_HOST:<%= @Constellation_port %>/ \";
+           --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:<%= @Constellation_port %>/ \";
            /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
         ports:
           - containerPort: <%= @Constellation_port %>
@@ -130,7 +130,7 @@ spec:
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=<%= @Geth_Network_Id %>
-           raft_args=\" --raft --raftport <%= @Raft_Port %> --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
+           raft_args=\" --raft --maxpeers <%= @nodes.size %>  --raftport <%= @Raft_Port %> --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
            args=\"--rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum \";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \

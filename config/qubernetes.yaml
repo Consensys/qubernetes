@@ -1,0 +1,37 @@
+namespace:
+  name: quorum-test
+# number of nodes to deploy
+nodes:
+  number: 10
+quorum:
+  # base quorum data dir as set inside each container.
+  Node_DataDir: /etc/quorum/qdata
+  # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
+  # Either full or relative paths on the machine generating the config
+  Key_Dir_Base: out/config 
+  Permissioned_Nodes_File: out/config/permissioned-nodes.json
+  Genesis_File: out/config/genesis.json
+  # related to quorum containers
+  quorum:
+    Raft_Port: 50401
+    # container images at https://hub.docker.com/u/quorumengineering/
+    Quorum_Version: 2.1.1
+  # related to transaction manager containers
+  tm:
+    # container images at https://hub.docker.com/u/quorumengineering/
+    # TODO: add support for tessera, this should hold the full container name
+    #       in that case.
+    Tm_Version: 0.3.2
+    Port: 9001
+
+# generic geth related options
+geth:
+  Node_WSPort: 8546
+  NodeP2P_ListenAddr: 21000 
+  network:
+    # network id (1: mainnet, 3: ropsten, 4: rinkeby ... )
+    id: 1101
+    # public (true|false) is it a public network?
+    public: false
+  # general verbosity of geth [1..5]
+  verbosity: 9

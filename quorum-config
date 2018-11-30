@@ -5,7 +5,7 @@ require "erb"
 
 # generic variables
 @config     = YAML.load_file("qubernetes.yaml")
-@nodes      = @config["nodes"]
+@nodes      = YAML.load_file("nodes.yaml")["nodes"]
 
 @Raft_Port                  = @config["quorum"]["quorum"]["Raft_Port"]
 @Permissioned_Nodes_File    = @config["quorum"]["Permissioned_Nodes_File"]

@@ -1,14 +1,18 @@
 namespace:
   name: quorum-test
-
+# number of nodes to deploy
+nodes:
+  number: 7 
 quorum:
+  # supported: raft | istanbul
+  consensus: istanbul 
   # base quorum data dir as set inside each container.
   Node_DataDir: /etc/quorum/qdata
   # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
   # Either full or relative paths on the machine generating the config
-  Key_Dir_Base: out/config 
-  Permissioned_Nodes_File: out/config/permissioned-nodes.json
-  Genesis_File: out/config/genesis.json
+  Key_Dir_Base: istanbul-7nodes 
+  Permissioned_Nodes_File: istanbul-7nodes/permissioned-nodes.json
+  Genesis_File: istanbul-7nodes/istanbul-genesis.json
   # related to quorum containers
   quorum:
     Raft_Port: 50401
@@ -33,36 +37,3 @@ geth:
     public: false
   # general verbosity of geth [1..5]
   verbosity: 9
-
-# here you can add as many nodes as you like, name and configure them
-# Note:
-# 1. need to be in the list of permissioned nodes and static nodes.
-# 2. keys should be set locally. 
-nodes:
-- member:
-    Node_UserIdent: quorum-node01 
-    Key_Dir: key1
-# keep adding nodes
-# - member:
-# ...
-- member:
-    Node_UserIdent: quorum-node02
-    Key_Dir: key2
-- member:
-    Node_UserIdent: quorum-node03
-    Key_Dir: key3
-- member:
-    Node_UserIdent: quorum-node04
-    Key_Dir: key4
-- member:
-    Node_UserIdent: quorum-node05
-    Key_Dir: key5
-- member:
-    Node_UserIdent: quorum-node06
-    Key_Dir: key6
-- member:
-    Node_UserIdent: quorum-node07
-    Key_Dir: key7
-- member:
-    Node_UserIdent: quorum-node08
-    Key_Dir: key8

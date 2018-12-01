@@ -6,6 +6,8 @@ require "erb"
 # generic variables
 @config     = YAML.load_file("qubernetes.yaml")
 
-File.open("out/nodes-test.yaml", "w") do |f|
+File.open("out/nodes.yaml", "w") do |f|
   f.puts (ERB.new(File.read("nodes.yaml.erb"), nil, "-").result)
 end
+
+`ln -s out/nodes.yaml .`

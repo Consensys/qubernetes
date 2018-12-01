@@ -2,8 +2,10 @@ namespace:
   name: quorum-test
 # number of nodes to deploy
 nodes:
-  number: 10
+  number: 8 
 quorum:
+  # supported: raft | istanbul
+  consensus: raft 
   # base quorum data dir as set inside each container.
   Node_DataDir: /etc/quorum/qdata
   # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.

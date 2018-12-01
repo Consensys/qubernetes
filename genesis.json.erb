@@ -12,6 +12,8 @@ end
 @Node_Index = 0
 -%>
 
+<% if @config["quorum"]["consensus"] == "raft" %>
+
 {
 "alloc": {
 <%- @nodes.each_with_index do |node, indexNode|
@@ -54,3 +56,54 @@ end
   "parenthash": "0x0000000000000000000000000000000000000000000000000000000000000000",
   "timestamp": "0x00"
 }
+<% elsif @config["quorum"]["consensus"] == "istanbul" %>
+
+{
+"alloc": {
+<%- @nodes.each_with_index do |node, indexNode|
+    set_node_template_vars(node.values.first)
+    @Keystores=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/UTC*"]
+    puts(@Accounts)
+    # Need to keep track of when the last account in the last node
+    # is being writen, so as not to have a trailing ',' in the
+    # genesis alloc json.
+    # The keystore is assumed to be the generated keystore and will
+    # start with UTC- and end with the account public key.
+    @Keystores.each_with_index do |keystore, indexKey|
+        #split on --
+        acct="0x" + keystore.split("--")[2]
+    -%>    "<%= acct%>": {
+       "balance": "1000000000000000000000000000"
+    }<%- if (indexNode == @nodes.size - 1) and (indexKey == @Keystores.size - 1)
+     else %>, <%- end %>
+    <%-
+        puts(acct)
+    end
+     -%>
+<% end %>
+  },
+  "coinbase": "0x0000000000000000000000000000000000000000",
+  "config": {
+    "byzantiumBlock": 1,
+    "eip150Block": 2,
+    "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "eip155Block": 3,
+    "eip158Block": 3,
+    "istanbul": {
+      "epoch": 30000,
+      "policy": 0
+    },
+    "isQuorum": true,
+    "chainId": 10
+  },
+  "extraData": "0x0000000000000000000000000000000000000000000000000000000000000000f897f893946571d97f340c8495b661a823f2c2145ca47d63c2948157d4437104e3b8df4451a85f7b2438ef6699ff94b131288f355bc27090e542ae0be213c20350b76794b912de287f9b047b4228436e94b5b78e3ee1617194d8dba507e85f116b1f7e231ca8525fc9008a696694e36cbeb565b061217930767886474e3cde903ac594f512a992f3fb749857d758ffda1330e590fa915e80c0",
+  "gasLimit": "0x47b760",
+  "difficulty": "0x1",
+  "mixHash": "0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365",
+  "nonce": "0x0",
+  "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "timestamp": "0x00"
+}
+<% else  %>
+  ANOTHER CONSENSUS
+<% end %>

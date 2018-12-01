@@ -1,0 +1,34 @@
+
+# here you can add as many nodes as you like, name and configure them
+# Note:
+# 1. need to be in the list of permissioned nodes and static nodes.
+# 2. keys should be set locally.
+nodes:
+
+- member:
+    Node_UserIdent: quorum-node1
+    Key_Dir: key1
+
+- member:
+    Node_UserIdent: quorum-node2
+    Key_Dir: key2
+
+- member:
+    Node_UserIdent: quorum-node3
+    Key_Dir: key3
+
+- member:
+    Node_UserIdent: quorum-node4
+    Key_Dir: key4
+
+- member:
+    Node_UserIdent: quorum-node5
+    Key_Dir: key5
+
+- member:
+    Node_UserIdent: quorum-node6
+    Key_Dir: key6
+
+- member:
+    Node_UserIdent: quorum-node7
+    Key_Dir: key7

@@ -51,7 +51,7 @@ spec:
         args:
         - "-cx"
         - "if [ ! -f $QUORUM_DATA_DIR/genesis_created ]; then
-              /usr/local/bin/geth --datadir $QUORUM_DATA_DIR init /etc/geth/genesis/genesis-geth.json;
+              /usr/local/bin/geth --datadir $QUORUM_DATA_DIR init /etc/quorum/genesis/genesis-geth.json;
               touch $QUORUM_DATA_DIR/genesis_created;
            fi;
            cp -r <%= @Node_DataDir %>/contracts-tmp <%= @Node_DataDir %>/contracts;
@@ -64,7 +64,7 @@ spec:
         - name: quorum-persistent-storage
           mountPath:  <%= @Node_DataDir %>
         - name: genesis-config-persistent-storage
-          mountPath: /etc/geth/genesis/genesis-geth.json
+          mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
         - name: contracts-config
           mountPath: <%= @Node_DataDir%>/contracts-tmp
@@ -124,17 +124,21 @@ spec:
 
            echo what in this dir;
            ls  $QUORUM_DATA_DIR;
-           cat /etc/geth/genesis/genesis-geth.json;
+           cat /etc/quorum/genesis/genesis-geth.json;
 
-           mkdir -p /etc/geth/qdata;
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=<%= @Geth_Network_Id %>
-           raft_args=\" --raft --maxpeers <%= @nodes.size %>  --raftport <%= @Raft_Port %> --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
+         <% if @config["quorum"]["consensus"] == "raft" %>
+           args=\" --raft --maxpeers <%= @nodes.size %>  --raftport <%= @Raft_Port %> --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
+         <% elsif @config["quorum"]["consensus"] == "istanbul" %>
+           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
+         <% else %>
            args=\"--rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum \";
+         <% end %>
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
-           $raft_args \
+           $args \
            --permissioned \
            --nodiscover \
            --nat=none \
@@ -162,7 +166,7 @@ spec:
           value: <%= @Node_DataDir %>/tm/
         volumeMounts:
         - name: genesis-config-persistent-storage
-          mountPath: /etc/geth/genesis/genesis-geth.json
+          mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
         - name: quorum-persistent-storage
           mountPath: <%= @Node_DataDir%>

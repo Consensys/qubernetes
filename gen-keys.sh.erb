@@ -37,7 +37,7 @@ for node_key_dir in "${array[@]}"; do
   echo | constellation-node --generatekeys=tm
   touch password.txt
   geth --keystore $KEY_DIR  account new --password password.txt
-  bootnode -genkey nodekey.key
-  bootnode  -nodekeyhex $(cat nodekey.key) -writeaddress > enode
+  bootnode -genkey nodekey
+  bootnode  -nodekeyhex $(cat nodekey) -writeaddress > enode
   popd
 done

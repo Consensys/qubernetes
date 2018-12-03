@@ -10,9 +10,9 @@ quorum:
   Node_DataDir: /etc/quorum/qdata
   # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
   # Either full or relative paths on the machine generating the config
-  Key_Dir_Base: istanbul-7nodes 
-  Permissioned_Nodes_File: istanbul-7nodes/permissioned-nodes.json
-  Genesis_File: istanbul-7nodes/istanbul-genesis.json
+  Key_Dir_Base: 7nodes 
+  Permissioned_Nodes_File: 7nodes/permissioned-nodes.json
+  Genesis_File: 7nodes/istanbul-7nodes/istanbul-genesis.json
   # related to quorum containers
   quorum:
     Raft_Port: 50401

@@ -19,7 +19,8 @@ end
 @Node_DataDir          = @config["quorum"]["Node_DataDir"]
 @Quorum_Version        = @config["quorum"]["quorum"]["Quorum_Version"]
 @Tm_Version            = @config["quorum"]["tm"]["Tm_Version"]
-@Constellation_port    = @config["quorum"]["tm"]["Port"]
+@Tm_Port               = @config["quorum"]["tm"]["Port"]
+@Tm_Name               = @config["quorum"]["tm"]["Name"]
 %>
 
 # The quorum deployment consists of
@@ -70,6 +71,7 @@ spec:
           mountPath: <%= @Node_DataDir%>/contracts-tmp
           readOnly: false
       containers:
+    <% if @Tm_Name == "constellation"  %>
       - name: constellation
         image: quorumengineering/constellation:<%= @Tm_Version %>
         command: ["sh"]
@@ -78,31 +80,32 @@ spec:
         - "chmod 600 $QUORUM_HOME/tm/tm.key;
            DDIR=$QUORUM_HOME/tm;
            printenv;
-           args=\" --url=https://$<%= @Service_Prefix %>_SERVICE_HOST:<%= @Constellation_port %>/  \
-           --port=<%= @Constellation_port %> \
+           args=\" --url=https://$<%= @Service_Prefix %>_SERVICE_HOST:<%= @Tm_Port %>/  \
+           --port=<%= @Tm_Port %> \
            --workdir=$DDIR \
            --socket=$DDIR/tm.ipc \
            --publickeys=$QUORUM_HOME/tm/tm.pub \
            --privatekeys=$QUORUM_HOME/tm/tm.key \
            --verbosity=<%= @Geth_Verbosity%> \
-           --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:<%= @Constellation_port %>/ \";
+           --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:<%= @Tm_Port %>/ \";
            /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
+     <%- end %>
         ports:
-          - containerPort: <%= @Constellation_port %>
+          - containerPort: <%= @Tm_Port %>
         env:
           - name: QUORUM_HOME
             value: <%= @Node_DataDir %>
         volumeMounts:
         - name: quorum-logs-persistent-storage
           mountPath: <%= @Node_DataDir %>/logs
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: <%= @Node_DataDir %>/tm
         - name: quorum-persistent-storage
           mountPath: <%= @Node_DataDir %>
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: <%= @Node_DataDir %>/tm/tm.pub
           subPath: tm.pub
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: <%= @Node_DataDir %>/tm/tm.key
           subPath: tm.key
       - name: quorum
@@ -170,7 +173,7 @@ spec:
           subPath: genesis-geth.json
         - name: quorum-persistent-storage
           mountPath: <%= @Node_DataDir%>
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: <%= @Node_DataDir%>/tm
         - name: quorum-key-config-persistent-storage
           mountPath: <%= @Node_DataDir%>/dd/keystore/key
@@ -202,9 +205,9 @@ spec:
       - name: contracts-config
         configMap:
           name: contracts-config
-      - name: keystore-constellation
+      - name: keystore-tm
         configMap:
-          name: <%= @Node_UserIdent %>-constellation-key-config
+          name: <%= @Node_UserIdent %>-tm-key-config
           items:
           - key: tm.pub
             path: tm.pub
@@ -225,7 +228,7 @@ spec:
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/<%= @Node_UserIdent %>
-      - name: constellation-persistent-storage
+      - name: tm-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/tm-<%= @Node_UserIdent %>
       - name: quorum-logs-persistent-storage

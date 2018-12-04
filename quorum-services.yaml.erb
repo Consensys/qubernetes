@@ -32,7 +32,7 @@ spec:
     name: <%= @Node_UserIdent %>-deployment
   type: ClusterIP
   ports:
-    - name: constellation
+    - name: tm-manager 
       protocol: TCP
       port: <%= @TM_Port %>
       targetPort: <%= @TM_Port %>

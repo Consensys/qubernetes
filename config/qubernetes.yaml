@@ -23,6 +23,7 @@ quorum:
     # container images at https://hub.docker.com/u/quorumengineering/
     # TODO: add support for tessera, this should hold the full container name
     #       in that case.
+    Name: constellation
     Tm_Version: 0.3.2
     Port: 9001
 

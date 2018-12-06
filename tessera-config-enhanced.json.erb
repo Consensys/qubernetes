@@ -1,0 +1,91 @@
+<%
+def set_node_template_vars(values)
+    @Node_UserIdent        = values["Node_UserIdent"]
+    @Node_Key_Dir          = values["Key_Dir"]
+    return
+end
+-%>
+
+<% # The configured key directory of each node holds a file with the enode value.
+# The enode value is obtained from that file and set in the permissioned-nodes.json
+%>
+<%
+   @Key_Dir_Base = @config["quorum"]["Key_Dir_Base"]
+   @Tm_Port      = @config["quorum"]["tm"]["Port"]
+%>
+{
+  "useWhiteList": false,
+  "jdbc": {
+    "username": "sa",
+    "password": "",
+    "url": "jdbc:h2:./$${DDIR}/db;MODE=Oracle;TRACE_LEVEL_SYSTEM_OUT=0",
+    "autoCreateTables": true
+  },
+  "serverConfigs":[
+  {
+    "app":"ThirdParty",
+    "enabled": true,
+    "serverSocket":{
+      "type":"INET",
+      "port": 9080,
+      "hostName": "http://%<%= "#{@Node_UserIdent}".upcase %>_SERVICE_HOST%"
+    },
+    "communicationType" : "REST"
+  },
+  {
+    "app":"Q2T",
+    "enabled": true,
+    "serverSocket":{
+      "type":"UNIX",
+      "path":"$${DDIR}/tm.ipc"
+    },
+    "communicationType" : "UNIX_SOCKET"
+  },
+  {
+    "app":"P2P",
+    "enabled": true,
+    "serverSocket":{
+      "type":"INET",
+    "port": <%= @Tm_Port %>,
+      "hostName": "http://%<%= "#{@Node_UserIdent}".upcase %>_SERVICE_HOST%"
+    },
+    "sslConfig": {
+      "tls": "OFF",
+      "generateKeyStoreIfNotExisted": true,
+      "serverKeyStore": "$${DDIR}/server-keystore",
+      "serverKeyStorePassword": "quorum",
+      "serverTrustStore": "$${DDIR}/server-truststore",
+      "serverTrustStorePassword": "quorum",
+      "serverTrustMode": "TOFU",
+      "knownClientsFile": "$${DDIR}/knownClients",
+      "clientKeyStore": "$${DDIR}/client-keystore",
+      "clientKeyStorePassword": "quorum",
+      "clientTrustStore": "$${DDIR}/client-truststore",
+      "clientTrustStorePassword": "quorum",
+      "clientTrustMode": "TOFU",
+      "knownServersFile": "$${DDIR}/knownServers"
+    },
+    "communicationType" : "REST"
+  }
+  ],
+
+    "peer": [
+<%- @nodes.each_with_index do |node, indexNode| %>
+<%= set_node_template_vars(node.values.first) -%>
+     {
+           "url": "http://%<%= "#{@Node_UserIdent}".upcase %>_SERVICE_HOST%:<%= @Tm_Port %>"
+         }<%- if (indexNode != @nodes.size - 1) %>,<%- end %>
+
+<% end -%>
+    ],
+    "keys": {
+         "passwords": [],
+         "keyData": [
+            {
+                "config": $$(cat $${DDIR}/tm.key),
+                "publicKey": "$$(cat $${DDIR}/tm.pub)"
+            }
+          ]
+     },
+    "alwaysSendTo": []
+}

@@ -1,6 +1,7 @@
 <%-
  @Permissioned_Nodes_File    = @config["quorum"]["Permissioned_Nodes_File"]
  @Genesis_File               = @config["quorum"]["Genesis_File"]
+ @Tessera_Config_Dir         = @config["quorum"]["tm"]["Tessera_Config_Dir"]
 %>
 
 apiVersion: v1
@@ -39,6 +40,26 @@ metadata:
 data:
   genesis-geth.json: |-
 <%- File.readlines(@Genesis_File).each do |line| -%>
+    <%= line -%>
+<% end -%>
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tessera-config
+  namespace: <%= @config["namespace"]["name"] %>
+  labels:
+    app: qubernetes
+    name: tessera-config
+data:
+  tessera-config.json: |-
+<%- File.readlines(@Tessera_Config_Dir + "/tessera-config.json").each do |line| -%>
+    <%= line -%>
+<% end -%>
+
+  tessera-config-enhanced.json: |-
+<%- File.readlines(@Tessera_Config_Dir + "/tessera-config-enhanced.json").each do |line| -%>
     <%= line -%>
 <% end -%>
 

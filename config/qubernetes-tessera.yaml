@@ -21,10 +21,8 @@ quorum:
   # related to transaction manager containers
   tm:
     # container images at https://hub.docker.com/u/quorumengineering/
-    # TODO: add support for tessera, this should hold the full container name
-    #       in that case.
-    Name: constellation
-    Tm_Version: 0.3.2
+    Name: tessera 
+    Tm_Version: 0.7.3
     Port: 9001
     Tessera_Config_Dir: out/config
 

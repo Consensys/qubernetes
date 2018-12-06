@@ -89,12 +89,47 @@ spec:
            --verbosity=<%= @Geth_Verbosity%> \
            --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:<%= @Tm_Port %>/ \";
            /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
+     <% else %>
+      - name: tessera
+        image: quorumengineering/tessera:<%= @Tm_Version %>
+        command: ["sh"]
+        args:
+        - "-cx"
+        - "chmod 600 $QUORUM_HOME/tm/tm.key;
+           echo DDIR is $DDIR;
+           printenv;
+
+           TESSERA_VERSION=$$(unzip -p /tessera/tessera-app.jar META-INF/MANIFEST.MF | grep Tessera-Version | cut -d\" \" -f2);
+           echo \"Tessera version (extracted from manifest file): $${TESSERA_VERSION}\";
+
+           TESSERA_VERSION=\"${TESSERA_VERSION}-suffix\";
+
+           TESSERA_CONFIG_TYPE=;
+
+           if [ \"${TESSERA_VERSION}\" \\> \"0.8 \" ]; then TESSERA_CONFIG_TYPE=\"-enhanced\"; fi;
+
+           echo Config type ${TESSERA_CONFIG_TYPE};
+
+           TESSERA_VERSION=$$(unzip -p /tessera/tessera-app.jar META-INF/MANIFEST.MF | grep Tessera-Version | cut -d\" \" -f2);
+           echo \"Tessera version (extracted from manifest file): ${TESSERA_VERSION}\";
+
+           CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json);
+
+           <%- @This_Host = ("#{@Node_UserIdent}".upcase + "_SERVICE_HOST").gsub("-", "_") -%>
+           CONFIG_WITH_OTHERS=$(echo $CONFIG_TMPL | <%= @Sed_Set_Node_Service_Host %>) ;
+           CONFIG_WITH_HOSTS=$(echo $CONFIG_WITH_OTHERS | sed \"s/%THIS_SERVICE_HOST%/$<%= @This_Host %>/g\");
+           echo $CONFIG_WITH_HOSTS >  ${DDIR}/tessera-config-with-hosts.json;
+           cat  ${DDIR}/tessera-config-with-hosts.json;
+           java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json;
+        "
      <%- end %>
         ports:
           - containerPort: <%= @Tm_Port %>
         env:
           - name: QUORUM_HOME
             value: <%= @Node_DataDir %>
+          - name: DDIR
+            value: <%= @Node_DataDir %>/tm
         volumeMounts:
         - name: quorum-logs-persistent-storage
           mountPath: <%= @Node_DataDir %>/logs
@@ -108,6 +143,12 @@ spec:
         - name: keystore-tm
           mountPath: <%= @Node_DataDir %>/tm/tm.key
           subPath: tm.key
+        - name: tessera-config
+          mountPath: <%= @Node_DataDir %>/tm/tessera-config.json
+          subPath: tessera-config.json
+        - name: tessera-config
+          mountPath: <%= @Node_DataDir %>/tm/tessera-config-enhanced.json
+          subPath: tessera-config-enhanced.json
       - name: quorum
         image: quorumengineering/quorum:<%= @Quorum_Version %>
         command: [ "sh" ]
@@ -202,6 +243,14 @@ spec:
           items:
           - key: genesis-geth.json
             path: genesis-geth.json
+      - name: tessera-config
+        configMap:
+          name: tessera-config
+          items:
+          - key: tessera-config.json
+            path: tessera-config.json
+          - key: tessera-config-enhanced.json
+            path: tessera-config-enhanced.json
       - name: contracts-config
         configMap:
           name: contracts-config

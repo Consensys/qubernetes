@@ -8,11 +8,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: quorum-node1-constellation-key-config
+  name: quorum-node1-tm-key-config
   namespace: quorum-test
   labels:
     app: qubernetes
-    name: quorum-node1-constellation-key-config
+    name: quorum-node1-tm-key-config
 data:
   tm.key: |-
     {"data":{"bytes":"Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA="},"type":"unlocked"}
@@ -59,11 +59,11 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: quorum-node2-constellation-key-config
+  name: quorum-node2-tm-key-config
   namespace: quorum-test
   labels:
     app: qubernetes
-    name: quorum-node2-constellation-key-config
+    name: quorum-node2-tm-key-config
 data:
   tm.key: |-
     {"data":{"bytes":"nDFwJNHSiT1gNzKBy9WJvMhmYRkW3TzFUmPsNzR6oFk="},"type":"unlocked"}
@@ -110,11 +110,11 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: quorum-node3-constellation-key-config
+  name: quorum-node3-tm-key-config
   namespace: quorum-test
   labels:
     app: qubernetes
-    name: quorum-node3-constellation-key-config
+    name: quorum-node3-tm-key-config
 data:
   tm.key: |-
     {"data":{"bytes":"tMxUVR8bX7aq/TbpVHc2QV3SN2iUuExBwefAuFsO0Lg="},"type":"unlocked"}
@@ -161,11 +161,11 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: quorum-node4-constellation-key-config
+  name: quorum-node4-tm-key-config
   namespace: quorum-test
   labels:
     app: qubernetes
-    name: quorum-node4-constellation-key-config
+    name: quorum-node4-tm-key-config
 data:
   tm.key: |-
     {"data":{"bytes":"grQjd3dBp4qFs8/5Jdq7xjz++aUx/LXAqISFyPWaCRw="},"type":"unlocked"}
@@ -212,11 +212,11 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: quorum-node5-constellation-key-config
+  name: quorum-node5-tm-key-config
   namespace: quorum-test
   labels:
     app: qubernetes
-    name: quorum-node5-constellation-key-config
+    name: quorum-node5-tm-key-config
 data:
   tm.key: |-
     {"data":{"bytes":"W8XcdJfOuxCrLcspSceNg9vh7Cwe8tXiIx5xPJ88OtQ="},"type":"unlocked"}
@@ -263,11 +263,11 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: quorum-node6-constellation-key-config
+  name: quorum-node6-tm-key-config
   namespace: quorum-test
   labels:
     app: qubernetes
-    name: quorum-node6-constellation-key-config
+    name: quorum-node6-tm-key-config
 data:
   tm.key: |-
     {"data":{"bytes":"N9wH6bG0lWOCJtSnosatAskvzkrDApdrjaWkqjDyDzE="},"type":"unlocked"}
@@ -314,11 +314,11 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: quorum-node7-constellation-key-config
+  name: quorum-node7-tm-key-config
   namespace: quorum-test
   labels:
     app: qubernetes
-    name: quorum-node7-constellation-key-config
+    name: quorum-node7-tm-key-config
 data:
   tm.key: |-
     {"data":{"bytes":"lesaO6EWbmL1rie1biy851BnN1QsRRDK4kWUimlK0EA="},"type":"unlocked"}

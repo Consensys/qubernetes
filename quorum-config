@@ -20,6 +20,8 @@ require "erb"
 # Generate genesis.json and permissioned-nodes.json
 #####################################################
 
+`mkdir -p out/config`
+
 # create genesis files with all discovered keystore accounts pre alloc with funds.
 puts(@Genesis_File)
 File.open(@Genesis_File, "w") do |f|

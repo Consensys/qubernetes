@@ -51,6 +51,7 @@ spec:
           mountPath: /etc/quorum/qdata/contracts-tmp
           readOnly: false
       containers:
+    
       - name: constellation
         image: quorumengineering/constellation:0.3.2
         command: ["sh"]
@@ -68,24 +69,33 @@ spec:
            --verbosity=9 \
            --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:9001/ \";
            /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
+     
         ports:
           - containerPort: 9001
         env:
           - name: QUORUM_HOME
             value: /etc/quorum/qdata
+          - name: DDIR
+            value: /etc/quorum/qdata/tm
         volumeMounts:
         - name: quorum-logs-persistent-storage
           mountPath: /etc/quorum/qdata/logs
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: /etc/quorum/qdata/tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config.json.tmpl
+          subPath: tessera-config.json.tmpl
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config-enhanced.json.tmpl
+          subPath: tessera-config-enhanced.json.tmpl
       - name: quorum
         image: quorumengineering/quorum:2.1.1
         command: [ "sh" ]
@@ -111,7 +121,7 @@ spec:
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=1101
          
-           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
+           args=\" --raft --maxpeers 7  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
          
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
@@ -147,7 +157,7 @@ spec:
           subPath: genesis-geth.json
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: /etc/quorum/qdata/tm
         - name: quorum-key-config-persistent-storage
           mountPath: /etc/quorum/qdata/dd/keystore/key
@@ -176,12 +186,20 @@ spec:
           items:
           - key: genesis-geth.json
             path: genesis-geth.json
+      - name: tessera-config
+        configMap:
+          name: tessera-config
+          items:
+          - key: tessera-config.json.tmpl
+            path: tessera-config.json.tmpl
+          - key: tessera-config-enhanced.json.tmpl
+            path: tessera-config-enhanced.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config
-      - name: keystore-constellation
+      - name: keystore-tm
         configMap:
-          name: quorum-node1-constellation-key-config
+          name: quorum-node1-tm-key-config
           items:
           - key: tm.pub
             path: tm.pub
@@ -202,7 +220,7 @@ spec:
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node1
-      - name: constellation-persistent-storage
+      - name: tm-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/tm-quorum-node1
       - name: quorum-logs-persistent-storage
@@ -260,6 +278,7 @@ spec:
           mountPath: /etc/quorum/qdata/contracts-tmp
           readOnly: false
       containers:
+    
       - name: constellation
         image: quorumengineering/constellation:0.3.2
         command: ["sh"]
@@ -277,24 +296,33 @@ spec:
            --verbosity=9 \
            --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:9001/ \";
            /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
+     
         ports:
           - containerPort: 9001
         env:
           - name: QUORUM_HOME
             value: /etc/quorum/qdata
+          - name: DDIR
+            value: /etc/quorum/qdata/tm
         volumeMounts:
         - name: quorum-logs-persistent-storage
           mountPath: /etc/quorum/qdata/logs
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: /etc/quorum/qdata/tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config.json.tmpl
+          subPath: tessera-config.json.tmpl
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config-enhanced.json.tmpl
+          subPath: tessera-config-enhanced.json.tmpl
       - name: quorum
         image: quorumengineering/quorum:2.1.1
         command: [ "sh" ]
@@ -320,7 +348,7 @@ spec:
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=1101
          
-           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
+           args=\" --raft --maxpeers 7  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
          
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
@@ -356,7 +384,7 @@ spec:
           subPath: genesis-geth.json
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: /etc/quorum/qdata/tm
         - name: quorum-key-config-persistent-storage
           mountPath: /etc/quorum/qdata/dd/keystore/key
@@ -385,12 +413,20 @@ spec:
           items:
           - key: genesis-geth.json
             path: genesis-geth.json
+      - name: tessera-config
+        configMap:
+          name: tessera-config
+          items:
+          - key: tessera-config.json.tmpl
+            path: tessera-config.json.tmpl
+          - key: tessera-config-enhanced.json.tmpl
+            path: tessera-config-enhanced.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config
-      - name: keystore-constellation
+      - name: keystore-tm
         configMap:
-          name: quorum-node2-constellation-key-config
+          name: quorum-node2-tm-key-config
           items:
           - key: tm.pub
             path: tm.pub
@@ -411,7 +447,7 @@ spec:
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node2
-      - name: constellation-persistent-storage
+      - name: tm-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/tm-quorum-node2
       - name: quorum-logs-persistent-storage
@@ -469,6 +505,7 @@ spec:
           mountPath: /etc/quorum/qdata/contracts-tmp
           readOnly: false
       containers:
+    
       - name: constellation
         image: quorumengineering/constellation:0.3.2
         command: ["sh"]
@@ -486,24 +523,33 @@ spec:
            --verbosity=9 \
            --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:9001/ \";
            /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
+     
         ports:
           - containerPort: 9001
         env:
           - name: QUORUM_HOME
             value: /etc/quorum/qdata
+          - name: DDIR
+            value: /etc/quorum/qdata/tm
         volumeMounts:
         - name: quorum-logs-persistent-storage
           mountPath: /etc/quorum/qdata/logs
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: /etc/quorum/qdata/tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config.json.tmpl
+          subPath: tessera-config.json.tmpl
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config-enhanced.json.tmpl
+          subPath: tessera-config-enhanced.json.tmpl
       - name: quorum
         image: quorumengineering/quorum:2.1.1
         command: [ "sh" ]
@@ -529,7 +575,7 @@ spec:
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=1101
          
-           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
+           args=\" --raft --maxpeers 7  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
          
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
@@ -565,7 +611,7 @@ spec:
           subPath: genesis-geth.json
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: /etc/quorum/qdata/tm
         - name: quorum-key-config-persistent-storage
           mountPath: /etc/quorum/qdata/dd/keystore/key
@@ -594,12 +640,20 @@ spec:
           items:
           - key: genesis-geth.json
             path: genesis-geth.json
+      - name: tessera-config
+        configMap:
+          name: tessera-config
+          items:
+          - key: tessera-config.json.tmpl
+            path: tessera-config.json.tmpl
+          - key: tessera-config-enhanced.json.tmpl
+            path: tessera-config-enhanced.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config
-      - name: keystore-constellation
+      - name: keystore-tm
         configMap:
-          name: quorum-node3-constellation-key-config
+          name: quorum-node3-tm-key-config
           items:
           - key: tm.pub
             path: tm.pub
@@ -620,7 +674,7 @@ spec:
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node3
-      - name: constellation-persistent-storage
+      - name: tm-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/tm-quorum-node3
       - name: quorum-logs-persistent-storage
@@ -678,6 +732,7 @@ spec:
           mountPath: /etc/quorum/qdata/contracts-tmp
           readOnly: false
       containers:
+    
       - name: constellation
         image: quorumengineering/constellation:0.3.2
         command: ["sh"]
@@ -695,24 +750,33 @@ spec:
            --verbosity=9 \
            --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:9001/ \";
            /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
+     
         ports:
           - containerPort: 9001
         env:
           - name: QUORUM_HOME
             value: /etc/quorum/qdata
+          - name: DDIR
+            value: /etc/quorum/qdata/tm
         volumeMounts:
         - name: quorum-logs-persistent-storage
           mountPath: /etc/quorum/qdata/logs
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: /etc/quorum/qdata/tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config.json.tmpl
+          subPath: tessera-config.json.tmpl
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config-enhanced.json.tmpl
+          subPath: tessera-config-enhanced.json.tmpl
       - name: quorum
         image: quorumengineering/quorum:2.1.1
         command: [ "sh" ]
@@ -738,7 +802,7 @@ spec:
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=1101
          
-           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
+           args=\" --raft --maxpeers 7  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
          
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
@@ -774,7 +838,7 @@ spec:
           subPath: genesis-geth.json
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: /etc/quorum/qdata/tm
         - name: quorum-key-config-persistent-storage
           mountPath: /etc/quorum/qdata/dd/keystore/key
@@ -803,12 +867,20 @@ spec:
           items:
           - key: genesis-geth.json
             path: genesis-geth.json
+      - name: tessera-config
+        configMap:
+          name: tessera-config
+          items:
+          - key: tessera-config.json.tmpl
+            path: tessera-config.json.tmpl
+          - key: tessera-config-enhanced.json.tmpl
+            path: tessera-config-enhanced.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config
-      - name: keystore-constellation
+      - name: keystore-tm
         configMap:
-          name: quorum-node4-constellation-key-config
+          name: quorum-node4-tm-key-config
           items:
           - key: tm.pub
             path: tm.pub
@@ -829,7 +901,7 @@ spec:
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node4
-      - name: constellation-persistent-storage
+      - name: tm-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/tm-quorum-node4
       - name: quorum-logs-persistent-storage
@@ -887,6 +959,7 @@ spec:
           mountPath: /etc/quorum/qdata/contracts-tmp
           readOnly: false
       containers:
+    
       - name: constellation
         image: quorumengineering/constellation:0.3.2
         command: ["sh"]
@@ -904,24 +977,33 @@ spec:
            --verbosity=9 \
            --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:9001/ \";
            /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
+     
         ports:
           - containerPort: 9001
         env:
           - name: QUORUM_HOME
             value: /etc/quorum/qdata
+          - name: DDIR
+            value: /etc/quorum/qdata/tm
         volumeMounts:
         - name: quorum-logs-persistent-storage
           mountPath: /etc/quorum/qdata/logs
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: /etc/quorum/qdata/tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config.json.tmpl
+          subPath: tessera-config.json.tmpl
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config-enhanced.json.tmpl
+          subPath: tessera-config-enhanced.json.tmpl
       - name: quorum
         image: quorumengineering/quorum:2.1.1
         command: [ "sh" ]
@@ -947,7 +1029,7 @@ spec:
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=1101
          
-           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
+           args=\" --raft --maxpeers 7  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
          
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
@@ -983,7 +1065,7 @@ spec:
           subPath: genesis-geth.json
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: /etc/quorum/qdata/tm
         - name: quorum-key-config-persistent-storage
           mountPath: /etc/quorum/qdata/dd/keystore/key
@@ -1012,12 +1094,20 @@ spec:
           items:
           - key: genesis-geth.json
             path: genesis-geth.json
+      - name: tessera-config
+        configMap:
+          name: tessera-config
+          items:
+          - key: tessera-config.json.tmpl
+            path: tessera-config.json.tmpl
+          - key: tessera-config-enhanced.json.tmpl
+            path: tessera-config-enhanced.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config
-      - name: keystore-constellation
+      - name: keystore-tm
         configMap:
-          name: quorum-node5-constellation-key-config
+          name: quorum-node5-tm-key-config
           items:
           - key: tm.pub
             path: tm.pub
@@ -1038,7 +1128,7 @@ spec:
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node5
-      - name: constellation-persistent-storage
+      - name: tm-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/tm-quorum-node5
       - name: quorum-logs-persistent-storage
@@ -1096,6 +1186,7 @@ spec:
           mountPath: /etc/quorum/qdata/contracts-tmp
           readOnly: false
       containers:
+    
       - name: constellation
         image: quorumengineering/constellation:0.3.2
         command: ["sh"]
@@ -1113,24 +1204,33 @@ spec:
            --verbosity=9 \
            --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:9001/ \";
            /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
+     
         ports:
           - containerPort: 9001
         env:
           - name: QUORUM_HOME
             value: /etc/quorum/qdata
+          - name: DDIR
+            value: /etc/quorum/qdata/tm
         volumeMounts:
         - name: quorum-logs-persistent-storage
           mountPath: /etc/quorum/qdata/logs
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: /etc/quorum/qdata/tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config.json.tmpl
+          subPath: tessera-config.json.tmpl
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config-enhanced.json.tmpl
+          subPath: tessera-config-enhanced.json.tmpl
       - name: quorum
         image: quorumengineering/quorum:2.1.1
         command: [ "sh" ]
@@ -1156,7 +1256,7 @@ spec:
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=1101
          
-           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
+           args=\" --raft --maxpeers 7  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
          
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
@@ -1192,7 +1292,7 @@ spec:
           subPath: genesis-geth.json
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: /etc/quorum/qdata/tm
         - name: quorum-key-config-persistent-storage
           mountPath: /etc/quorum/qdata/dd/keystore/key
@@ -1221,12 +1321,20 @@ spec:
           items:
           - key: genesis-geth.json
             path: genesis-geth.json
+      - name: tessera-config
+        configMap:
+          name: tessera-config
+          items:
+          - key: tessera-config.json.tmpl
+            path: tessera-config.json.tmpl
+          - key: tessera-config-enhanced.json.tmpl
+            path: tessera-config-enhanced.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config
-      - name: keystore-constellation
+      - name: keystore-tm
         configMap:
-          name: quorum-node6-constellation-key-config
+          name: quorum-node6-tm-key-config
           items:
           - key: tm.pub
             path: tm.pub
@@ -1247,7 +1355,7 @@ spec:
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node6
-      - name: constellation-persistent-storage
+      - name: tm-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/tm-quorum-node6
       - name: quorum-logs-persistent-storage
@@ -1305,6 +1413,7 @@ spec:
           mountPath: /etc/quorum/qdata/contracts-tmp
           readOnly: false
       containers:
+    
       - name: constellation
         image: quorumengineering/constellation:0.3.2
         command: ["sh"]
@@ -1322,24 +1431,33 @@ spec:
            --verbosity=9 \
            --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:9001/ \";
            /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
+     
         ports:
           - containerPort: 9001
         env:
           - name: QUORUM_HOME
             value: /etc/quorum/qdata
+          - name: DDIR
+            value: /etc/quorum/qdata/tm
         volumeMounts:
         - name: quorum-logs-persistent-storage
           mountPath: /etc/quorum/qdata/logs
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: /etc/quorum/qdata/tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
-        - name: keystore-constellation
+        - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config.json.tmpl
+          subPath: tessera-config.json.tmpl
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config-enhanced.json.tmpl
+          subPath: tessera-config-enhanced.json.tmpl
       - name: quorum
         image: quorumengineering/quorum:2.1.1
         command: [ "sh" ]
@@ -1365,7 +1483,7 @@ spec:
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=1101
          
-           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
+           args=\" --raft --maxpeers 7  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
          
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
@@ -1401,7 +1519,7 @@ spec:
           subPath: genesis-geth.json
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-        - name: constellation-persistent-storage
+        - name: tm-persistent-storage
           mountPath: /etc/quorum/qdata/tm
         - name: quorum-key-config-persistent-storage
           mountPath: /etc/quorum/qdata/dd/keystore/key
@@ -1430,12 +1548,20 @@ spec:
           items:
           - key: genesis-geth.json
             path: genesis-geth.json
+      - name: tessera-config
+        configMap:
+          name: tessera-config
+          items:
+          - key: tessera-config.json.tmpl
+            path: tessera-config.json.tmpl
+          - key: tessera-config-enhanced.json.tmpl
+            path: tessera-config-enhanced.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config
-      - name: keystore-constellation
+      - name: keystore-tm
         configMap:
-          name: quorum-node7-constellation-key-config
+          name: quorum-node7-tm-key-config
           items:
           - key: tm.pub
             path: tm.pub
@@ -1456,7 +1582,7 @@ spec:
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node7
-      - name: constellation-persistent-storage
+      - name: tm-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/tm-quorum-node7
       - name: quorum-logs-persistent-storage

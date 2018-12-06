@@ -12,7 +12,7 @@ quorum:
   # Either full or relative paths on the machine generating the config
   Key_Dir_Base: 7nodes 
   Permissioned_Nodes_File: 7nodes/permissioned-nodes.json
-  Genesis_File: 7nodes/raft-7nodes/genesis.json
+  Genesis_File: 7nodes/raft-genesis.json
   # related to quorum containers
   quorum:
     Raft_Port: 50401
@@ -21,10 +21,10 @@ quorum:
   # related to transaction manager containers
   tm:
     # container images at https://hub.docker.com/u/quorumengineering/
-    # TODO: add support for tessera, this should hold the full container name
-    #       in that case.
+    Name: constellation
     Tm_Version: 0.3.2
     Port: 9001
+    Tessera_Config_Dir: 7nodes 
 
 # generic geth related options
 geth:

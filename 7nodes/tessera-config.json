@@ -1,0 +1,83 @@
+
+
+
+
+{
+    "useWhiteList": false,
+    "jdbc": {
+        "username": "sa",
+        "password": "",
+        "url": "jdbc:h2:/etc/quorum/qdata/tm/db;MODE=Oracle;TRACE_LEVEL_SYSTEM_OUT=0",
+        "autoCreateTables": true
+    },
+    "server": {
+        "port": 9001,
+        "hostName": "http://%THIS_SERVICE_HOST%",
+        "bindingAddress": "http://0.0.0.0:9001",
+        "sslConfig": {
+            "tls": "OFF",
+            "generateKeyStoreIfNotExisted": true,
+            "serverKeyStore": "/etc/quorum/qdata/tm/server-keystore",
+            "serverKeyStorePassword": "quorum",
+            "serverTrustStore": "/etc/quorum/qdata/tm/server-truststore",
+            "serverTrustStorePassword": "quorum",
+            "serverTrustMode": "TOFU",
+            "knownClientsFile": "/etc/quorum/qdata/tm/knownClients",
+            "clientKeyStore": "/etc/quorum/qdata/tm/client-keystore",
+            "clientKeyStorePassword": "quorum",
+            "clientTrustStore": "/etc/quorum/qdata/tm/client-truststore",
+            "clientTrustStorePassword": "quorum",
+            "clientTrustMode": "TOFU",
+            "knownServersFile": "/etc/quorum/qdata/tm/knownServers"
+        }
+    },
+    "peer": [
+
+         {
+           "url": "http://%QUORUM-NODE1_SERVICE_HOST%:9001"
+         },
+
+
+         {
+           "url": "http://%QUORUM-NODE2_SERVICE_HOST%:9001"
+         },
+
+
+         {
+           "url": "http://%QUORUM-NODE3_SERVICE_HOST%:9001"
+         },
+
+
+         {
+           "url": "http://%QUORUM-NODE4_SERVICE_HOST%:9001"
+         },
+
+
+         {
+           "url": "http://%QUORUM-NODE5_SERVICE_HOST%:9001"
+         },
+
+
+         {
+           "url": "http://%QUORUM-NODE6_SERVICE_HOST%:9001"
+         },
+
+
+         {
+           "url": "http://%QUORUM-NODE7_SERVICE_HOST%:9001"
+         }
+
+    ],
+    "keys": {
+        "passwords": [],
+        "keyData": [
+            {
+                "privateKeyPath": "/etc/quorum/qdata/tm/tm.key",
+                "publicKeyPath": "/etc/quorum/qdata/tm/tm.pub"
+            }
+        ]
+    },
+    "alwaysSendTo": [],
+    "unixSocketFile": "/etc/quorum/qdata/tm/tm.ipc"
+}
+

@@ -53,12 +53,12 @@ metadata:
     app: qubernetes
     name: tessera-config
 data:
-  tessera-config.json: |-
+  tessera-config.json.tmpl: |-
 <%- File.readlines(@Tessera_Config_Dir + "/tessera-config.json").each do |line| -%>
     <%= line -%>
 <% end -%>
 
-  tessera-config-enhanced.json: |-
+  tessera-config-enhanced.json.tmpl: |-
 <%- File.readlines(@Tessera_Config_Dir + "/tessera-config-enhanced.json").each do |line| -%>
     <%= line -%>
 <% end -%>

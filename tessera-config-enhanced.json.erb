@@ -6,19 +6,20 @@ def set_node_template_vars(values)
 end
 -%>
 
-<% # The configured key directory of each node holds a file with the enode value.
-# The enode value is obtained from that file and set in the permissioned-nodes.json
+<% 
+# for more information about the tessera-config file see https://github.com/jpmorganchase/tessera/wiki/Configuration-overview.
 %>
 <%
    @Key_Dir_Base = @config["quorum"]["Key_Dir_Base"]
    @Tm_Port      = @config["quorum"]["tm"]["Port"]
+   @DDIR         = @Node_DataDir + "/tm"
 %>
 {
   "useWhiteList": false,
   "jdbc": {
     "username": "sa",
     "password": "",
-    "url": "jdbc:h2:./$${DDIR}/db;MODE=Oracle;TRACE_LEVEL_SYSTEM_OUT=0",
+    "url": "jdbc:h2:<%= @DDIR %>/db;MODE=Oracle;TRACE_LEVEL_SYSTEM_OUT=0",
     "autoCreateTables": true
   },
   "serverConfigs":[
@@ -28,7 +29,7 @@ end
     "serverSocket":{
       "type":"INET",
       "port": 9080,
-      "hostName": "http://%<%= "#{@Node_UserIdent}".upcase %>_SERVICE_HOST%"
+      "hostName": "http://%THIS_SERVICE_HOST%"
     },
     "communicationType" : "REST"
   },
@@ -37,7 +38,7 @@ end
     "enabled": true,
     "serverSocket":{
       "type":"UNIX",
-      "path":"$${DDIR}/tm.ipc"
+      "path":"<%= @DDIR %>/tm.ipc"
     },
     "communicationType" : "UNIX_SOCKET"
   },
@@ -46,24 +47,25 @@ end
     "enabled": true,
     "serverSocket":{
       "type":"INET",
-    "port": <%= @Tm_Port %>,
-      "hostName": "http://%<%= "#{@Node_UserIdent}".upcase %>_SERVICE_HOST%"
+      "port": <%= @Tm_Port %>,
+      "hostName": "http://%THIS_SERVICE_HOST%",
+      "bindingAddress": "http://0.0.0.0:<%= @Tm_Port %>"
     },
     "sslConfig": {
       "tls": "OFF",
       "generateKeyStoreIfNotExisted": true,
-      "serverKeyStore": "$${DDIR}/server-keystore",
+      "serverKeyStore": "<%= @DDIR %>/server-keystore",
       "serverKeyStorePassword": "quorum",
-      "serverTrustStore": "$${DDIR}/server-truststore",
+      "serverTrustStore": "<%= @DDIR %>/server-truststore",
       "serverTrustStorePassword": "quorum",
       "serverTrustMode": "TOFU",
-      "knownClientsFile": "$${DDIR}/knownClients",
-      "clientKeyStore": "$${DDIR}/client-keystore",
+      "knownClientsFile": "<%= @DDIR %>/knownClients",
+      "clientKeyStore": "<%= @DDIR %>/client-keystore",
       "clientKeyStorePassword": "quorum",
-      "clientTrustStore": "$${DDIR}/client-truststore",
+      "clientTrustStore": "<%= @DDIR %>/client-truststore",
       "clientTrustStorePassword": "quorum",
       "clientTrustMode": "TOFU",
-      "knownServersFile": "$${DDIR}/knownServers"
+      "knownServersFile": "<%= @DDIR %>/knownServers"
     },
     "communicationType" : "REST"
   }
@@ -82,8 +84,8 @@ end
          "passwords": [],
          "keyData": [
             {
-                "config": $$(cat $${DDIR}/tm.key),
-                "publicKey": "$$(cat $${DDIR}/tm.pub)"
+                "config": %THIS_PRIV_KEY%,
+                "publicKey": "%THIS_PUB_KEY%"
             }
           ]
      },

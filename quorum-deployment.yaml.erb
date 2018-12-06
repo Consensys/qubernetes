@@ -99,8 +99,8 @@ spec:
            echo DDIR is $DDIR;
            printenv;
 
-           TESSERA_VERSION=$$(unzip -p /tessera/tessera-app.jar META-INF/MANIFEST.MF | grep Tessera-Version | cut -d\" \" -f2);
-           echo \"Tessera version (extracted from manifest file): $${TESSERA_VERSION}\";
+           TESSERA_VERSION=$(unzip -p /tessera/tessera-app.jar META-INF/MANIFEST.MF | grep Tessera-Version | cut -d\" \" -f2);
+           echo \"Tessera version (extracted from manifest file): ${TESSERA_VERSION}\";
 
            TESSERA_VERSION=\"${TESSERA_VERSION}-suffix\";
 
@@ -110,15 +110,16 @@ spec:
 
            echo Config type ${TESSERA_CONFIG_TYPE};
 
-           TESSERA_VERSION=$$(unzip -p /tessera/tessera-app.jar META-INF/MANIFEST.MF | grep Tessera-Version | cut -d\" \" -f2);
-           echo \"Tessera version (extracted from manifest file): ${TESSERA_VERSION}\";
-
-           CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json);
+           CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json.tmpl);
 
            <%- @This_Host = ("#{@Node_UserIdent}".upcase + "_SERVICE_HOST").gsub("-", "_") -%>
-           CONFIG_WITH_OTHERS=$(echo $CONFIG_TMPL | <%= @Sed_Set_Node_Service_Host %>) ;
-           CONFIG_WITH_HOSTS=$(echo $CONFIG_WITH_OTHERS | sed \"s/%THIS_SERVICE_HOST%/$<%= @This_Host %>/g\");
-           echo $CONFIG_WITH_HOSTS >  ${DDIR}/tessera-config-with-hosts.json;
+           CONFIG_WITH_OTHER_HOSTS=$(echo $CONFIG_TMPL | <%= @Sed_Set_Node_Service_Host %>) ;
+           CONFIG_WITH_ALL_HOSTS=$(echo $CONFIG_WITH_OTHER_HOSTS | sed \"s/%THIS_SERVICE_HOST%/$<%= @This_Host %>/g\");
+           PRIV_KEY=$(cat $DDIR/tm.key)
+           PUB_KEY=$(cat $DDIR/tm.pub)
+           CONFIG_FINAL=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\")
+
+           echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
            cat  ${DDIR}/tessera-config-with-hosts.json;
            java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json;
         "
@@ -144,11 +145,11 @@ spec:
           mountPath: <%= @Node_DataDir %>/tm/tm.key
           subPath: tm.key
         - name: tessera-config
-          mountPath: <%= @Node_DataDir %>/tm/tessera-config.json
-          subPath: tessera-config.json
+          mountPath: <%= @Node_DataDir %>/tm/tessera-config.json.tmpl
+          subPath: tessera-config.json.tmpl
         - name: tessera-config
-          mountPath: <%= @Node_DataDir %>/tm/tessera-config-enhanced.json
-          subPath: tessera-config-enhanced.json
+          mountPath: <%= @Node_DataDir %>/tm/tessera-config-enhanced.json.tmpl
+          subPath: tessera-config-enhanced.json.tmpl
       - name: quorum
         image: quorumengineering/quorum:<%= @Quorum_Version %>
         command: [ "sh" ]
@@ -247,10 +248,10 @@ spec:
         configMap:
           name: tessera-config
           items:
-          - key: tessera-config.json
-            path: tessera-config.json
-          - key: tessera-config-enhanced.json
-            path: tessera-config-enhanced.json
+          - key: tessera-config.json.tmpl
+            path: tessera-config.json.tmpl
+          - key: tessera-config-enhanced.json.tmpl
+            path: tessera-config-enhanced.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config

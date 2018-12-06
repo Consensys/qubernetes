@@ -5,14 +5,14 @@ nodes:
   number: 7 
 quorum:
   # supported: raft | istanbul
-  consensus: istanbul 
+  consensus: raft 
   # base quorum data dir as set inside each container.
   Node_DataDir: /etc/quorum/qdata
   # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
   # Either full or relative paths on the machine generating the config
-  Key_Dir_Base: 7nodes
+  Key_Dir_Base: 7nodes 
   Permissioned_Nodes_File: 7nodes/permissioned-nodes.json
-  Genesis_File: 7nodes/istanbul-7nodes/istanbul-genesis.json
+  Genesis_File: 7nodes/raft-genesis.json
   # related to quorum containers
   quorum:
     Raft_Port: 50401
@@ -21,10 +21,10 @@ quorum:
   # related to transaction manager containers
   tm:
     # container images at https://hub.docker.com/u/quorumengineering/
-    # TODO: add support for tessera, this should hold the full container name
-    #       in that case.
-    Tm_Version: 0.3.2
+    Name: tessera 
+    Tm_Version: 0.7.3
     Port: 9001
+    Tessera_Config_Dir: 7nodes 
 
 # generic geth related options
 geth:

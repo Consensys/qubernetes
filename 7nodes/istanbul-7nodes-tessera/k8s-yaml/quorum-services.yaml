@@ -19,10 +19,15 @@ spec:
     name: quorum-node1-deployment
   type: ClusterIP
   ports:
-    - name: constellation
+    - name: tm-manager 
       protocol: TCP
       port: 9001
       targetPort: 9001
+    # default 8545
+    - name: tm-tessera-third-part
+      protocol: TCP
+      port: 9080
+      targetPort: 9080
     # default 8545
     - name: wsrpc-listener
       protocol: TCP
@@ -56,10 +61,15 @@ spec:
     name: quorum-node2-deployment
   type: ClusterIP
   ports:
-    - name: constellation
+    - name: tm-manager 
       protocol: TCP
       port: 9001
       targetPort: 9001
+    # default 8545
+    - name: tm-tessera-third-part
+      protocol: TCP
+      port: 9080
+      targetPort: 9080
     # default 8545
     - name: wsrpc-listener
       protocol: TCP
@@ -93,10 +103,15 @@ spec:
     name: quorum-node3-deployment
   type: ClusterIP
   ports:
-    - name: constellation
+    - name: tm-manager 
       protocol: TCP
       port: 9001
       targetPort: 9001
+    # default 8545
+    - name: tm-tessera-third-part
+      protocol: TCP
+      port: 9080
+      targetPort: 9080
     # default 8545
     - name: wsrpc-listener
       protocol: TCP
@@ -130,10 +145,15 @@ spec:
     name: quorum-node4-deployment
   type: ClusterIP
   ports:
-    - name: constellation
+    - name: tm-manager 
       protocol: TCP
       port: 9001
       targetPort: 9001
+    # default 8545
+    - name: tm-tessera-third-part
+      protocol: TCP
+      port: 9080
+      targetPort: 9080
     # default 8545
     - name: wsrpc-listener
       protocol: TCP
@@ -167,10 +187,15 @@ spec:
     name: quorum-node5-deployment
   type: ClusterIP
   ports:
-    - name: constellation
+    - name: tm-manager 
       protocol: TCP
       port: 9001
       targetPort: 9001
+    # default 8545
+    - name: tm-tessera-third-part
+      protocol: TCP
+      port: 9080
+      targetPort: 9080
     # default 8545
     - name: wsrpc-listener
       protocol: TCP
@@ -204,10 +229,15 @@ spec:
     name: quorum-node6-deployment
   type: ClusterIP
   ports:
-    - name: constellation
+    - name: tm-manager 
       protocol: TCP
       port: 9001
       targetPort: 9001
+    # default 8545
+    - name: tm-tessera-third-part
+      protocol: TCP
+      port: 9080
+      targetPort: 9080
     # default 8545
     - name: wsrpc-listener
       protocol: TCP
@@ -241,10 +271,15 @@ spec:
     name: quorum-node7-deployment
   type: ClusterIP
   ports:
-    - name: constellation
+    - name: tm-manager 
       protocol: TCP
       port: 9001
       targetPort: 9001
+    # default 8545
+    - name: tm-tessera-third-part
+      protocol: TCP
+      port: 9080
+      targetPort: 9080
     # default 8545
     - name: wsrpc-listener
       protocol: TCP

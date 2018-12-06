@@ -6,8 +6,8 @@ def set_node_template_vars(values)
 end
 -%>
 
-<% # The configured key directory of each node holds a file with the enode value.
-# The enode value is obtained from that file and set in the permissioned-nodes.json
+<%
+# for more information about the tessera-config file see https://github.com/jpmorganchase/tessera/wiki/Configuration-overview
 %>
 <%
    @Key_Dir_Base = @config["quorum"]["Key_Dir_Base"]
@@ -66,3 +66,4 @@ end
     "alwaysSendTo": [],
     "unixSocketFile": "<%= @DDIR %>/tm.ipc"
 }
+

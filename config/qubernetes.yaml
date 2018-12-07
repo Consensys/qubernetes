@@ -4,7 +4,7 @@ namespace:
 nodes:
   number: 10 
 quorum:
-  # supported: raft | istanbul
+  # supported: (raft | istanbul)
   consensus: raft 
   # base quorum data dir as set inside each container.
   Node_DataDir: /etc/quorum/qdata
@@ -20,13 +20,11 @@ quorum:
     Quorum_Version: 2.1.1
   # related to transaction manager containers
   tm:
-    # container images at https://hub.docker.com/u/quorumengineering/
-    # TODO: add support for tessera, this should hold the full container name
-    #       in that case.
-    Name: constellation
-    Tm_Version: 0.3.2
+    # (tessera|constellation)
+    Name: tessera 
+    Tm_Version: 0.7.3
     Port: 9001
-    Tessera_Config_Dir: out/config
+    Tessera_Config_Dir: 7nodes 
 
 # generic geth related options
 geth:

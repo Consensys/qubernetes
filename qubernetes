@@ -43,22 +43,22 @@ end
 @Sed_Set_Node_Service_Host = sed_string[0...-2]
 #puts (sed_string)
 
-File.open("out/quorum-shared-config.yaml", "w") do |f|
+File.open("out/01-quorum-shared-config.yaml", "w") do |f|
   f.puts (ERB.new(File.read("quorum-shared-config.yaml.erb"), nil, "-").result)
 end
 
 # Create the service resources
-File.open("out/quorum-services.yaml", "w") do |f|
+File.open("out/02-quorum-services.yaml", "w") do |f|
   f.puts (ERB.new(File.read("quorum-services.yaml.erb"), nil, "-").result)
 end
 
 # make all keystore resrouce (configMap, TODO: Secretes)
-File.open("out/quorum-keyconfigs.yaml", "w") do |f|
+File.open("out/03-quorum-keyconfigs.yaml", "w") do |f|
   f.puts (ERB.new(File.read("quorum-keystore.yaml.erb"), nil, "-").result)
 end
 
 # make deployments
-File.open("out/quorum-deployments.yaml", "w") do |f|
+File.open("out/04-quorum-deployments.yaml", "w") do |f|
   f.puts (ERB.new(File.read("quorum-deployment.yaml.erb"), nil, "-").result)
 end
 

@@ -2,9 +2,9 @@ namespace:
   name: quorum-test
 # number of nodes to deploy
 nodes:
-  number: 10 
+  number: 8
 quorum:
-  # supported: raft | istanbul
+  # supported: (raft | istanbul)
   consensus: raft 
   # base quorum data dir as set inside each container.
   Node_DataDir: /etc/quorum/qdata
@@ -21,6 +21,7 @@ quorum:
   # related to transaction manager containers
   tm:
     # container images at https://hub.docker.com/u/quorumengineering/
+    # (tessera|constellation)
     Name: tessera 
     Tm_Version: 0.7.3
     Port: 9001

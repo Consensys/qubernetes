@@ -1,10 +1,12 @@
 namespace:
   name: quorum-test
-# number of nodes to deploy
+# number of nodes to deploy, this is relying on already generated files which reside in the 7nodes
+# directory, so teh number will always be 7.
+# see: 7nodes directory for already generated quorum resources and various qubernetes.yaml files.
 nodes:
   number: 7 
 quorum:
-  # supported: raft | istanbul
+  # supported: (raft | istanbul)
   consensus: istanbul 
   # base quorum data dir as set inside each container.
   Node_DataDir: /etc/quorum/qdata
@@ -21,7 +23,6 @@ quorum:
   # related to transaction manager containers
   tm:
     # container images at https://hub.docker.com/u/quorumengineering/
-    # TODO: add support for tessera, this should hold the full container name
     #       in that case.
     Tm_Version: 0.3.2
     Port: 9001

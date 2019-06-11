@@ -64,11 +64,10 @@ end
 
 puts("\n")
 puts "  Success! ".green
-puts("  Kubernetes resrouce files for kubernetes have been generated in the `out/` directory.")
+puts("\n")
+puts("  Quorum Kubernetes resource files have been generated in the `out/` directory.")
 puts("\n")
 puts("  Deploy to kubernetes:")
 puts("\n")
-puts("  run `/deploy.sh` with your kubernetes cluster ")
-puts("  set in the script.")
-puts("  or run `kubectl apply -f {Resource.yam}` on the generated files")
+puts("  $> kubectl apply -f out")
 puts("\n")

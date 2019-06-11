@@ -2,39 +2,53 @@
 
 A project for deploying [Quorum](https://github.com/jpmorganchase/quorum) on [Kubernetes](https://github.com/kubernetes/kubernetes).
 
+## Install 
+```shell
+$> brew install ruby
+$> gem install colorize
+```
+* To test locally install [minikube](https://kubernetes.io/docs/setup/minikube/) for your distro.
+```shell
+$> brew cast install minikube
+$> minikube start --memory 6144
 
+# when you wish to shutdown
+$> minikube stop
+$> minikube delete
+```
 ## Configuration 
-The main configuration files are [`qubernetes.yaml`](config/qubernetes.yaml) and [`nodes.yaml`](nodes.yaml). 
+The main configuration files are [`qubernetes.yaml`](qubernetes.yaml) and [`nodes.yaml`](nodes.yaml). 
 `qubernetes.yaml` can generate `nodes.yaml`. These two configuration yaml files must exist in the base directory.
 
-By default `qubernetes.yaml` is symlinked to [config/qubernetes.yaml](config/qubernetes.yaml), but it can be changed
-to point to the desired configurations, e.g. to regenerate the [istanbul-7nodes-tessera/k8s-yaml][7nodes/istanbul-7nodes-tessera/k8s-yaml] 
+By default `qubernetes.yaml` is symlinked to [7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yaml](7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yaml), but it can be changed
+to point to the desired configurations, e.g. to regenerate the [istanbul-7nodes-tessera/k8s-yaml](7nodes/istanbul-7nodes-tessera/k8s-yaml) 
 use [7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yaml](7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yaml): 
 ```shell
 $> ln -s 7nodes/istanbul-7nodes/qubernetes-istanbul-7nodes.yaml qubernetes.yaml
 $> ln -s 7nodes/nodes.yaml nodes.yaml
 # generate the resource yaml in the ./out dir
 $> ./qubernetes
+$> kubectl apply -f out
 ```
 
 ## [7 Nodes Example](https://github.com/jpmorganchase/quorum-examples/tree/master/examples/7nodes)
-quorum-exmaples 7nodes has been ported to k8 resources:
+quorum-exmaples 7nodes has been ported to k8s resources:
 
 * [istanbul tessera k8s resource yaml](7nodes/istanbul-7nodes-tessera/k8s-yaml)
 ```shell
-$> kubeclt apply -f 7nodes/istanbul-7nodes-tessera/k8s-yaml
+$> kubectl apply -f 7nodes/istanbul-7nodes-tessera/k8s-yaml
 ```
 * [istanbul constellation k8s resource yaml](7nodes/istanbul-7nodes-constellation/k8s-yaml)
 ```shell
-$> kubeclt apply -f 7nodes/istanbul-7nodes-constellation/k8s-yaml
+$> kubectl apply -f 7nodes/istanbul-7nodes-constellation/k8s-yaml
 ```
 * [raft tessera k8s resource yaml](7nodes/raft-7nodes-tessera/k8s-yaml)
 ```shell
-$> kubeclt apply -f 7nodes/raft-7nodes-tessera/k8s-yaml
+$> kubectl apply -f 7nodes/raft-7nodes-tessera/k8s-yaml
 ```
 * [raft constellation k8s resource yaml](7nodes/raft-7nodes-constellation/k8s-yaml)
 ```shell
-$> kubeclt apply -f 7nodes/raft-7nodes-constellation/k8s-yaml
+$> kubectl apply -f 7nodes/raft-7nodes-constellation/k8s-yaml
 ```
 ### Deleting
 1. Delete the kubernetes resources:
@@ -46,8 +60,8 @@ $> kubeclt delete -f 7nodes/istanbul-7nodes-tessera/k8s-yaml
 
 ## Generating Quroum K8s Resources From Configs 
 
-1. Set `qubernetes.yaml` in this directory to the desired confufation, there is a base config in [`config/qubernetes.yaml`](config/qubernetes.yaml).
-create a symlink `ln -s config/qubernetes.yaml .` if you wish to use it, or cp it to this direction.
+1. Set `qubernetes.yaml` in this directory to the desired configuration, there are some example configs in [`examples/config`](examples/config).
+create a symlink `ln -s examples/config/qubernetes.yaml .` if you wish to use it, or cp it to this direction.
 The most basic thing to modify in `qubernetes.yaml` is the number of nodes you wish to deploy: 
 ```yaml
 # number of nodes to deploy
@@ -55,14 +69,16 @@ nodes:
   number: 10
 ```
 
-2. Run `./quorum-init` to generate the necessary keys, genesis.json, and permissioned-nodes.json needed for the quorum deployment. 
+2. Run `./quorum-init` to generate the necessary keys (**note**: this requires the geth bootnode command to be on your path,
+e.g. if you have geth source on your machine `export PATH="~/go/src/github.com/ethereum/go-ethereum/build/bin:$PATH"`),
+ genesis.json, and permissioned-nodes.json needed for the quorum deployment. 
 These resouces will be written to the directory specified in the [`qubernetes.yaml`](qubernetes.yaml):
 ```shell
 # Generate the keys, permissioned-nodes.json file
 # genesis.json for the configured nodes
 $> ./quorum-init
 ```
-* These resouces will be written to (and read from) the directories specified in the `qubernetes.yaml` the default [`qubernets.yaml`](config/qubernetes.yaml)
+* These resouces will be written to (and read from) the directories specified in the `qubernetes.yaml` the default [`qubernetes.yaml`](config/qubernetes.yaml)
 is configured to write theses to the `./out/config` directory.
 ```yaml
 Key_Dir_Base: out/config 
@@ -82,29 +98,29 @@ $> ./qubernetes
 
 ```shell
 # apply all the generated .yaml files that are in the ./out directory.
-$> kubectl apply -f out/
+$> kubectl apply -f out
 ```
 
 
 4. Accessing the quorum container: 
 
 ```shell
-local $> kubectl get pods --namespace=$YOUR_NAMESPACE 
-local $> kubect exec -it $POD_ID -c quorum /bin/ash
-quorum-qubernetes $> cd /etc/quorum/qdata
-quorum-qubernetes $> ls 
-quorum-qubernetes $> geth attach dd/geth.ipc 
+local $> kubectl get pods --namespace=$YOUR_NAMESPACE
+local $> kubectl config set-context $(kubectl config current-context) --namespace=$YOUR_NAMESPACE 
+local $> kubectl  exec -it $POD_ID -c quorum /bin/ash
+quorum-qubernetes $> geth attach /etc/quorum/qdata/dd/geth.ipc
 > eth.blockNumber
 > 0
-> exit
 
 quorum-qubernetes $> cd /etc/quorum/qdata/contracts
-quorum-qubernetes $>./runscript.js public_contract.js 
+quorum-qubernetes $> ./runscript.sh public_contract.js
+quorum-qubernetes $> ./runscript.sh private_contract.js
 
-# you should know see the tx go through
-quorum-qubernetes $> geth attach /etc/quorum/qdata/dd/geth.ipc 
+# you should know see the txs go through
+# note: if you are running istanbul the blocknumber will automatic increment at a steady interval.
+quorum-qubernetes $> geth attach /etc/quorum/qdata/dd/geth.ipc
 > eth.blockNumber
-> 1 
+> 2
 
 # show connected peers
 > admin.peers 
@@ -116,7 +132,11 @@ quorum-qubernetes $> geth attach /etc/quorum/qdata/dd/geth.ipc
 
 ```shell
 
-$> kubeclt delete -f out/ 
+$> kubectl delete -f out
+# make sure to delete the data directory on the base box
+# e.g. minikube
+$> minikube ssh
+$> rm -r /var/lib/docker/geth-storage
 ```
 * Delete the files on the host machine, by default under `/var/lib/docker/geth-storage`.
 

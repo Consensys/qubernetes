@@ -2,7 +2,7 @@
 
 # create the output directory if
 # it doesn't exist
-mkdir -p out
+mkdir -p out/config
 
 # generate the nodes.yaml
 # file for the set number of
@@ -18,3 +18,9 @@ mkdir -p out
 #   permissioned-nodes.json
 #   genesis.json 
 ./quorum-config
+
+echo
+echo "  Base quorum resources have been generated. "
+echo "  ...Running ./qubernetes to generate Kubernetes resources..."
+echo
+./qubernetes

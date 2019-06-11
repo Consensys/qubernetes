@@ -60,25 +60,40 @@ $> kubeclt delete -f 7nodes/istanbul-7nodes-tessera/k8s-yaml
 
 ## Generating Quroum K8s Resources From Configs 
 
+### Install Prerequisites
+* [`bootnode`](https://github.com/ethereum/go-ethereum/tree/master/cmd/bootnode) (geth) for generating keys. 
+   If you have geth source on your machine
+   ```
+    $> cd go-ethereum 
+    go-ethereum $> make all
+    # or place this in your .bash_profile or equivalent file
+    $> export PATH="~/go/src/github.com/ethereum/go-ethereum/build/bin:$PATH"
+   ```
+* [nodejs](https://nodejs.org/en/download/) Istanbul only.
+* [istanbul-tools](https://github.com/jpmorganchase/istanbul-tools) Istanbul only.
+   
 1. Set `qubernetes.yaml` in this directory to the desired configuration, there are some example configs in [`examples/config`](examples/config).
-create a symlink `ln -s examples/config/qubernetes.yaml .` if you wish to use it, or cp it to this direction.
+create a symlink `ln -s examples/config/qubernetes-istanbul-generate-8nodes.yaml qubernetes.yaml` if you wish to use it, or cp it to this direction
+`cp examples/config/qubernetes-istanbul-generate-8nodes.yaml qubernetes.yaml`.
 The most basic thing to modify in `qubernetes.yaml` is the number of nodes you wish to deploy: 
 ```yaml
 # number of nodes to deploy
 nodes:
-  number: 10
+  number: 8
 ```
 
-2. Run `./quorum-init` to generate the necessary keys (**note**: this requires the geth bootnode command to be on your path,
-e.g. if you have geth source on your machine `export PATH="~/go/src/github.com/ethereum/go-ethereum/build/bin:$PATH"`),
+2. Run `./quorum-init` to generate the necessary keys (**note**: this requires the geth `bootnode` command to be on your path,
+),
  genesis.json, and permissioned-nodes.json needed for the quorum deployment. 
-These resouces will be written to the directory specified in the [`qubernetes.yaml`](qubernetes.yaml):
+These resources will be written to the directory specified in the [`qubernetes.yaml`](qubernetes.yaml)
+and generate the necessary k8s resources in the `out` directory:
 ```shell
+$> rm -r out
 # Generate the keys, permissioned-nodes.json file
 # genesis.json for the configured nodes
 $> ./quorum-init
 ```
-* These resouces will be written to (and read from) the directories specified in the `qubernetes.yaml` the default [`qubernetes.yaml`](config/qubernetes.yaml)
+* These resources will be written to (and read from) the directories specified in the `qubernetes.yaml` the default [`qubernetes.yaml`](config/qubernetes.yaml)
 is configured to write theses to the `./out/config` directory.
 ```yaml
 Key_Dir_Base: out/config 
@@ -86,7 +101,8 @@ Permissioned_Nodes_File: out/config/permissioned-nodes.json
 Genesis_File: out/config/genesis.json
 ```
 
-3. Generate the Kubernetes resource yaml for the deployment. By default these will be generated to the `./out` directory.
+3. (Re)generate the Kubernetes resource yaml for the deployment. By default these will be generated to the `./out` directory.
+This command can be run multiple times and be idempotent as long as the underlying Quorum resources do not change.
 
 ```shell
 # Generate the kubernetes resources necessary to support a Quorum deploy
@@ -136,6 +152,7 @@ $> kubectl delete -f out
 # make sure to delete the data directory on the base box
 # e.g. minikube
 $> minikube ssh
+$> sudo su
 $> rm -r /var/lib/docker/geth-storage
 ```
 * Delete the files on the host machine, by default under `/var/lib/docker/geth-storage`.

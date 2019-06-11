@@ -13,10 +13,10 @@ end
 -%>
 
 <% if @config["quorum"]["consensus"] == "raft" %>
-
 {
 "alloc": {
 <%- @nodes.each_with_index do |node, indexNode|
+
     set_node_template_vars(node.values.first)
     @Keystores=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/UTC*"]
     puts(@Accounts)
@@ -27,6 +27,8 @@ end
     # start with UTC- and end with the account public key.
     @Keystores.each_with_index do |keystore, indexKey|
         #split on --
+        # expects key to be in form: UTC--2019-06-07T20-35-11.255962000Z--b4d28f57063e3876b0a228280ee43fe4cf56a81c
+        # libby todo: len - 1 instead
         acct="0x" + keystore.split("--")[2]
     -%>    "<%= acct%>": {
        "balance": "1000000000000000000000000000"
@@ -57,7 +59,6 @@ end
   "timestamp": "0x00"
 }
 <% elsif @config["quorum"]["consensus"] == "istanbul" %>
-
 {
 "alloc": {
 <%- @nodes.each_with_index do |node, indexNode|
@@ -81,6 +82,7 @@ end
     end
      -%>
 <% end %>
+
   },
   "coinbase": "0x0000000000000000000000000000000000000000",
   "config": {
@@ -96,7 +98,45 @@ end
     "isQuorum": true,
     "chainId": 10
   },
-  "extraData": "0x0000000000000000000000000000000000000000000000000000000000000000f897f893946571d97f340c8495b661a823f2c2145ca47d63c2948157d4437104e3b8df4451a85f7b2438ef6699ff94b131288f355bc27090e542ae0be213c20350b76794b912de287f9b047b4228436e94b5b78e3ee1617194d8dba507e85f116b1f7e231ca8525fc9008a696694e36cbeb565b061217930767886474e3cde903ac594f512a992f3fb749857d758ffda1330e590fa915e80c0",
+
+  <%-
+   # generate extraData from all nodekeys
+   # create a istanbul validator config
+   # see: https://github.com/jpmorganchase/istanbul-tools/blob/master/cmd/istanbul/example/config.toml
+   # https://github.com/jpmorganchase/istanbul-tools
+   # $> istanbul extra encode --config ./cmd/istanbul/example/config.toml
+   #
+   # Note: this requires istanbul-tools and nodejs to be installed on the host.
+  %>
+  <%-
+  @IstanbulConfig = @Key_Dir_Base + "/istanbul-validator-config.toml"
+  File.open(@IstanbulConfig, "w") do |f|
+    f.puts ("vanity = \"0x00\" \nvalidators = [")
+  end
+
+ @nodes.each_with_index do |node, indexNode|
+   set_node_template_vars(node.values.first)
+
+   #puts(@Key_Dir_Base + "/" + @Node_Key_Dir + "/nodekey")
+   File.open(@Key_Dir_Base + "/" + @Node_Key_Dir + "/nodekey", "r") do |f|
+    f.each_line do |nodekey|
+      nodeAcct=`node istanbul-helpers/privateKeyToAccount.js 0x#{nodekey}`
+      puts("node account for Istanbul is: " + nodeAcct)
+      nodeAcct=nodeAcct.strip
+      File.open(@IstanbulConfig, "a") do |f|
+        f.puts "\"" + nodeAcct + "\","
+      end
+    end
+   end
+  end
+  File.open(@IstanbulConfig, "a") do |f|
+     f.puts "]"
+  end
+   extraData=`istanbul extra encode --config #{@IstanbulConfig} | awk '{print $4}'`
+   extraData=extraData.strip
+   puts("Generated istanbul \"extraData\"=\"" + extraData + "\"")
+   -%>
+  "extraData": "<%= extraData%>",
   "gasLimit": "0x47b760",
   "difficulty": "0x1",
   "mixHash": "0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365",

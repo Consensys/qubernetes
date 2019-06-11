@@ -5,120 +5,91 @@ A project for deploying [Quorum](https://github.com/jpmorganchase/quorum) on [Ku
 ## Install 
 ```shell
 $> brew install ruby
+
+# check ruby version > 2.6
+$> ruby --version
+   ruby 2.6.3
 $> gem install colorize
 ```
-* To test locally install [minikube](https://kubernetes.io/docs/setup/minikube/) for your distro.
+
+## Quickstart with minikube
+*  Install [minikube](https://kubernetes.io/docs/setup/minikube/) for your distro.
 ```shell
-$> brew cast install minikube
+$> brew cask install minikube
 $> minikube start --memory 6144
 
-# when you wish to shutdown
+# you should be able to ssh into minikube
+$> minikube ssh
+
+# update your kubectl command see: https://stackoverflow.com/questions/55417410/kubernetes-create-deployment-unexpected-schemaerror 
+$> rm /usr/local/bin/kubectl
+$> brew link --overwrite kubernetes-cli
+
+# version tested with
+$> kubectl version
+Client Version: version.Info{Major:"1", Minor:"14", GitVersion:"v1.14.3", GitCommit:"5e53fd6bc17c0dec8434817e69b04a25d8ae0ff0", GitTreeState:"clean", BuildDate:"2019-06-07T09:55:27Z", GoVersion:"go1.12.5", Compiler:"gc", Platform:"darwin/amd64"}
+Server Version: version.Info{Major:"1", Minor:"14", GitVersion:"v1.14.2", GitCommit:"66049e3b21efe110454d67df4fa62b08ea79a19b", GitTreeState:"clean", BuildDate:"2019-05-16T16:14:56Z", GoVersion:"go1.12.5", Compiler:"gc", Platform:"linux/amd64"}
+
+# generate k8s files
+$> ./qubernetes
+# by default the k8s namespace is set to quorum-test, set this in the kubectl global config
+$> kubectl config set-context $(kubectl config current-context) --namespace=quorum-test
+
+# deploy quorum to your minikube
+$> kubectl apply -f out
+
+# you should now see your pods running.
+$> kubectl get pods
+
+# delete minikube k8s deployment
+$> kubectl delete -f out
+
+# when you wish to shutdown minikube
 $> minikube stop
 $> minikube delete
 ```
-## Configuration 
-The main configuration files are [`qubernetes.yaml`](qubernetes.yaml) and [`nodes.yaml`](nodes.yaml). 
-`qubernetes.yaml` can generate `nodes.yaml`. These two configuration yaml files must exist in the base directory.
 
-By default `qubernetes.yaml` is symlinked to [7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yaml](7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yaml), but it can be changed
-to point to the desired configurations, e.g. to regenerate the [istanbul-7nodes-tessera/k8s-yaml](7nodes/istanbul-7nodes-tessera/k8s-yaml) 
-use [7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yaml](7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yaml): 
+### Deleting Kubernetes Deployment
+
+1. Delete the kubernetes resources:
 ```shell
-$> ln -s 7nodes/istanbul-7nodes/qubernetes-istanbul-7nodes.yaml qubernetes.yaml
-$> ln -s 7nodes/nodes.yaml nodes.yaml
-# generate the resource yaml in the ./out dir
-$> ./qubernetes
-$> kubectl apply -f out
+$> kubectl delete -f PATH/TO/K8S-YAML-DIR
+```
+2. Delete the files on the host machine, by default under `/var/lib/docker/geth-storage`.
+```
+$> minikube ssh
+$> sudo su
+$> rm -r /var/lib/docker/geth-storage
 ```
 
-## [7 Nodes Example](https://github.com/jpmorganchase/quorum-examples/tree/master/examples/7nodes)
-quorum-exmaples 7nodes has been ported to k8s resources:
+## 7 Nodes Examples
+[quorum-examples 7nodes](https://github.com/jpmorganchase/quorum-examples/tree/master/examples/7nodes) has been ported to k8s resources.
+There are k8s resource files in this repo's 7nodes directory for deploying quorum on kubernetes with 
+tessera or constellation as the transaction manager, and raft or istanbul as the consensus engines.  
 
+**note** when deleting remove the `/var/lib/docker/geth-storage` from the host (see above).
 * [istanbul tessera k8s resource yaml](7nodes/istanbul-7nodes-tessera/k8s-yaml)
 ```shell
 $> kubectl apply -f 7nodes/istanbul-7nodes-tessera/k8s-yaml
+$> kubectl delete -f 7nodes/istanbul-7nodes-tessera/k8s-yaml
 ```
 * [istanbul constellation k8s resource yaml](7nodes/istanbul-7nodes-constellation/k8s-yaml)
 ```shell
 $> kubectl apply -f 7nodes/istanbul-7nodes-constellation/k8s-yaml
+$> kubectl delete -f 7nodes/istanbul-7nodes-constellation/k8s-yaml
 ```
 * [raft tessera k8s resource yaml](7nodes/raft-7nodes-tessera/k8s-yaml)
 ```shell
 $> kubectl apply -f 7nodes/raft-7nodes-tessera/k8s-yaml
+$> kubectl delete -f 7nodes/raft-7nodes-tessera/k8s-yaml
 ```
 * [raft constellation k8s resource yaml](7nodes/raft-7nodes-constellation/k8s-yaml)
 ```shell
 $> kubectl apply -f 7nodes/raft-7nodes-constellation/k8s-yaml
-```
-### Deleting
-1. Delete the kubernetes resources:
-```shell
-$> kubeclt delete -f 7nodes/istanbul-7nodes-tessera/k8s-yaml
-```
-2. Delete the files on the host machine, by default under `/var/lib/docker/geth-storage`.
-
-
-## Generating Quroum K8s Resources From Configs 
-
-### Install Prerequisites
-* [`bootnode`](https://github.com/ethereum/go-ethereum/tree/master/cmd/bootnode) (geth) for generating keys. 
-   If you have geth source on your machine
-   ```
-    $> cd go-ethereum 
-    go-ethereum $> make all
-    # or place this in your .bash_profile or equivalent file
-    $> export PATH="~/go/src/github.com/ethereum/go-ethereum/build/bin:$PATH"
-   ```
-* [nodejs](https://nodejs.org/en/download/) Istanbul only.
-* [istanbul-tools](https://github.com/jpmorganchase/istanbul-tools) Istanbul only.
-   
-1. Set `qubernetes.yaml` in this directory to the desired configuration, there are some example configs in [`examples/config`](examples/config).
-create a symlink `ln -s examples/config/qubernetes-istanbul-generate-8nodes.yaml qubernetes.yaml` if you wish to use it, or cp it to this direction
-`cp examples/config/qubernetes-istanbul-generate-8nodes.yaml qubernetes.yaml`.
-The most basic thing to modify in `qubernetes.yaml` is the number of nodes you wish to deploy: 
-```yaml
-# number of nodes to deploy
-nodes:
-  number: 8
+$> kubectl delete -f 7nodes/raft-7nodes-tessera/k8s-yaml
 ```
 
-2. Run `./quorum-init` to generate the necessary keys (**note**: this requires the geth `bootnode` command to be on your path,
-),
- genesis.json, and permissioned-nodes.json needed for the quorum deployment. 
-These resources will be written to the directory specified in the [`qubernetes.yaml`](qubernetes.yaml)
-and generate the necessary k8s resources in the `out` directory:
-```shell
-$> rm -r out
-# Generate the keys, permissioned-nodes.json file
-# genesis.json for the configured nodes
-$> ./quorum-init
-```
-* These resources will be written to (and read from) the directories specified in the `qubernetes.yaml` the default [`qubernetes.yaml`](config/qubernetes.yaml)
-is configured to write theses to the `./out/config` directory.
-```yaml
-Key_Dir_Base: out/config 
-Permissioned_Nodes_File: out/config/permissioned-nodes.json
-Genesis_File: out/config/genesis.json
-```
-
-3. (Re)generate the Kubernetes resource yaml for the deployment. By default these will be generated to the `./out` directory.
-This command can be run multiple times and be idempotent as long as the underlying Quorum resources do not change.
-
-```shell
-# Generate the kubernetes resources necessary to support a Quorum deploy
-# this will be written to the `out` dir.
-$> ./qubernetes
-
-```
-4. Deploy to your kubernetes cluster
-
-```shell
-# apply all the generated .yaml files that are in the ./out directory.
-$> kubectl apply -f out
-```
-
-
-4. Accessing the quorum container: 
+### Accessing Quorum and Transaction Manager Containers on K8s
 
 ```shell
 local $> kubectl get pods --namespace=$YOUR_NAMESPACE
@@ -142,6 +113,137 @@ quorum-qubernetes $> geth attach /etc/quorum/qdata/dd/geth.ipc
 > admin.peers 
 
 ```
+
+## Configuration Details
+The main configuration files are [`qubernetes.yaml`](7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yaml) and [`nodes.yaml`](7nodes/nodes-7.yaml). 
+These two configuration yaml files must exist in the base directory.
+
+By default `qubernetes.yaml` is symlinked to [`qubernetes-istanbul-7nodes.yaml`](7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yaml)
+```
+$> ls -la qubernetes.yaml
+qubernetes.yaml -> 7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yaml 
+```
+But can be changed to point to other yaml config files. 
+
+Let's change it to generate the raft 7nodes with tessera: 
+```shell
+$> rm qubernetes.yaml
+$> ln -s 7nodes/raft-7nodes-tessera/qubernetes-tessera.yaml qubernetes.yaml
+# generate the resource yaml in the ./out dir
+$> ./qubernetes
+$> kubectl apply -f out
+$> kubectl config set-context $(kubectl config current-context) --namespace=quorum-test
+$> kubectl get pods
+
+# now you can delete 
+$> kubectl delete -f out
+# and remove dir /var/lib/docker/geth-storage from the host.
+```
+
+## Generating Quroum K8s Resources From Custom Configs
+
+This section describes how to deploy a more customized k8s deployment with a varying number of quorum and transaction 
+manager nodes, including generating the appropriate genesis config, required keys, services, etc. 
+
+### Install Prerequisites
+* [`bootnode`](https://github.com/ethereum/go-ethereum/tree/master/cmd/bootnode) (geth) for generating keys. Run 
+   ```
+     # what you should see if installed.
+     $> bootnode
+     Fatal: Use -nodekey or -nodekeyhex to specify a private key
+   ```
+   on your machine to see if it is installed.
+   If you have geth source on your machine: 
+   ```
+    $> cd go-ethereum 
+    go-ethereum $> make all
+    # or place this in your .bash_profile or equivalent file
+    $> export PATH="~/go/src/github.com/ethereum/go-ethereum/build/bin:$PATH"
+   ```
+* [nodejs](https://nodejs.org/en/download/) Istanbul only.
+  ```
+   # tested with version 10.15
+   $> node --version
+   v10.15.
+   ```
+* web3 `$> npm web3` Istanbul only.
+
+* [constellation-node](https://github.com/jpmorganchase/constellation)
+```
+$> brew install berkeley-db leveldb libsodium
+$> brew install haskell-stack
+$> git clone https://github.com/jpmorganchase/constellation.git WHATEVER/DIRECTORY
+$> cd constellation
+constellation $> stack setup
+constellation $> stack install
+```
+
+* [istanbul-tools](https://github.com/jpmorganchase/istanbul-tools) Istanbul only.
+  ```
+   # install
+   $> go get github.com/getamis/istanbul-tools/cmd/istanbul  
+    
+   # tested with 1.0.0
+   $> istanbul --version
+   istanbul version v1.0.0
+   ```
+### Generating Your Own K8s Resources
+
+Once the install prerequisites are on your machine, the k8s resources can now be generated to run an arbitrary number of nodes.
+   
+1. There are example `qubernetes.yaml` configs in [`examples/config`](examples/config). 
+   Let's run the 8nodes example: 
+```
+ $> cp examples/config/qubernetes-istanbul-generate-8nodes.yaml qubernetes.yaml
+ 
+ # remove your old out dir, this will be recreated.
+ $> rm -r out
+```  
+The most basic thing to modify in `qubernetes.yaml` is the number of nodes you wish to deploy: 
+```yaml
+# number of nodes to deploy
+nodes:
+  number: 8
+```
+
+2. Run `./quorum-init` to generate the necessary quorum keys (**note**: this requires the geth `bootnode` command to be on your path),
+ genesis.json, permissioned-nodes.json, etc. needed for the quorum deployment.
+  
+ These resources will be written to (and read from) the directories specified in the `qubernetes.yaml` the default [`qubernetes.yaml`](config/qubernetes.yaml)
+ is configured to write theses to the `./out/config` directory.
+ ```yaml
+ Key_Dir_Base: out/config 
+ Permissioned_Nodes_File: out/config/permissioned-nodes.json
+ Genesis_File: out/config/genesis.json
+ ```
+ 
+ After the quorum  resources have been generate, the necessary k8s resources will be created in the `out` directory:
+```shell
+$> rm -r out
+# Generate the keys, permissioned-nodes.json file
+# genesis.json for the configured nodes
+$> ./quorum-init
+$> ls out
+```
+
+3. (Re)generate the Kubernetes resource yaml for the deployment. By default these will be generated to the `./out` directory.
+This command can be run multiple times and be idempotent as long as the underlying Quorum resources do not change.
+
+```shell
+# Generate the kubernetes resources necessary to support a Quorum deploy
+# this will be written to the `out` dir.
+$> ./qubernetes
+
+```
+4. Deploy to your kubernetes cluster
+
+```shell
+# apply all the generated .yaml files that are in the ./out directory.
+$> kubectl apply -f out
+```
+
+
+
 
 
 5. Deleting the deployment 

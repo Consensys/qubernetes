@@ -2,10 +2,10 @@ namespace:
   name: quorum-test
 # number of nodes to deploy
 nodes:
-  number: 7 
+  number: 7
 quorum:
   # supported: raft | istanbul
-  consensus: istanbul 
+  consensus: istanbul
   # base quorum data dir as set inside each container.
   Node_DataDir: /etc/quorum/qdata
   # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
@@ -17,19 +17,19 @@ quorum:
   quorum:
     Raft_Port: 50401
     # container images at https://hub.docker.com/u/quorumengineering/
-    Quorum_Version: 2.1.1
+    Quorum_Version: 2.2.3
   # related to transaction manager containers
   tm:
     # (tessera|constellation)
-    Name: tessera 
-    Tm_Version: 0.7.3
+    Name: tessera
+    Tm_Version: 0.8
     Port: 9001
-    Tessera_Config_Dir: 7nodes 
+    Tessera_Config_Dir: 7nodes
 
 # generic geth related options
 geth:
   Node_WSPort: 8546
-  NodeP2P_ListenAddr: 21000 
+  NodeP2P_ListenAddr: 21000
   network:
     # network id (1: mainnet, 3: ropsten, 4: rinkeby ... )
     id: 1101

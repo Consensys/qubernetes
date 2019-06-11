@@ -17,7 +17,7 @@ quorum:
   quorum:
     Raft_Port: 50401
     # container images at https://hub.docker.com/u/quorumengineering/
-    Quorum_Version: 2.1.1
+    Quorum_Version: 2.2.3
   # related to transaction manager containers
   tm:
     Name: constellation

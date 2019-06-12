@@ -13,6 +13,10 @@ $> gem install colorize
 ```
 
 ## Quickstart with minikube
+
+This section shows how to deploy a 7 node quorum network to minikube. Once the pods are deployed if
+you wish to interact with them see [Accessing Quorum and Transaction Manager Containers on K8s](#accessing-quorum-and-transaction-manager-containers-on-k8s).
+
 *  Install [minikube](https://kubernetes.io/docs/setup/minikube/) for your distro.
 ```shell
 $> brew cask install minikube
@@ -125,7 +129,7 @@ qubernetes.yaml -> 7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yam
 ```
 But can be changed to point to other yaml config files. 
 
-Let's change it to generate the raft 7nodes with tessera: 
+Let's change it to generate the **raft** 7nodes with tessera: 
 ```shell
 $> rm qubernetes.yaml
 $> ln -s 7nodes/raft-7nodes-tessera/qubernetes-tessera.yaml qubernetes.yaml
@@ -146,13 +150,13 @@ This section describes how to deploy a more customized k8s deployment with a var
 manager nodes, including generating the appropriate genesis config, required keys, services, etc. 
 
 ### Install Prerequisites
-* [`bootnode`](https://github.com/ethereum/go-ethereum/tree/master/cmd/bootnode) (geth) for generating keys. Run 
+* [`bootnode`](https://github.com/ethereum/go-ethereum/tree/master/cmd/bootnode) (geth) for generating keys. 
    ```
      # what you should see if installed.
      $> bootnode
      Fatal: Use -nodekey or -nodekeyhex to specify a private key
    ```
-   on your machine to see if it is installed.
+   
    If you have geth source on your machine: 
    ```
     $> cd go-ethereum 
@@ -169,14 +173,14 @@ manager nodes, including generating the appropriate genesis config, required key
 * web3 `$> npm web3` Istanbul only.
 
 * [constellation-node](https://github.com/jpmorganchase/constellation)
-```
-$> brew install berkeley-db leveldb libsodium
-$> brew install haskell-stack
-$> git clone https://github.com/jpmorganchase/constellation.git WHATEVER/DIRECTORY
-$> cd constellation
-constellation $> stack setup
-constellation $> stack install
-```
+  ```
+  $> brew install berkeley-db leveldb libsodium
+  $> brew install haskell-stack
+  $> git clone https://github.com/jpmorganchase/constellation.git WHATEVER/DIRECTORY
+  $> cd constellation
+  constellation $> stack setup
+  constellation $> stack install
+  ```
 
 * [istanbul-tools](https://github.com/jpmorganchase/istanbul-tools) Istanbul only.
   ```
@@ -194,6 +198,7 @@ Once the install prerequisites are on your machine, the k8s resources can now be
 1. There are example `qubernetes.yaml` configs in [`examples/config`](examples/config). 
    Let's run the 8nodes example: 
 ```
+ $> rm qubernetes.yaml
  $> cp examples/config/qubernetes-istanbul-generate-8nodes.yaml qubernetes.yaml
  
  # remove your old out dir, this will be recreated.
@@ -219,6 +224,9 @@ nodes:
  
  After the quorum  resources have been generate, the necessary k8s resources will be created in the `out` directory:
 ```shell
+# if you want to check out the generated quorum resources
+$> ls out/config
+
 $> rm -r out
 # Generate the keys, permissioned-nodes.json file
 # genesis.json for the configured nodes

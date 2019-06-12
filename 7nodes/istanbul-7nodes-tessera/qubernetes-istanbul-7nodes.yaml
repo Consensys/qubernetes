@@ -22,7 +22,7 @@ quorum:
   tm:
     # (tessera|constellation)
     Name: tessera
-    Tm_Version: 0.8
+    Tm_Version: 0.9.2
     Port: 9001
     Tessera_Config_Dir: 7nodes
 
@@ -32,7 +32,7 @@ geth:
   NodeP2P_ListenAddr: 21000
   network:
     # network id (1: mainnet, 3: ropsten, 4: rinkeby ... )
-    id: 1101
+    id: 10
     # public (true|false) is it a public network?
     public: false
   # general verbosity of geth [1..5]

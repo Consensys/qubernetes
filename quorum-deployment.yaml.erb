@@ -107,6 +107,7 @@ spec:
            TESSERA_CONFIG_TYPE=;
 
            if [ \"${TESSERA_VERSION}\" \\> \"0.8 \" ]; then TESSERA_CONFIG_TYPE=\"-enhanced\"; fi;
+           if [[ \"${TESSERA_VERSION}\" \\> \"0.9 \" ]]; then TESSERA_CONFIG_TYPE=\"-9.0\"; fi;
 
            echo Config type ${TESSERA_CONFIG_TYPE};
 
@@ -117,8 +118,9 @@ spec:
            CONFIG_WITH_ALL_HOSTS=$(echo $CONFIG_WITH_OTHER_HOSTS | sed \"s/%THIS_SERVICE_HOST%/$<%= @This_Host %>/g\");
            PRIV_KEY=$(cat $DDIR/tm.key)
            PUB_KEY=$(cat $DDIR/tm.pub)
-           CONFIG_FINAL=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\")
-
+           CONFIG_FINAL=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
+           CONFIG_FINAL_9_0=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
+           if [[ \"${TESSERA_VERSION}\" \\> \"0.9 \" ]]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
            echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
            cat  ${DDIR}/tessera-config-with-hosts.json;
            java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json;
@@ -150,6 +152,9 @@ spec:
         - name: tessera-config
           mountPath: <%= @Node_DataDir %>/tm/tessera-config-enhanced.json.tmpl
           subPath: tessera-config-enhanced.json.tmpl
+        - name: tessera-config
+          mountPath: <%= @Node_DataDir %>/tm/tessera-config-9.0.json.tmpl
+          subPath: tessera-config-9.0.json.tmpl
       - name: quorum
         image: quorumengineering/quorum:<%= @Quorum_Version %>
         command: [ "sh" ]
@@ -252,6 +257,8 @@ spec:
             path: tessera-config.json.tmpl
           - key: tessera-config-enhanced.json.tmpl
             path: tessera-config-enhanced.json.tmpl
+          - key: tessera-config-9.0.json.tmpl
+            path: tessera-config-9.0.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config

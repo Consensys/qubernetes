@@ -62,6 +62,10 @@ data:
 <%- File.readlines(@Tessera_Config_Dir + "/tessera-config-enhanced.json").each do |line| -%>
     <%= line -%>
 <% end -%>
+  tessera-config-9.0.json.tmpl: |-
+<%- File.readlines(@Tessera_Config_Dir + "/tessera-config-9.0.json").each do |line| -%>
+    <%= line -%>
+<% end -%>
 
 ---
 apiVersion: v1
@@ -77,6 +81,7 @@ data:
 <%- File.readlines("contracts/runscript.sh").each do |line| -%>
     <%= line -%>
 <% end -%>
+# TODO: replace "%TM_7_PK%" with actual node 7 tm pk key
   private_contract.js: |-
 <%- File.readlines("contracts/private_contract.js").each do |line| -%>
     <%= line -%>

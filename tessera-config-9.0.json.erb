@@ -1,0 +1,81 @@
+<%
+def set_node_template_vars(values)
+    @Node_UserIdent        = values["Node_UserIdent"]
+    @Node_Key_Dir          = values["Key_Dir"]
+    return
+end
+-%>
+
+<% 
+# for more information about the tessera-config file see https://github.com/jpmorganchase/tessera/wiki/Configuration-overview.
+%>
+<%
+   @Key_Dir_Base = @config["quorum"]["Key_Dir_Base"]
+   @Tm_Port      = @config["quorum"]["tm"]["Port"]
+   @DDIR         = @Node_DataDir + "/tm"
+%>
+{
+  "useWhiteList": false,
+  "jdbc": {
+    "username": "sa",
+    "password": "",
+    "url": "jdbc:h2:<%= @DDIR %>/db;MODE=Oracle;TRACE_LEVEL_SYSTEM_OUT=0",
+    "autoCreateTables": true
+  },
+  "serverConfigs":[
+  {
+    "app":"ThirdParty",
+    "enabled": true,
+    "serverAddress": "http://%THIS_SERVICE_HOST%:9080",
+    "communicationType" : "REST"
+  },
+  {
+    "app":"Q2T",
+    "enabled": true,
+    "serverAddress":"unix:<%= @DDIR %>/tm.ipc",
+    "communicationType" : "REST"
+  },
+  {
+    "app":"P2P",
+    "enabled": true,
+    "serverAddress":"http://%THIS_SERVICE_HOST%:<%= @Tm_Port %>",
+    "sslConfig": {
+      "tls": "OFF",
+      "generateKeyStoreIfNotExisted": true,
+      "serverKeyStore": "<%= @DDIR %>/server-keystore",
+      "serverKeyStorePassword": "quorum",
+      "serverTrustStore": "<%= @DDIR %>/server-truststore",
+      "serverTrustStorePassword": "quorum",
+      "serverTrustMode": "TOFU",
+      "knownClientsFile": "<%= @DDIR %>/knownClients",
+      "clientKeyStore": "<%= @DDIR %>/client-keystore",
+      "clientKeyStorePassword": "quorum",
+      "clientTrustStore": "<%= @DDIR %>/client-truststore",
+      "clientTrustStorePassword": "quorum",
+      "clientTrustMode": "TOFU",
+      "knownServersFile": "<%= @DDIR %>/knownServers"
+    },
+    "communicationType" : "REST"
+  }
+  ],
+
+    "peer": [
+<%- @nodes.each_with_index do |node, indexNode| %>
+<%= set_node_template_vars(node.values.first) -%>
+     {
+           "url": "http://%<%= "#{@Node_UserIdent}".upcase %>_SERVICE_HOST%:<%= @Tm_Port %>"
+         }<%- if (indexNode != @nodes.size - 1) %>,<%- end %>
+
+<% end -%>
+    ],
+    "keys": {
+         "passwords": [],
+         "keyData": [
+            {
+                "privateKeyPath": "%THIS_PRIV_KEY%",
+                "publicKeyPath": "%THIS_PUB_KEY%"
+            }
+          ]
+     },
+    "alwaysSendTo": []
+}

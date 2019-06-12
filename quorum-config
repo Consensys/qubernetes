@@ -43,3 +43,8 @@ puts(@Tessera_Config_Dir + "/tessera-config-enhanced.json")
 File.open(@Tessera_Config_Dir + "/tessera-config-enhanced.json" , "w") do |f|
   f.puts (ERB.new(File.read("tessera-config-enhanced.json.erb"), nil, "-").result)
 end
+# Add support for tessera 9.0+ configs
+puts(@Tessera_Config_Dir + "/tessera-config-9.0.json")
+File.open(@Tessera_Config_Dir + "/tessera-config-9.0.json" , "w") do |f|
+  f.puts (ERB.new(File.read("tessera-config-9.0.json.erb"), nil, "-").result)
+end

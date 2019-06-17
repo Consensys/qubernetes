@@ -96,20 +96,31 @@ $> kubectl delete -f 7nodes/raft-7nodes-tessera/k8s-yaml
 ### Accessing Quorum and Transaction Manager Containers on K8s
 
 ```shell
-local $> kubectl get pods --namespace=$YOUR_NAMESPACE
-local $> kubectl config set-context $(kubectl config current-context) --namespace=$YOUR_NAMESPACE 
-local $> kubectl  exec -it $POD_ID -c quorum /bin/ash
-quorum-qubernetes $> geth attach /etc/quorum/qdata/dd/geth.ipc
+export YOUR_NAMESPACE="quorum-test"
+
+$> kubectl get pods --namespace=$YOUR_NAMESPACE
+# additionally you can set the default namespace for k8s so you don't have to add the --namespace flag.
+$> kubectl config set-context $(kubectl config current-context) --namespace=$YOUR_NAMESPACE
+$> kubectl get pods
+NAME                                       READY   STATUS    RESTARTS   AGE
+quorum-node1-deployment-57b6588b6b-5tqdr   1/2     Running   1          40s
+quorum-node2-deployment-5f776b479c-f7kxs   2/2     Running   2          40s
+
+$> POD_NAME=$(kubectl get pods | grep node1 | awk '{print $1}')
+$> kubectl  exec -it $POD_NAME -c quorum /bin/ash
+
+# now you are inside the quorum container
+/> geth attach /etc/quorum/qdata/dd/geth.ipc
 > eth.blockNumber
 > 0
 
-quorum-qubernetes $> cd /etc/quorum/qdata/contracts
-quorum-qubernetes $> ./runscript.sh public_contract.js
-quorum-qubernetes $> ./runscript.sh private_contract.js
+/> cd /etc/quorum/qdata/contracts
+/> ./runscript.sh public_contract.js
+/> ./runscript.sh private_contract.js
 
 # you should know see the txs go through
 # note: if you are running istanbul the blocknumber will automatic increment at a steady interval.
-quorum-qubernetes $> geth attach /etc/quorum/qdata/dd/geth.ipc
+/> geth attach /etc/quorum/qdata/dd/geth.ipc
 > eth.blockNumber
 > 2
 

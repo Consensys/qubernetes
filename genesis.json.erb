@@ -10,6 +10,7 @@ end
 @Accounts = ""
 @Account_Allocs = ""
 @Node_Index = 0
+
 -%>
 
 <% if @config["quorum"]["consensus"] == "raft" %>
@@ -27,9 +28,8 @@ end
     # start with UTC- and end with the account public key.
     @Keystores.each_with_index do |keystore, indexKey|
         #split on --
-        # expects key to be in form: UTC--2019-06-07T20-35-11.255962000Z--b4d28f57063e3876b0a228280ee43fe4cf56a81c
-        # libby todo: len - 1 instead
-        acct="0x" + keystore.split("--")[2]
+        # expects key file name to be in form: UTC--2019-06-07T20-35-11.255962000Z--b4d28f57063e3876b0a228280ee43fe4cf56a81c
+        acct="0x" + keystore.split("--").last
     -%>    "<%= acct%>": {
        "balance": "1000000000000000000000000000"
     }<%- if (indexNode == @nodes.size - 1) and (indexKey == @Keystores.size - 1)
@@ -72,7 +72,8 @@ end
     # start with UTC- and end with the account public key.
     @Keystores.each_with_index do |keystore, indexKey|
         #split on --
-        acct="0x" + keystore.split("--")[2]
+        # expects key file name to be in form: UTC--2019-06-07T20-35-11.255962000Z--b4d28f57063e3876b0a228280ee43fe4cf56a81c
+        acct="0x" + keystore.split("--").last
     -%>    "<%= acct%>": {
        "balance": "1000000000000000000000000000"
     }<%- if (indexNode == @nodes.size - 1) and (indexKey == @Keystores.size - 1)

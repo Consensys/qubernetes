@@ -1,5 +1,18 @@
-#!/bin/bash
+#!/usr/bin/env ruby
 
+if File.directory?("out")
+  puts("\n The 'out' directory already exist.")
+  puts(" Do you want to delete the directory and re-generate it [Y/N]?")
+  res = gets
+  res = res.upcase.strip
+  if not (res == "Y" or res == "YES")
+    puts("OK, keeping the 'out' dir, stay safe :)")
+    exit
+  end
+    `rm -r out`
+end
+
+`
 # create the output directory if
 # it doesn't exist
 mkdir -p out/config
@@ -19,8 +32,10 @@ mkdir -p out/config
 #   genesis.json 
 ./quorum-config
 
+
 echo
 echo "  Base quorum resources have been generated. "
 echo "  ...Running ./qubernetes to generate Kubernetes resources..."
 echo
 ./qubernetes
+`

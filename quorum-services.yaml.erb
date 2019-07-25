@@ -19,7 +19,7 @@ end
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: <%= @config["namespace"]["name"] %>
+  <%= @Namespace %>
   name: <%= @Node_UserIdent %>
   labels:
     app: qubernetes

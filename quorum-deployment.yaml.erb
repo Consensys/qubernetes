@@ -32,7 +32,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: <%= @Node_UserIdent %>-deployment
-  namespace: <%= @config["namespace"]["name"] %>
+  <%= @Namespace %>
 spec:
   strategy:
     type: RollingUpdate

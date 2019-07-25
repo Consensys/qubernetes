@@ -4,20 +4,21 @@
  @Tessera_Config_Dir         = @config["quorum"]["tm"]["Tessera_Config_Dir"]
 %>
 
+<%- if @Namespace != "" %>
 apiVersion: v1
 kind: Namespace
 metadata:
   name: <%= @config["namespace"]["name"] %>
   labels:
     name: <%= @config["namespace"]["name"] %>
-
+<%- end %>
 ---
 # kubectl create configmap game-config --from-file=configure-pod-container/dd1/key
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-permissioned-config
-  namespace: <%= @config["namespace"]["name"] %>
+  <%= @Namespace %>
   labels:
     app: qubernetes
     name: quorum-permissioned-config
@@ -33,7 +34,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: genesis-config
-  namespace: <%= @config["namespace"]["name"] %>
+  <%= @Namespace %>
   labels:
     app: qubernetes
     name: genesis-config
@@ -48,7 +49,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: tessera-config
-  namespace: <%= @config["namespace"]["name"] %>
+  <%= @Namespace %>
   labels:
     app: qubernetes
     name: tessera-config
@@ -72,7 +73,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: contracts-config
-  namespace: <%= @config["namespace"]["name"] %>
+  <%= @Namespace %>
   labels:
     app: qubernetes
     name: contracts-config

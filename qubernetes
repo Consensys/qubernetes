@@ -11,6 +11,14 @@ require 'colorize'
 @Node_WSPort           = @config["geth"]["Node_WSPort"]
 @NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
 
+# If the namespace is set in the config, create it and add it to all the resources.
+@Namespace = ""
+if @config["namespace"] != nil
+  if @config["namespace"]["name"] != ""
+@Namespace = "namespace: " + @config["namespace"]["name"]
+   end
+end
+
 #####################
 # Create config files for each node
 #####################
@@ -19,6 +27,8 @@ def set_node_template_vars(values)
   @Node_UserIdent        = values["Node_UserIdent"]
   return
 end
+
+
 
 # create the output directory if it doesn't exist
 `mkdir -p out`
@@ -42,7 +52,6 @@ end
 
 @Sed_Set_Node_Service_Host = sed_string[0...-2]
 #puts (sed_string)
-
 File.open("out/01-quorum-shared-config.yaml", "w") do |f|
   f.puts (ERB.new(File.read("quorum-shared-config.yaml.erb"), nil, "-").result)
 end

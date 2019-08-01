@@ -164,7 +164,9 @@ spec:
         args:
         - "-cx"
         - "
-           sleep 5;
+           apk add curl;
+           until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:<%= @Tm_Port %>/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
+           echo transaction manager is up;
            PERM_NODE_TMPL=$(cat $QUORUM_DATA_DIR/permissioned-nodes.json.tmpl);
            PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | <%= @Sed_Set_Node_Service_Host %>);
            echo $PERM_NODE_JSON >  $QUORUM_DATA_DIR/permissioned-nodes.json;
@@ -211,6 +213,8 @@ spec:
         - name: QUORUM_DATA_DIR
           value: <%= @Node_DataDir %>/dd
         - name: QUORUM_HOME
+          value: <%= @Node_DataDir %>
+        - name: QHOME
           value: <%= @Node_DataDir %>
         - name: TM_HOME
           value: <%= @Node_DataDir %>/tm/

@@ -5,6 +5,9 @@ namespace:
 # see: 7nodes directory for already generated quorum resources and various qubernetes.yaml files.
 nodes:
   number: 7 
+service:
+  # NodePort | ClusterIP
+  type: ClusterIP
 quorum:
   # supported: (raft | istanbul)
   consensus: istanbul 

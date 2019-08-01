@@ -30,7 +30,8 @@ spec:
     app: qubernetes
     tier: backend
     name: <%= @Node_UserIdent %>-deployment
-  type: ClusterIP
+  # NodePort | ClusterIP
+  type: <%= @config["service"]["type"] %>
   ports:
     - name: tm-manager 
       protocol: TCP

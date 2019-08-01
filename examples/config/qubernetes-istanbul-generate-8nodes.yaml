@@ -3,6 +3,9 @@ namespace:
 # number of nodes to deploy
 nodes:
   number: 8
+service:
+  # NodePort | ClusterIP
+  type: ClusterIP
 quorum:
   # supported: (raft | istanbul)
   consensus: istanbul

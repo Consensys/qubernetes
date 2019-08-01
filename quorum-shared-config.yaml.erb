@@ -2,6 +2,9 @@
  @Permissioned_Nodes_File    = @config["quorum"]["Permissioned_Nodes_File"]
  @Genesis_File               = @config["quorum"]["Genesis_File"]
  @Tessera_Config_Dir         = @config["quorum"]["tm"]["Tessera_Config_Dir"]
+
+ # keys are named the same inside their respective directories.
+ @Keystore_Dir = @config["quorum"]["Key_Dir_Base"]
 %>
 
 <%- if @Namespace != "" %>
@@ -82,10 +85,16 @@ data:
 <%- File.readlines("contracts/runscript.sh").each do |line| -%>
     <%= line -%>
 <% end -%>
-# TODO: replace "%TM_7_PK%" with actual node 7 tm pk key
+# set the tm.pub for node2 in the privateFor field.
+# assumes that at least 2 nodes are being deployed.
   private_contract.js: |-
+<%-  tm_key2 = "NOT_SET" -%>
+<%- File.readlines("#{@Keystore_Dir}/key2/tm.pub").each do |line| -%>
+<% tm_key2 = line %>
+<% end -%>
 <%- File.readlines("contracts/private_contract.js").each do |line| -%>
-    <%= line -%>
+    <%- with_valid_key = line.gsub(/"%PRIVATE_FOR_NODE%"/, '"' + tm_key2 + '"') -%>
+    <%= with_valid_key -%>
 <% end -%>
   public_contract.js: |-
 <%- File.readlines("contracts/public_contract.js").each do |line| -%>

@@ -22,20 +22,31 @@ mkdir -p out/config
 # nodes.
 ./quorum-create-nodes
 
+`
+puts ""
+puts "  Generating keys..."
+`
 # generate the keygen script
 # to generate nodekey, account keys, and
 # quorum transaction manger (tm.pub,tm.key) keys.
 ./quorum-keygen
+`
 
+puts "  Generating Quorum configs..."
+`
 # generate the appropriate config files:
 #   permissioned-nodes.json
 #   genesis.json 
 ./quorum-config
+`
 
-
-echo
-echo "  Base quorum resources have been generated. "
-echo "  ...Running ./qubernetes to generate Kubernetes resources..."
-echo
+puts ""
+puts  "  Base quorum resources have been generated. "
+puts  "  Running ./qubernetes to generate Kubernetes resources."
+puts ""
+`
 ./qubernetes
 `
+puts "  Deploy Quorum Kubernetes resources:"
+puts "  $> kubectl apply -f out"
+

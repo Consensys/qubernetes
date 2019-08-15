@@ -15,6 +15,7 @@ do
  echo "setting up port forwarding mini $MINI_IP"
  # don't prompt for 'The authenticity of host' / known_host on first connection.
  ssh -N  -o "StrictHostKeyChecking no" -L $IP:9001:$IP:9001 -i ~/.minikube/machines/minikube/id_rsa docker@$MINI_IP  &
+ ssh -N  -o "StrictHostKeyChecking no" -L $IP:8545:$IP:8545 -i ~/.minikube/machines/minikube/id_rsa docker@$MINI_IP  &
 done
 
 for IP in $IPS

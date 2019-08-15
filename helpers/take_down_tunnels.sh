@@ -9,7 +9,7 @@ do
  sudo ifconfig lo0 -alias $IP
 done
 
-PIDS=$(ps -ef | grep "ssh -N -L" | awk '{print $2}')
+PIDS=$(ps -ef | grep "ssh -N -o StrictHostKeyChecking no -L" | awk '{print $2}')
 for PID in $PIDS
 do
  echo $PID

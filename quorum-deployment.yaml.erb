@@ -21,6 +21,11 @@ end
 @Tm_Version            = @config["quorum"]["tm"]["Tm_Version"]
 @Tm_Port               = @config["quorum"]["tm"]["Port"]
 @Tm_Name               = @config["quorum"]["tm"]["Name"]
+if @config["quorum"]["Data_Dir"]
+  @DataDir               = @config["quorum"]["Data_Dir"]
+else
+  @DataDir               = "/var/lib/docker/geth-storage"
+end
 %>
 
 # The quorum deployment consists of
@@ -288,12 +293,12 @@ spec:
             path: nodekey
       - name: quorum-persistent-storage
         hostPath:
-          path: /var/lib/docker/geth-storage/<%= @Node_UserIdent %>
+          path: <%= @DataDir%>/<%= @Node_UserIdent %>
       - name: tm-persistent-storage
         hostPath:
-          path: /var/lib/docker/geth-storage/tm-<%= @Node_UserIdent %>
+          path: <%= @DataDir%>/tm-<%= @Node_UserIdent %>
       - name: quorum-logs-persistent-storage
         hostPath:
-          path: /var/lib/docker/geth-storage/<%= @Node_UserIdent %>-logs
+          path: <%= @DataDir%>/<%= @Node_UserIdent %>-logs
 
 <% end -%>

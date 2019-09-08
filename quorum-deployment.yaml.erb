@@ -16,6 +16,12 @@ end
 @Node_WSPort           = @config["geth"]["Node_WSPort"]
 @NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
 
+if @config["geth"]["Geth_Startup_Params"]
+  @Geth_Startup_Params   = @config["geth"]["Geth_Startup_Params"]
+else
+  @Geth_Startup_Params   = ""
+end
+
 @Node_DataDir          = @config["quorum"]["Node_DataDir"]
 @Quorum_Version        = @config["quorum"]["quorum"]["Quorum_Version"]
 @Tm_Version            = @config["quorum"]["tm"]["Tm_Version"]
@@ -207,7 +213,8 @@ spec:
            --rpcaddr 0.0.0.0 \
            --rpcport <%= @Node_WSPort %> \
            --port <%= @NodeP2P_ListenAddr %> \
-           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a <%= @Node_DataDir%>/logs/quorum.log; " 
+           <%= @Geth_Startup_Params %> \
+           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a <%= @Node_DataDir%>/logs/quorum.log;"
         ports:
           - containerPort: <%= @Raft_Port %>
           - containerPort: <%= @Node_WSPort %>

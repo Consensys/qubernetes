@@ -1,0 +1,51 @@
+<%
+def set_node_template_vars(values)
+    @Node_UserIdent = values["Node_UserIdent"]
+    return
+end
+
+@Capacity = "1Gi"
+if @config["quorum"]["storage"]["Capacity"]
+  @Capacity = @config["quorum"]["storage"]["Capacity"]
+end
+-%>
+
+<%- @nodes.each do |node| -%>
+    <%= set_node_template_vars(node.values.first) -%>
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: <%= @Node_UserIdent %>-quorum
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: <%= @Capacity %>
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: <%= @Node_UserIdent %>-tm-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: <%= @Capacity %>
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: <%= @Node_UserIdent %>-log-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: <%= @Capacity %>
+<% end -%>

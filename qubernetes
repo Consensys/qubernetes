@@ -19,6 +19,12 @@ if @config["namespace"] != nil
    end
 end
 
+# What kind of persistent storage is desired?
+# Default to host, but if
+@Storage_Type          = "Host"
+if  @config["quorum"]["storage"] && @config["quorum"]["storage"]["Type"] == "PVC"
+  @Storage_Type = "PVC"
+end
 #####################
 # Create config files for each node
 #####################
@@ -52,6 +58,11 @@ end
 
 @Sed_Set_Node_Service_Host = sed_string[0...-2]
 #puts (sed_string)
+if @Storage_Type == "PVC"
+  File.open("out/00-quorum-persistent-volumes.yaml", "w") do |f|
+    f.puts (ERB.new(File.read("persistent-volumes.yaml.erb"), nil, "-").result)
+  end
+end
 File.open("out/01-quorum-shared-config.yaml", "w") do |f|
   f.puts (ERB.new(File.read("quorum-shared-config.yaml.erb"), nil, "-").result)
 end

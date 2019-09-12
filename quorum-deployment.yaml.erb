@@ -27,10 +27,24 @@ end
 @Tm_Version            = @config["quorum"]["tm"]["Tm_Version"]
 @Tm_Port               = @config["quorum"]["tm"]["Port"]
 @Tm_Name               = @config["quorum"]["tm"]["Name"]
+
+# Storage for data directories, default host with default DataDir (hostPath).
+@Storage_Type          = "Host"
+@DataDir               = "/var/lib/docker/geth-storage"
 if @config["quorum"]["Data_Dir"]
-  @DataDir               = @config["quorum"]["Data_Dir"]
-else
-  @DataDir               = "/var/lib/docker/geth-storage"
+    @DataDir = @config["quorum"]["Data_Dir"]
+end
+# if storage is set set up the appropriate storage variable (host or PVC)
+if @config["quorum"]["storage"]
+  if @config["quorum"]["storage"]["Type"] == "Host"
+    @Storage_Type = "Host"
+    if @config["quorum"]["storage"]["Data_Dir"]
+      @DataDir = @config["quorum"]["storage"]["Data_Dir"]
+    end
+  # Persistent_Volume_Claim
+  elsif @config["quorum"]["storage"]["Type"] == "PVC"
+    @Storage_Type = "PVC"
+  end
 end
 %>
 
@@ -298,6 +312,19 @@ spec:
           items:
           - key: nodekey
             path: nodekey
+      # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
+     <% if @Storage_Type == "PVC" %>
+      - name: quorum-persistent-storage
+        persistentVolumeClaim:
+          claimName: <%= @Node_UserIdent %>-quorum
+      - name: tm-persistent-storage
+        persistentVolumeClaim:
+          claimName: <%= @Node_UserIdent %>-tm-pvc
+      - name: quorum-logs-persistent-storage
+        persistentVolumeClaim:
+          claimName: <%= @Node_UserIdent %>-log-pvc
+      # default is Host if not set.
+      <% else %>
       - name: quorum-persistent-storage
         hostPath:
           path: <%= @DataDir%>/<%= @Node_UserIdent %>
@@ -307,5 +334,5 @@ spec:
       - name: quorum-logs-persistent-storage
         hostPath:
           path: <%= @DataDir%>/<%= @Node_UserIdent %>-logs
-
+      <% end %>
 <% end -%>

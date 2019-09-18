@@ -1,0 +1,18 @@
+<%-
+ @Genesis_File = @config["quorum"]["Genesis_File"]
+%>
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: genesis-config
+    <%= @Namespace %>
+  labels:
+    app: qubernetes
+    name: genesis-config
+data:
+  genesis-geth.json: |-
+<%- File.readlines(@Genesis_File).each do |line| -%>
+      <%= line -%>
+<% end -%>
+

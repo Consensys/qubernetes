@@ -30,14 +30,20 @@ mkdir -p $BASE_DIR
 IFS=', ' read -r -a array <<< "$NODE_DIRS"
 
 for node_key_dir in "${array[@]}"; do
-  pushd .
   KEY_DIR=$BASE_DIR/$node_key_dir
-  mkdir -p $KEY_DIR
-  cd $KEY_DIR
-  echo | constellation-node --generatekeys=tm
-  touch password.txt
-  geth --keystore $KEY_DIR  account new --password password.txt
-  bootnode -genkey nodekey
-  bootnode  -nodekeyhex $(cat nodekey) -writeaddress > enode
-  popd
+  echo "KEY DIR IS $KEY_DIR"
+  ## If key dir exists, skip it.
+  if [ ! -d $KEY_DIR ]; then
+    pushd .
+    mkdir -p $KEY_DIR
+    cd $KEY_DIR
+    echo | constellation-node --generatekeys=tm
+    touch password.txt
+    geth --keystore $KEY_DIR  account new --password password.txt
+    bootnode -genkey nodekey
+    bootnode  -nodekeyhex $(cat nodekey) -writeaddress > enode
+    popd
+  else
+    echo "Key Dir exists! Skipping creating new key in $KEY_DIR"
+  fi
 done

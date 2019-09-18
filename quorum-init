@@ -2,14 +2,26 @@
 
 if File.directory?("out")
   puts("\n The 'out' directory already exist.")
-  puts(" Do you want to delete the directory and re-generate it [Y/N]?")
+  puts(" Please select the action you wish to take:")
+  puts("")
+  puts(" [1] Delete the 'out' directory and generate new resources.")
+  puts(" [2] Update / add nodes that don't already exist.")
+  puts(" [3] Cancel.")
   res = gets
-  res = res.upcase.strip
-  if not (res == "Y" or res == "YES")
-    puts("OK, keeping the 'out' dir, stay safe :)")
-    exit
-  end
+  res = res.strip
+  case res
+  when "1"
+    puts("Creating all new resources.")
     `rm -r out`
+  when "2"
+    puts("Generating additional resources only.")
+  when "3"
+    puts("OK, bye :)")
+    exit(0)
+  else
+    puts("OK, not doing anything :)")
+    exit(0)
+  end
 end
 
 `

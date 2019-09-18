@@ -12,4 +12,5 @@ File.open("gen-node-keys.sh", "w") do |f|
 end
 
 `chmod 755 gen-node-keys.sh`
+`echo generating keys`
 `./gen-node-keys.sh`

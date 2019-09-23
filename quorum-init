@@ -1,5 +1,15 @@
 #!/usr/bin/env ruby
 
+require "yaml"
+require "erb"
+
+@config                = YAML.load_file("qubernetes.yaml")
+# Generate deployments in a single file, or in separate files.
+@sep_deployment_files=false
+if @config["sep_deployment_files"] != nil
+  @sep_deployment_files = @config["sep_deployment_files"]
+end
+
 if File.directory?("out")
   puts("\n The 'out' directory already exist.")
   puts(" Please select the action you wish to take:")
@@ -59,6 +69,10 @@ puts ""
 `
 ./qubernetes
 `
-puts "  Deploy Quorum Kubernetes resources:"
-puts "  $> kubectl apply -f out"
+@Kubectl_Cmd="  $> kubectl apply -f out"
+if @sep_deployment_files
+  @Kubectl_Cmd="  $> kubectl apply -f out -f out/deployments"
+end
+puts("  To deploy to kubernetes run:")
+puts(@Kubectl_Cmd)
 

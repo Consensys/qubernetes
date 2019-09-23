@@ -1,15 +1,4 @@
-<%
-def set_node_template_vars(values)
-    @Node_UserIdent        = values["Node_UserIdent"]
-    @Node_Key_Dir          = values["Key_Dir"]
-    return
-end
--%>
----
-
-<%- @nodes.each do |node| -%>
-<%= set_node_template_vars(node.values.first) -%>
-
+#<%- File.readlines("#{@Keystore_Dir}/#{@Node_Key_Dir}/enode").each do |line| -%><%= line -%><% end -%>
 <%
 @Service_Prefix = (@Node_UserIdent.upcase).gsub("-", "_")
 @Geth_Verbosity        = @config["geth"]["verbosity"]
@@ -211,7 +200,7 @@ spec:
          <% if @config["quorum"]["consensus"] == "raft" %>
            args=\" --gcmode archive --raft  --raftport <%= @Raft_Port %> --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
          <% elsif @config["quorum"]["consensus"] == "istanbul" %>
-           args=\"--gcmode archive --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
+           args=\" --gcmode archive --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
          <% else %>
            args=\"--rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum \";
          <% end %>
@@ -352,4 +341,3 @@ spec:
         hostPath:
           path: <%= @DataDir%>/<%= @Node_UserIdent %>-logs
       <% end %>
-<% end -%>

@@ -11,6 +11,13 @@ require 'colorize'
 @Node_WSPort           = @config["geth"]["Node_WSPort"]
 @NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
 
+
+# Generate deployments in a single file, or in separate files.
+@sep_deployment_files=false
+if @config["sep_deployment_files"] != nil
+  @sep_deployment_files = @config["sep_deployment_files"]
+end
+
 # If the namespace is set in the config, create it and add it to all the resources.
 @Namespace = ""
 if @config["namespace"] != nil
@@ -87,17 +94,41 @@ File.open("out/04-quorum-keyconfigs.yaml", "w") do |f|
   f.puts (ERB.new(File.read("quorum-keystore.yaml.erb"), nil, "-").result)
 end
 
-# make deployments
-File.open("out/05-quorum-deployments.yaml", "w") do |f|
-  f.puts (ERB.new(File.read("quorum-deployment.yaml.erb"), nil, "-").result)
+@Kubectl_Cmd="  $> kubectl apply -f out"
+if @sep_deployment_files
+ `mkdir -p out/deployments`
+ ct=1
+ @nodes.each do |node|
+   set_node_template_vars(node.values.first)
+   # create each deployment in a separate file.
+   File.open("out/deployments/0" + ct.to_s + "-quorum-single-deployment.yaml", "w") do |f|
+     f.puts (ERB.new(File.read("quorum-deployment.yaml.erb"), nil, "-").result)
+   end
+   ct = ct + 1
+ end
+ @Kubectl_Cmd="  $> kubectl apply -f out -f out/deployments"
+else
+  File.open("out/05-quorum-deployments.yaml", "w") do |f|
+    f.puts("---")
+  end
+  @nodes.each do |node|
+    set_node_template_vars(node.values.first)
+    # create each deployment in a separate file.
+    File.open("out/05-quorum-deployments.yaml", "a") do |f|
+      f.puts (ERB.new(File.read("quorum-deployment.yaml.erb"), nil, "-").result)
+      f.puts("---")
+    end
+  end
 end
+
+
 
 puts("\n")
 puts "  Success! ".green
 puts("\n")
 puts("  Quorum Kubernetes resource files have been generated in the `out/` directory.")
 puts("\n")
-puts("  Deploy to kubernetes:")
+puts("  To deploy to kubernetes run:")
 puts("\n")
-puts("  $> kubectl apply -f out")
+puts(@Kubectl_Cmd)
 puts("\n")

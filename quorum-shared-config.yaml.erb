@@ -32,6 +32,13 @@ data:
     <%= line -%>
 <% end -%>
 
+  permissioned-update.sh: |
+    #!/bin/bash
+    PERM_NODE_TMPL=$(cat $QHOME/permission-nodes/permissioned-nodes.json.tmpl);
+    PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | <%= @Sed_Set_Node_Service_Host_No_Escape %>);
+    echo $PERM_NODE_JSON >  $QUORUM_DATA_DIR/permissioned-nodes.json;
+    cp $QUORUM_DATA_DIR/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
+
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -85,3 +92,4 @@ data:
 <%- File.readlines("contracts/public_contract.js").each do |line| -%>
     <%= line -%>
 <% end -%>
+

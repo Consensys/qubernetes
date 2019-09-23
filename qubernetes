@@ -31,15 +31,16 @@ end
 
 def set_node_template_vars(values)
   @Node_UserIdent        = values["Node_UserIdent"]
+  @Node_Key_Dir          = values["Key_Dir"]
   return
 end
-
 
 
 # create the output directory if it doesn't exist
 `mkdir -p out`
 
 sed_string = ""
+sed_string_no_escape = ""
 
 # make all services
 # set the replacement string sed command which is run on the permissioned-nodes.json,
@@ -53,11 +54,15 @@ sed_string = ""
   permission_node_host="#{@Node_UserIdent}".upcase + "_SERVICE_HOST"
  # puts (k8_service_host_var)
   sed_instruction = ' sed \"s/%' + permission_node_host + '%/$' + k8_service_host_var + '/g\"'
+  sed_instruction_no_escape = ' sed "s/%' + permission_node_host + '%/$' + k8_service_host_var + '/g"'
   sed_string = sed_string + sed_instruction + " | "
+  sed_string_no_escape = sed_string_no_escape + sed_instruction_no_escape + " | "
 end
 
 # used inside deployment
 @Sed_Set_Node_Service_Host = sed_string[0...-2]
+# used inside cofigMap script
+@Sed_Set_Node_Service_Host_No_Escape = sed_string_no_escape[0...-2]
 
 #puts (sed_string)
 if @Storage_Type == "PVC"

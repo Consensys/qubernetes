@@ -1,6 +1,7 @@
 <%
 def set_node_template_vars(values)
     @Node_UserIdent        = values["Node_UserIdent"]
+    @Node_Key_Dir          = values["Key_Dir"]
     return
 end
 -%>
@@ -78,7 +79,7 @@ spec:
         - "-cx"
         - "if [ ! -f $QUORUM_DATA_DIR/genesis_created ]; then
               /usr/local/bin/geth --datadir $QUORUM_DATA_DIR init /etc/quorum/genesis/genesis-geth.json;
-              touch $QUORUM_DATA_DIR/genesis_created;
+              date > $QUORUM_DATA_DIR/genesis_created;
            fi;
            cp -r <%= @Node_DataDir %>/contracts-tmp <%= @Node_DataDir %>/contracts;
            chmod 755  <%= @Node_DataDir %>/contracts/runscript.sh;
@@ -86,6 +87,8 @@ spec:
         env:
           - name: QUORUM_DATA_DIR
             value: <%= @Node_DataDir %>/dd
+          - name: QHOME
+            value: <%= @Node_DataDir %>
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  <%= @Node_DataDir %>
@@ -186,16 +189,15 @@ spec:
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
         # sleep to give constellation some time to start up and discover the other nodes.
+        #  --maxpeers <%= @nodes.size %>
         args:
         - "-cx"
         - "
            apk add curl;
+           apk add jq;
            until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:<%= @Tm_Port %>/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
            echo transaction manager is up;
-           PERM_NODE_TMPL=$(cat $QUORUM_DATA_DIR/permissioned-nodes.json.tmpl);
-           PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | <%= @Sed_Set_Node_Service_Host %>);
-           echo $PERM_NODE_JSON >  $QUORUM_DATA_DIR/permissioned-nodes.json;
-           cp $QUORUM_DATA_DIR/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
+           sh $QHOME/permission-nodes/permissioned-update.sh;
 
            rm -r <%= @Node_DataDir %>/contracts-tmp;
 
@@ -207,9 +209,9 @@ spec:
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=<%= @Geth_Network_Id %>
          <% if @config["quorum"]["consensus"] == "raft" %>
-           args=\" --raft --maxpeers <%= @nodes.size %>  --raftport <%= @Raft_Port %> --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
+           args=\" --gcmode archive --raft  --raftport <%= @Raft_Port %> --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
          <% elsif @config["quorum"]["consensus"] == "istanbul" %>
-           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
+           args=\"--gcmode archive --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
          <% else %>
            args=\"--rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum \";
          <% end %>
@@ -244,6 +246,10 @@ spec:
           value: <%= @Node_DataDir %>
         - name: TM_HOME
           value: <%= @Node_DataDir %>/tm/
+        - name: THIS_NODE_ID
+          value: <%= @Node_UserIdent%>
+        - name: THIS_ENODE
+          value: <%- File.readlines("#{@Keystore_Dir}/#{@Node_Key_Dir}/enode").each do |line| -%><%= line -%><% end -%>
         volumeMounts:
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
@@ -260,19 +266,24 @@ spec:
         - name: quorum-nodekey
           mountPath: <%= @Node_DataDir%>/dd/geth/nodekey
           subPath: nodekey
+        - name: quorum-enode
+          mountPath: <%= @Node_DataDir%>/dd/geth/enode
+          subPath: enode
         - name: quorum-permissioned-config
-          mountPath: <%= @Node_DataDir%>/dd/permissioned-nodes.json.tmpl
-          subPath: permissioned-nodes.json
-        - name: quorum-permissioned-config
-          mountPath: <%= @Node_DataDir%>/dd/static-nodes.json.tmpl
-          subPath: permissioned-nodes.json
+          mountPath: <%= @Node_DataDir%>/permission-nodes
+          #subPath: permissioned-nodes.json
+       # - name: quorum-permissioned-config
+       #   mountPath: <%= @Node_DataDir%>/dd/static-nodes.json.tmpl
+       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:
           name: quorum-permissioned-config
           items:
           - key: permissioned-nodes.json
-            path: permissioned-nodes.json
+            path: permissioned-nodes.json.tmpl
+          - key: permissioned-update.sh
+            path: permissioned-update.sh
       - name: genesis-config-persistent-storage
         configMap:
           name: genesis-config
@@ -312,6 +323,12 @@ spec:
           items:
           - key: nodekey
             path: nodekey
+      - name: quorum-enode
+        configMap:
+          name: <%= @Node_UserIdent %>-enode-config
+          items:
+            - key: enode
+              path: enode
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
      <% if @Storage_Type == "PVC" %>
       - name: quorum-persistent-storage

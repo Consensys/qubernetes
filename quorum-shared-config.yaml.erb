@@ -92,4 +92,13 @@ data:
 <%- File.readlines("contracts/public_contract.js").each do |line| -%>
     <%= line -%>
 <% end -%>
+  raft_add_node.sh: |-
+<%- File.readlines("helpers/raft_add_node.sh").each do |line| -%>
+    <%= line -%>
+<% end -%>
+  raft_add_all_permissioned.sh: |-
+<%- File.readlines("helpers/raft_add_all_permissioned.sh").each do |line| -%>
+    <%= line -%>
+<% end -%>
+
 

@@ -72,6 +72,8 @@ spec:
            fi;
            cp -r <%= @Node_DataDir %>/contracts-tmp <%= @Node_DataDir %>/contracts;
            chmod 755  <%= @Node_DataDir %>/contracts/runscript.sh;
+           chmod 755  <%= @Node_DataDir %>/contracts/raft_add_all_permissioned.sh;
+           chmod 755  <%= @Node_DataDir %>/contracts/raft_add_node.sh;
           "
         env:
           - name: QUORUM_DATA_DIR

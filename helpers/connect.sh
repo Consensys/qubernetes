@@ -7,6 +7,11 @@ if [ "$#" -lt 2 ]; then
   exit 1
 fi
 
-POD=$(kubectl get pods | grep Running | grep $1 |  awk '{print $1}')
+if [ "$#" -eq 3 ]; then
+   echo "setting namespace to $3"
+   NAMESPACE="--namespace=$3"
+fi
+
+POD=$(kubectl get pods $NAMESPACE | grep Running | grep $1 |  awk '{print $1}')
 echo "connecting to POD [$POD]"
-kubectl exec -it $POD -c $2 /bin/ash 
+kubectl $NAMESPACE exec -it $POD -c $2 /bin/ash 

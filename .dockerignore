@@ -1,0 +1,7 @@
+gen-node-keys.sh
+out/*.yaml
+out/
+.idea/
+qubernetes.yaml
+nodes.yaml
+7nodes

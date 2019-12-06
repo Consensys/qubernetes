@@ -278,6 +278,21 @@ $> rm -r /var/lib/docker/geth-storage
 ```
 * Delete the files on the host machine, by default under `/var/lib/docker/geth-storage`.
 
+## Docker bootstrap container
+
+To avoid installing all the prerequisites, you can use a docker container with all prerequisites already installed.
+
+Usage:
+```
+docker run -ti jpmorganchase/qubernetes
+./quorum-init
+# point kubectl to a correct cluster
+# for example for k8s on gcloud do `gcloud init` and paste config command from "connect" button in UI
+kubectl apply -f out
+```
+
+If you have qubernetes checked out and with custom configs, you can mount it to a container adding `-v $(pwd):/qubernetes` to your `docker run` command
+
 ## Thanks! And Additional Resources 
 Thanks to [Maximilian Meister blog and code](https://medium.com/@cryptoctl) which provided and awesome starting point!
 and is a good read to undestand the different components.

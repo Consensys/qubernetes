@@ -101,4 +101,17 @@ data:
     <%= line -%>
 <% end -%>
 
-
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: istanbul-validator-config.toml
+    <%= @Namespace %>
+  labels:
+    app: qubernetes
+    name: istanbul-validator-config
+data:
+  istanbul-validator-config.toml: |-
+<%- File.readlines(@Tessera_Config_Dir + "/istanbul-validator-config.toml").each do |line| -%>
+    <%= line -%>
+<% end -%>

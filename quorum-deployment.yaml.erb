@@ -267,6 +267,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: <%= @Node_DataDir%>/permission-nodes
+        - name: istanbul-validator-config
+          mountPath: <%= @Node_DataDir%>/istanbul-validator-config.toml
           #subPath: permissioned-nodes.json
        # - name: quorum-permissioned-config
        #   mountPath: <%= @Node_DataDir%>/dd/static-nodes.json.tmpl
@@ -325,6 +327,9 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: istanbul-validator-config
+        configMap:
+          name: istanbul-validator-config.toml
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
      <% if @Storage_Type == "PVC" %>
       - name: quorum-persistent-storage

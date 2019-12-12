@@ -92,12 +92,33 @@ data:
 <%- File.readlines("contracts/public_contract.js").each do |line| -%>
     <%= line -%>
 <% end -%>
+## Raft management helpers: adding nodes
   raft_add_node.sh: |-
 <%- File.readlines("helpers/raft_add_node.sh").each do |line| -%>
     <%= line -%>
 <% end -%>
   raft_add_all_permissioned.sh: |-
 <%- File.readlines("helpers/raft_add_all_permissioned.sh").each do |line| -%>
+    <%= line -%>
+<% end -%>
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-management
+    <%= @Namespace %>
+  labels:
+    app: qubernetes
+    name: node-management
+data:
+  ibft_propose.sh: |-
+<%- File.readlines("helpers/ibft_propose.sh").each do |line| -%>
+    <%= line -%>
+<% end -%>
+
+  ibft_propose_all.sh: |-
+<%- File.readlines("helpers/ibft_propose_all.sh").each do |line| -%>
     <%= line -%>
 <% end -%>
 

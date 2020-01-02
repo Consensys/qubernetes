@@ -147,12 +147,14 @@ spec:
            if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
            echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
            cat  ${DDIR}/tessera-config-with-hosts.json;
-           java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json;
+           java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json | tee -a ${QHOME}/logs/tessera.log;
         "
      <%- end %>
         ports:
           - containerPort: <%= @Tm_Port %>
         env:
+          - name: QHOME
+            value: <%= @Node_DataDir %>
           - name: QUORUM_HOME
             value: <%= @Node_DataDir %>
           - name: DDIR

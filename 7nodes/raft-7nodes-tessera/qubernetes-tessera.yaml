@@ -15,7 +15,7 @@ quorum:
   # Either full or relative paths on the machine generating the config
   Key_Dir_Base: 7nodes 
   Permissioned_Nodes_File: 7nodes/permissioned-nodes.json
-  Genesis_File: 7nodes/istanbul-genesis.json
+  Genesis_File: 7nodes/raft-genesis.json
   # related to quorum containers
   quorum:
     Raft_Port: 50401

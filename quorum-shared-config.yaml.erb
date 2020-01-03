@@ -102,6 +102,8 @@ data:
     <%= line -%>
 <% end -%>
 
+
+<% if @config["quorum"]["consensus"] == "istanbul" %>
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -135,4 +137,6 @@ data:
   istanbul-validator-config.toml: |-
 <%- File.readlines(@Tessera_Config_Dir + "/istanbul-validator-config.toml").each do |line| -%>
     <%= line -%>
+<% end -%>
+
 <% end -%>

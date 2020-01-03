@@ -269,6 +269,7 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: <%= @Node_DataDir%>/permission-nodes
+        <% if @config["quorum"]["consensus"] == "istanbul" %>
         - name: istanbul-validator-config
           mountPath: <%= @Node_DataDir%>/istanbul-validator-config.toml
         - name: node-management
@@ -277,6 +278,7 @@ spec:
         - name: node-management
           mountPath: <%= @Node_DataDir%>/node-management/ibft_propose_all.sh
           subPath: ibft_propose_all.sh
+        <% end %>
           #subPath: permissioned-nodes.json
        # - name: quorum-permissioned-config
        #   mountPath: <%= @Node_DataDir%>/dd/static-nodes.json.tmpl
@@ -335,6 +337,7 @@ spec:
           items:
             - key: enode
               path: enode
+      <% if @config["quorum"]["consensus"] == "istanbul" %>
       - name: istanbul-validator-config
         configMap:
           name: istanbul-validator-config.toml
@@ -347,6 +350,7 @@ spec:
            - key: ibft_propose_all.sh
              path: ibft_propose_all.sh
            defaultMode: 0777
+      <% end %>
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
      <% if @Storage_Type == "PVC" %>
       - name: quorum-persistent-storage

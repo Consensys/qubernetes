@@ -10,6 +10,16 @@ if @config["quorum"]["storage"]["Capacity"]
 end
 -%>
 
+<%- if @Namespace != "" %>
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: <%= @config["namespace"]["name"] %>
+  labels:
+    name: <%= @config["namespace"]["name"] %>
+<%- end %>
+---
+
 <%- @nodes.each do |node| -%>
     <%= set_node_template_vars(node.values.first) -%>
 
@@ -18,6 +28,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: <%= @Node_UserIdent %>-quorum
+  <%= @Namespace %>
 spec:
   accessModes:
     - ReadWriteOnce
@@ -30,6 +41,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: <%= @Node_UserIdent %>-tm-pvc
+  <%= @Namespace %>
 spec:
   accessModes:
     - ReadWriteOnce
@@ -42,6 +54,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: <%= @Node_UserIdent %>-log-pvc
+  <%= @Namespace %>
 spec:
   accessModes:
     - ReadWriteOnce

@@ -7,15 +7,6 @@
  @Keystore_Dir = @config["quorum"]["Key_Dir_Base"]
 %>
 
-<%- if @Namespace != "" %>
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: <%= @config["namespace"]["name"] %>
-  labels:
-    name: <%= @config["namespace"]["name"] %>
-<%- end %>
----
 # kubectl create configmap game-config --from-file=configure-pod-container/dd1/key
 apiVersion: v1
 kind: ConfigMap

@@ -28,11 +28,12 @@
   },
   "coinbase": "0x0000000000000000000000000000000000000000",
   "config": {
-    "byzantiumBlock": 1,
-    "eip150Block": 2,
+    "byzantiumBlock": 0,
+    "constantinopleBlock": 0,
+    "eip150Block": 0,
     "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-    "eip155Block": 3,
-    "eip158Block": 3,
+    "eip155Block": 0,
+    "eip158Block": 0,
     "istanbul": {
       "epoch": 30000,
       "policy": 0

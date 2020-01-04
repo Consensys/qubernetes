@@ -2,11 +2,21 @@
  @Genesis_File = @config["quorum"]["Genesis_File"]
 %>
 
+<%- if @Namespace != "" %>
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: <%= @config["namespace"]["name"] %>
+  labels:
+    name: <%= @config["namespace"]["name"] %>
+    <%- end %>
+---
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: genesis-config
-    <%= @Namespace %>
+  <%= @Namespace %>
   labels:
     app: qubernetes
     name: genesis-config

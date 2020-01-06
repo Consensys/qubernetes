@@ -196,11 +196,7 @@ manager nodes, including generating the appropriate genesis config, required key
 * [istanbul-tools](https://github.com/jpmorganchase/istanbul-tools) Istanbul only.
   ```
    # install
-   $> go get github.com/getamis/istanbul-tools/cmd/istanbul  
-    
-   # tested with 1.0.0
-   $> istanbul --version
-   istanbul version v1.0.0
+   $> go get github.com/jpmorganchase/istanbul-tools/cmd/istanbul  
    ```
 ### Generating Your Own K8s Resources
 

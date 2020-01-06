@@ -280,14 +280,19 @@ To avoid installing all the prerequisites, you can use a docker container with a
 
 Usage:
 ```
-docker run -ti jpmorganchase/qubernetes
+docker run -ti quorumengineering/qubernetes
 ./quorum-init
 # point kubectl to a correct cluster
 # for example for k8s on gcloud do `gcloud init` and paste config command from "connect" button in UI
 kubectl apply -f out
 ```
+**note**: `qubernetes.yaml` is not added to the the docker container, as this file will change between various deployments.
+It can by included by mounting a directory containing the desired `qubernetes.yaml` files. For example, if you have qubernetes 
+checked out and with custom configs, you can mount it to a container adding `-v $(pwd):/qubernetes` to your `docker run` command:
 
-If you have qubernetes checked out and with custom configs, you can mount it to a container adding `-v $(pwd):/qubernetes` to your `docker run` command
+```
+$> docker run -v $(pwd):/qubernetes -ti quorumengineering/qubernetes
+```
 
 ## Thanks! And Additional Resources 
 Thanks to [Maximilian Meister blog and code](https://medium.com/@cryptoctl) which provided and awesome starting point!

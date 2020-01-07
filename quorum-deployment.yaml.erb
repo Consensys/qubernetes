@@ -90,7 +90,7 @@ spec:
           mountPath: <%= @Node_DataDir%>/contracts-tmp
           readOnly: false
       containers:
-    <% if @Tm_Name == "constellation"  %>
+    <%- if @Tm_Name == "constellation"  -%>
       - name: constellation
         image: quorumengineering/constellation:<%= @Tm_Version %>
         command: ["sh"]
@@ -108,7 +108,7 @@ spec:
            --verbosity=<%= @Geth_Verbosity%> \
            --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:<%= @Tm_Port %>/ \";
            /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
-     <% else %>
+     <%- else -%>
       - name: tessera
         image: quorumengineering/tessera:<%= @Tm_Version %>
         command: ["sh"]
@@ -149,7 +149,7 @@ spec:
            cat  ${DDIR}/tessera-config-with-hosts.json;
            java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json | tee -a ${QHOME}/logs/tessera.log;
         "
-     <%- end %>
+     <%- end -%>
         ports:
           - containerPort: <%= @Tm_Port %>
         env:
@@ -172,6 +172,7 @@ spec:
         - name: keystore-tm
           mountPath: <%= @Node_DataDir %>/tm/tm.key
           subPath: tm.key
+        <%- if @Tm_Name == "tessera" -%>
         - name: tessera-config
           mountPath: <%= @Node_DataDir %>/tm/tessera-config.json.tmpl
           subPath: tessera-config.json.tmpl
@@ -181,6 +182,7 @@ spec:
         - name: tessera-config
           mountPath: <%= @Node_DataDir %>/tm/tessera-config-9.0.json.tmpl
           subPath: tessera-config-9.0.json.tmpl
+        <%- end -%>
       - name: quorum
         image: quorumengineering/quorum:<%= @Quorum_Version %>
         command: [ "sh" ]
@@ -193,26 +195,32 @@ spec:
         - "
            apk add curl;
            apk add jq;
-           until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:<%= @Tm_Port %>/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
-           echo transaction manager is up;
+
            sh $QHOME/permission-nodes/permissioned-update.sh;
-
            rm -r <%= @Node_DataDir %>/contracts-tmp;
-
            echo what in this dir;
            ls  $QUORUM_DATA_DIR;
            cat /etc/quorum/genesis/genesis-geth.json;
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
+ <%- if @Tm_Name == "tessera" -%>
+           until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:<%= @Tm_Port %>/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
+           echo transaction manager is up;
+ <%- else -%>
+           sleep 5;
+           echo slept for 5 to give TM time to start up;
+ <%- end -%>
+
+
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=<%= @Geth_Network_Id %>
-         <% if @config["quorum"]["consensus"] == "raft" %>
+         <%- if @config["quorum"]["consensus"] == "raft" -%>
            args=\" --gcmode archive --raft  --raftport <%= @Raft_Port %> --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
-         <% elsif @config["quorum"]["consensus"] == "istanbul" %>
+         <%- elsif @config["quorum"]["consensus"] == "istanbul" -%>
            args=\" --gcmode archive --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
-         <% else %>
+         <%- else -%>
            args=\"--rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum \";
-         <% end %>
+         <%- end -%>
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -269,7 +277,7 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: <%= @Node_DataDir%>/permission-nodes
-        <% if @config["quorum"]["consensus"] == "istanbul" %>
+        <%- if @config["quorum"]["consensus"] == "istanbul" -%>
         - name: istanbul-validator-config
           mountPath: <%= @Node_DataDir%>/istanbul-validator-config.toml
         - name: node-management
@@ -278,7 +286,7 @@ spec:
         - name: node-management
           mountPath: <%= @Node_DataDir%>/node-management/ibft_propose_all.sh
           subPath: ibft_propose_all.sh
-        <% end %>
+        <%- end -%>
           #subPath: permissioned-nodes.json
        # - name: quorum-permissioned-config
        #   mountPath: <%= @Node_DataDir%>/dd/static-nodes.json.tmpl

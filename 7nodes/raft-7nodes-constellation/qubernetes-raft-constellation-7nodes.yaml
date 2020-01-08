@@ -8,31 +8,32 @@ service:
   type: ClusterIP
 quorum:
   # supported: raft | istanbul
-  consensus: raft 
+  consensus: raft
   # base quorum data dir as set inside each container.
   Node_DataDir: /etc/quorum/qdata
   # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
   # Either full or relative paths on the machine generating the config
-  Key_Dir_Base: 7nodes 
+  Key_Dir_Base: 7nodes
   Permissioned_Nodes_File: 7nodes/permissioned-nodes.json
   Genesis_File: 7nodes/raft-genesis.json
   # related to quorum containers
   quorum:
     Raft_Port: 50401
     # container images at https://hub.docker.com/u/quorumengineering/
-    Quorum_Version:  2.2.3
+    Quorum_Version: 2.2.3
   # related to transaction manager containers
   tm:
+    # (tessera|constellation)
     # container images at https://hub.docker.com/u/quorumengineering/
     Name: constellation
     Tm_Version: 0.3.2
     Port: 9001
-    Tessera_Config_Dir: 7nodes 
+    Tessera_Config_Dir: 7nodes
 
 # generic geth related options
 geth:
   Node_WSPort: 8546
-  NodeP2P_ListenAddr: 21000 
+  NodeP2P_ListenAddr: 21000
   network:
     # network id (1: mainnet, 3: ropsten, 4: rinkeby ... )
     id: 10

@@ -17,6 +17,7 @@ spec:
     app: qubernetes
     tier: backend
     name: quorum-node1-deployment
+  # NodePort | ClusterIP
   type: ClusterIP
   ports:
     - name: tm-manager 
@@ -59,6 +60,7 @@ spec:
     app: qubernetes
     tier: backend
     name: quorum-node2-deployment
+  # NodePort | ClusterIP
   type: ClusterIP
   ports:
     - name: tm-manager 
@@ -101,6 +103,7 @@ spec:
     app: qubernetes
     tier: backend
     name: quorum-node3-deployment
+  # NodePort | ClusterIP
   type: ClusterIP
   ports:
     - name: tm-manager 
@@ -143,6 +146,7 @@ spec:
     app: qubernetes
     tier: backend
     name: quorum-node4-deployment
+  # NodePort | ClusterIP
   type: ClusterIP
   ports:
     - name: tm-manager 
@@ -185,6 +189,7 @@ spec:
     app: qubernetes
     tier: backend
     name: quorum-node5-deployment
+  # NodePort | ClusterIP
   type: ClusterIP
   ports:
     - name: tm-manager 
@@ -227,6 +232,7 @@ spec:
     app: qubernetes
     tier: backend
     name: quorum-node6-deployment
+  # NodePort | ClusterIP
   type: ClusterIP
   ports:
     - name: tm-manager 
@@ -269,6 +275,7 @@ spec:
     app: qubernetes
     tier: backend
     name: quorum-node7-deployment
+  # NodePort | ClusterIP
   type: ClusterIP
   ports:
     - name: tm-manager 

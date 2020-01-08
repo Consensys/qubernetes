@@ -1,6 +1,5 @@
 ---
-
-
+#ac6b1096ca56b9f6d004b779ae3728bf83f8e22453404cc3cef16a3d9b96608bc67c4b30db88e0a5a6c6390213f7acbe1153ff6d23ce57380104288ae19373ef
 
 
 # The quorum deployment consists of
@@ -27,20 +26,24 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.1.1
+        image: quorumengineering/quorum:2.2.3
         command: [ "sh" ]
         args:
         - "-cx"
         - "if [ ! -f $QUORUM_DATA_DIR/genesis_created ]; then
               /usr/local/bin/geth --datadir $QUORUM_DATA_DIR init /etc/quorum/genesis/genesis-geth.json;
-              touch $QUORUM_DATA_DIR/genesis_created;
+              date > $QUORUM_DATA_DIR/genesis_created;
            fi;
            cp -r /etc/quorum/qdata/contracts-tmp /etc/quorum/qdata/contracts;
            chmod 755  /etc/quorum/qdata/contracts/runscript.sh;
+           chmod 755  /etc/quorum/qdata/contracts/raft_add_all_permissioned.sh;
+           chmod 755  /etc/quorum/qdata/contracts/raft_add_node.sh;
           "
         env:
           - name: QUORUM_DATA_DIR
             value: /etc/quorum/qdata/dd
+          - name: QHOME
+            value: /etc/quorum/qdata
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
@@ -51,28 +54,50 @@ spec:
           mountPath: /etc/quorum/qdata/contracts-tmp
           readOnly: false
       containers:
-    
-      - name: constellation
-        image: quorumengineering/constellation:0.3.2
+      - name: tessera
+        image: quorumengineering/tessera:0.9.2
         command: ["sh"]
         args:
         - "-cx"
         - "chmod 600 $QUORUM_HOME/tm/tm.key;
-           DDIR=$QUORUM_HOME/tm;
+           echo DDIR is $DDIR;
            printenv;
-           args=\" --url=https://$QUORUM_NODE1_SERVICE_HOST:9001/  \
-           --port=9001 \
-           --workdir=$DDIR \
-           --socket=$DDIR/tm.ipc \
-           --publickeys=$QUORUM_HOME/tm/tm.pub \
-           --privatekeys=$QUORUM_HOME/tm/tm.key \
-           --verbosity=9 \
-           --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:9001/ \";
-           /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
-     
+
+           TESSERA_VERSION=$(unzip -p /tessera/tessera-app.jar META-INF/MANIFEST.MF | grep Tessera-Version | cut -d\" \" -f2);
+           echo \"Tessera version (extracted from manifest file): ${TESSERA_VERSION}\";
+
+           TESSERA_VERSION=\"${TESSERA_VERSION}-suffix\";
+           Tess_Ver_First=$(echo ${TESSERA_VERSION} | awk -F. '{print $1}');
+           Tess_Ver_Second=$(echo ${TESSERA_VERSION} | awk -F. '{print $2}');
+           Tess_Ver_Third=$(echo ${TESSERA_VERSION} | awk -F. '{print $3}');
+           echo \"version: first [$Tess_Ver_First], second [$Tess_Ver_Second], third [$Tess_Ver_Third]\";
+           echo \"Tessera version - suffix ${TESSERA_VERSION}\";
+           TESSERA_CONFIG_TYPE=;
+
+           if [ \"${Tess_Ver_Second}\" -ge \"8\" ]; then TESSERA_CONFIG_TYPE=\"-enhanced\"; fi;
+           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then TESSERA_CONFIG_TYPE=\"-9.0\"; fi;
+
+           echo Config type [${TESSERA_CONFIG_TYPE}];
+
+           CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json.tmpl);
+
+           echo  \" sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" \";
+           CONFIG_WITH_OTHER_HOSTS=$(echo $CONFIG_TMPL |  sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" ) ;
+           CONFIG_WITH_ALL_HOSTS=$(echo $CONFIG_WITH_OTHER_HOSTS | sed \"s/%THIS_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\");
+           PRIV_KEY=$(cat $DDIR/tm.key)
+           PUB_KEY=$(cat $DDIR/tm.pub)
+           CONFIG_FINAL=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
+           CONFIG_FINAL_9_0=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
+           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
+           echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
+           cat  ${DDIR}/tessera-config-with-hosts.json;
+           java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json | tee -a ${QHOME}/logs/tessera.log;
+        "
         ports:
           - containerPort: 9001
         env:
+          - name: QHOME
+            value: /etc/quorum/qdata
           - name: QUORUM_HOME
             value: /etc/quorum/qdata
           - name: DDIR
@@ -96,33 +121,36 @@ spec:
         - name: tessera-config
           mountPath: /etc/quorum/qdata/tm/tessera-config-enhanced.json.tmpl
           subPath: tessera-config-enhanced.json.tmpl
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
+          subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.1.1
+        image: quorumengineering/quorum:2.2.3
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
         # sleep to give constellation some time to start up and discover the other nodes.
+        #  --maxpeers 7
         args:
         - "-cx"
         - "
-           sleep 5;
-           PERM_NODE_TMPL=$(cat $QUORUM_DATA_DIR/permissioned-nodes.json.tmpl);
-           PERM_NODE_JSON=$(echo $PERM_NODE_TMPL |  sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" );
-           echo $PERM_NODE_JSON >  $QUORUM_DATA_DIR/permissioned-nodes.json;
-           cp $QUORUM_DATA_DIR/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
+           apk add curl;
+           apk add jq;
 
+           sh $QHOME/permission-nodes/permissioned-update.sh;
            rm -r /etc/quorum/qdata/contracts-tmp;
-
            echo what in this dir;
            ls  $QUORUM_DATA_DIR;
            cat /etc/quorum/genesis/genesis-geth.json;
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
+           until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:9001/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
+           echo transaction manager is up;
+
+
            touch $QUORUM_DATA_DIR/password.txt;
-           NETWORK_ID=1101
-         
-           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
-         
+           NETWORK_ID=10
+           args=\" --gcmode archive --raft  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -137,7 +165,8 @@ spec:
            --rpcaddr 0.0.0.0 \
            --rpcport 8546 \
            --port 21000 \
-           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log; " 
+            \
+           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
           - containerPort: 8546
@@ -149,8 +178,14 @@ spec:
           value: /etc/quorum/qdata/dd
         - name: QUORUM_HOME
           value: /etc/quorum/qdata
+        - name: QHOME
+          value: /etc/quorum/qdata
         - name: TM_HOME
           value: /etc/quorum/qdata/tm/
+        - name: THIS_NODE_ID
+          value: quorum-node1
+        - name: THIS_ENODE
+          value: ac6b1096ca56b9f6d004b779ae3728bf83f8e22453404cc3cef16a3d9b96608bc67c4b30db88e0a5a6c6390213f7acbe1153ff6d23ce57380104288ae19373ef
         volumeMounts:
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
@@ -167,19 +202,24 @@ spec:
         - name: quorum-nodekey
           mountPath: /etc/quorum/qdata/dd/geth/nodekey
           subPath: nodekey
+        - name: quorum-enode
+          mountPath: /etc/quorum/qdata/dd/geth/enode
+          subPath: enode
         - name: quorum-permissioned-config
-          mountPath: /etc/quorum/qdata/dd/permissioned-nodes.json.tmpl
-          subPath: permissioned-nodes.json
-        - name: quorum-permissioned-config
-          mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
-          subPath: permissioned-nodes.json
+          mountPath: /etc/quorum/qdata/permission-nodes
+          #subPath: permissioned-nodes.json
+       # - name: quorum-permissioned-config
+       #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
+       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:
           name: quorum-permissioned-config
           items:
           - key: permissioned-nodes.json
-            path: permissioned-nodes.json
+            path: permissioned-nodes.json.tmpl
+          - key: permissioned-update.sh
+            path: permissioned-update.sh
       - name: genesis-config-persistent-storage
         configMap:
           name: genesis-config
@@ -194,6 +234,8 @@ spec:
             path: tessera-config.json.tmpl
           - key: tessera-config-enhanced.json.tmpl
             path: tessera-config-enhanced.json.tmpl
+          - key: tessera-config-9.0.json.tmpl
+            path: tessera-config-9.0.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config
@@ -217,6 +259,15 @@ spec:
           items:
           - key: nodekey
             path: nodekey
+      - name: quorum-enode
+        configMap:
+          name: quorum-node1-enode-config
+          items:
+            - key: enode
+              path: enode
+      
+      # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
+     
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node1
@@ -226,8 +277,9 @@ spec:
       - name: quorum-logs-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node1-logs
-
-
+      
+---
+#0ba6b9f606a43a95edc6247cdb1c1e105145817be7bcafd6b2c0ba15d58145f0dc1a194f70ba73cd6f4cdd6864edc7687f311254c7555cc32e4d45aeb1b80416
 
 
 # The quorum deployment consists of
@@ -254,20 +306,24 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.1.1
+        image: quorumengineering/quorum:2.2.3
         command: [ "sh" ]
         args:
         - "-cx"
         - "if [ ! -f $QUORUM_DATA_DIR/genesis_created ]; then
               /usr/local/bin/geth --datadir $QUORUM_DATA_DIR init /etc/quorum/genesis/genesis-geth.json;
-              touch $QUORUM_DATA_DIR/genesis_created;
+              date > $QUORUM_DATA_DIR/genesis_created;
            fi;
            cp -r /etc/quorum/qdata/contracts-tmp /etc/quorum/qdata/contracts;
            chmod 755  /etc/quorum/qdata/contracts/runscript.sh;
+           chmod 755  /etc/quorum/qdata/contracts/raft_add_all_permissioned.sh;
+           chmod 755  /etc/quorum/qdata/contracts/raft_add_node.sh;
           "
         env:
           - name: QUORUM_DATA_DIR
             value: /etc/quorum/qdata/dd
+          - name: QHOME
+            value: /etc/quorum/qdata
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
@@ -278,28 +334,50 @@ spec:
           mountPath: /etc/quorum/qdata/contracts-tmp
           readOnly: false
       containers:
-    
-      - name: constellation
-        image: quorumengineering/constellation:0.3.2
+      - name: tessera
+        image: quorumengineering/tessera:0.9.2
         command: ["sh"]
         args:
         - "-cx"
         - "chmod 600 $QUORUM_HOME/tm/tm.key;
-           DDIR=$QUORUM_HOME/tm;
+           echo DDIR is $DDIR;
            printenv;
-           args=\" --url=https://$QUORUM_NODE2_SERVICE_HOST:9001/  \
-           --port=9001 \
-           --workdir=$DDIR \
-           --socket=$DDIR/tm.ipc \
-           --publickeys=$QUORUM_HOME/tm/tm.pub \
-           --privatekeys=$QUORUM_HOME/tm/tm.key \
-           --verbosity=9 \
-           --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:9001/ \";
-           /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
-     
+
+           TESSERA_VERSION=$(unzip -p /tessera/tessera-app.jar META-INF/MANIFEST.MF | grep Tessera-Version | cut -d\" \" -f2);
+           echo \"Tessera version (extracted from manifest file): ${TESSERA_VERSION}\";
+
+           TESSERA_VERSION=\"${TESSERA_VERSION}-suffix\";
+           Tess_Ver_First=$(echo ${TESSERA_VERSION} | awk -F. '{print $1}');
+           Tess_Ver_Second=$(echo ${TESSERA_VERSION} | awk -F. '{print $2}');
+           Tess_Ver_Third=$(echo ${TESSERA_VERSION} | awk -F. '{print $3}');
+           echo \"version: first [$Tess_Ver_First], second [$Tess_Ver_Second], third [$Tess_Ver_Third]\";
+           echo \"Tessera version - suffix ${TESSERA_VERSION}\";
+           TESSERA_CONFIG_TYPE=;
+
+           if [ \"${Tess_Ver_Second}\" -ge \"8\" ]; then TESSERA_CONFIG_TYPE=\"-enhanced\"; fi;
+           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then TESSERA_CONFIG_TYPE=\"-9.0\"; fi;
+
+           echo Config type [${TESSERA_CONFIG_TYPE}];
+
+           CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json.tmpl);
+
+           echo  \" sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" \";
+           CONFIG_WITH_OTHER_HOSTS=$(echo $CONFIG_TMPL |  sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" ) ;
+           CONFIG_WITH_ALL_HOSTS=$(echo $CONFIG_WITH_OTHER_HOSTS | sed \"s/%THIS_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\");
+           PRIV_KEY=$(cat $DDIR/tm.key)
+           PUB_KEY=$(cat $DDIR/tm.pub)
+           CONFIG_FINAL=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
+           CONFIG_FINAL_9_0=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
+           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
+           echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
+           cat  ${DDIR}/tessera-config-with-hosts.json;
+           java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json | tee -a ${QHOME}/logs/tessera.log;
+        "
         ports:
           - containerPort: 9001
         env:
+          - name: QHOME
+            value: /etc/quorum/qdata
           - name: QUORUM_HOME
             value: /etc/quorum/qdata
           - name: DDIR
@@ -323,33 +401,36 @@ spec:
         - name: tessera-config
           mountPath: /etc/quorum/qdata/tm/tessera-config-enhanced.json.tmpl
           subPath: tessera-config-enhanced.json.tmpl
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
+          subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.1.1
+        image: quorumengineering/quorum:2.2.3
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
         # sleep to give constellation some time to start up and discover the other nodes.
+        #  --maxpeers 7
         args:
         - "-cx"
         - "
-           sleep 5;
-           PERM_NODE_TMPL=$(cat $QUORUM_DATA_DIR/permissioned-nodes.json.tmpl);
-           PERM_NODE_JSON=$(echo $PERM_NODE_TMPL |  sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" );
-           echo $PERM_NODE_JSON >  $QUORUM_DATA_DIR/permissioned-nodes.json;
-           cp $QUORUM_DATA_DIR/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
+           apk add curl;
+           apk add jq;
 
+           sh $QHOME/permission-nodes/permissioned-update.sh;
            rm -r /etc/quorum/qdata/contracts-tmp;
-
            echo what in this dir;
            ls  $QUORUM_DATA_DIR;
            cat /etc/quorum/genesis/genesis-geth.json;
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
+           until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:9001/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
+           echo transaction manager is up;
+
+
            touch $QUORUM_DATA_DIR/password.txt;
-           NETWORK_ID=1101
-         
-           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
-         
+           NETWORK_ID=10
+           args=\" --gcmode archive --raft  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -364,7 +445,8 @@ spec:
            --rpcaddr 0.0.0.0 \
            --rpcport 8546 \
            --port 21000 \
-           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log; " 
+            \
+           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
           - containerPort: 8546
@@ -376,8 +458,14 @@ spec:
           value: /etc/quorum/qdata/dd
         - name: QUORUM_HOME
           value: /etc/quorum/qdata
+        - name: QHOME
+          value: /etc/quorum/qdata
         - name: TM_HOME
           value: /etc/quorum/qdata/tm/
+        - name: THIS_NODE_ID
+          value: quorum-node2
+        - name: THIS_ENODE
+          value: 0ba6b9f606a43a95edc6247cdb1c1e105145817be7bcafd6b2c0ba15d58145f0dc1a194f70ba73cd6f4cdd6864edc7687f311254c7555cc32e4d45aeb1b80416
         volumeMounts:
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
@@ -394,19 +482,24 @@ spec:
         - name: quorum-nodekey
           mountPath: /etc/quorum/qdata/dd/geth/nodekey
           subPath: nodekey
+        - name: quorum-enode
+          mountPath: /etc/quorum/qdata/dd/geth/enode
+          subPath: enode
         - name: quorum-permissioned-config
-          mountPath: /etc/quorum/qdata/dd/permissioned-nodes.json.tmpl
-          subPath: permissioned-nodes.json
-        - name: quorum-permissioned-config
-          mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
-          subPath: permissioned-nodes.json
+          mountPath: /etc/quorum/qdata/permission-nodes
+          #subPath: permissioned-nodes.json
+       # - name: quorum-permissioned-config
+       #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
+       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:
           name: quorum-permissioned-config
           items:
           - key: permissioned-nodes.json
-            path: permissioned-nodes.json
+            path: permissioned-nodes.json.tmpl
+          - key: permissioned-update.sh
+            path: permissioned-update.sh
       - name: genesis-config-persistent-storage
         configMap:
           name: genesis-config
@@ -421,6 +514,8 @@ spec:
             path: tessera-config.json.tmpl
           - key: tessera-config-enhanced.json.tmpl
             path: tessera-config-enhanced.json.tmpl
+          - key: tessera-config-9.0.json.tmpl
+            path: tessera-config-9.0.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config
@@ -444,6 +539,15 @@ spec:
           items:
           - key: nodekey
             path: nodekey
+      - name: quorum-enode
+        configMap:
+          name: quorum-node2-enode-config
+          items:
+            - key: enode
+              path: enode
+      
+      # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
+     
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node2
@@ -453,8 +557,9 @@ spec:
       - name: quorum-logs-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node2-logs
-
-
+      
+---
+#579f786d4e2830bbcc02815a27e8a9bacccc9605df4dc6f20bcc1a6eb391e7225fff7cb83e5b4ecd1f3a94d8b733803f2f66b7e871961e7b029e22c155c3a778
 
 
 # The quorum deployment consists of
@@ -481,20 +586,24 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.1.1
+        image: quorumengineering/quorum:2.2.3
         command: [ "sh" ]
         args:
         - "-cx"
         - "if [ ! -f $QUORUM_DATA_DIR/genesis_created ]; then
               /usr/local/bin/geth --datadir $QUORUM_DATA_DIR init /etc/quorum/genesis/genesis-geth.json;
-              touch $QUORUM_DATA_DIR/genesis_created;
+              date > $QUORUM_DATA_DIR/genesis_created;
            fi;
            cp -r /etc/quorum/qdata/contracts-tmp /etc/quorum/qdata/contracts;
            chmod 755  /etc/quorum/qdata/contracts/runscript.sh;
+           chmod 755  /etc/quorum/qdata/contracts/raft_add_all_permissioned.sh;
+           chmod 755  /etc/quorum/qdata/contracts/raft_add_node.sh;
           "
         env:
           - name: QUORUM_DATA_DIR
             value: /etc/quorum/qdata/dd
+          - name: QHOME
+            value: /etc/quorum/qdata
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
@@ -505,28 +614,50 @@ spec:
           mountPath: /etc/quorum/qdata/contracts-tmp
           readOnly: false
       containers:
-    
-      - name: constellation
-        image: quorumengineering/constellation:0.3.2
+      - name: tessera
+        image: quorumengineering/tessera:0.9.2
         command: ["sh"]
         args:
         - "-cx"
         - "chmod 600 $QUORUM_HOME/tm/tm.key;
-           DDIR=$QUORUM_HOME/tm;
+           echo DDIR is $DDIR;
            printenv;
-           args=\" --url=https://$QUORUM_NODE3_SERVICE_HOST:9001/  \
-           --port=9001 \
-           --workdir=$DDIR \
-           --socket=$DDIR/tm.ipc \
-           --publickeys=$QUORUM_HOME/tm/tm.pub \
-           --privatekeys=$QUORUM_HOME/tm/tm.key \
-           --verbosity=9 \
-           --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:9001/ \";
-           /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
-     
+
+           TESSERA_VERSION=$(unzip -p /tessera/tessera-app.jar META-INF/MANIFEST.MF | grep Tessera-Version | cut -d\" \" -f2);
+           echo \"Tessera version (extracted from manifest file): ${TESSERA_VERSION}\";
+
+           TESSERA_VERSION=\"${TESSERA_VERSION}-suffix\";
+           Tess_Ver_First=$(echo ${TESSERA_VERSION} | awk -F. '{print $1}');
+           Tess_Ver_Second=$(echo ${TESSERA_VERSION} | awk -F. '{print $2}');
+           Tess_Ver_Third=$(echo ${TESSERA_VERSION} | awk -F. '{print $3}');
+           echo \"version: first [$Tess_Ver_First], second [$Tess_Ver_Second], third [$Tess_Ver_Third]\";
+           echo \"Tessera version - suffix ${TESSERA_VERSION}\";
+           TESSERA_CONFIG_TYPE=;
+
+           if [ \"${Tess_Ver_Second}\" -ge \"8\" ]; then TESSERA_CONFIG_TYPE=\"-enhanced\"; fi;
+           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then TESSERA_CONFIG_TYPE=\"-9.0\"; fi;
+
+           echo Config type [${TESSERA_CONFIG_TYPE}];
+
+           CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json.tmpl);
+
+           echo  \" sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" \";
+           CONFIG_WITH_OTHER_HOSTS=$(echo $CONFIG_TMPL |  sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" ) ;
+           CONFIG_WITH_ALL_HOSTS=$(echo $CONFIG_WITH_OTHER_HOSTS | sed \"s/%THIS_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\");
+           PRIV_KEY=$(cat $DDIR/tm.key)
+           PUB_KEY=$(cat $DDIR/tm.pub)
+           CONFIG_FINAL=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
+           CONFIG_FINAL_9_0=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
+           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
+           echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
+           cat  ${DDIR}/tessera-config-with-hosts.json;
+           java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json | tee -a ${QHOME}/logs/tessera.log;
+        "
         ports:
           - containerPort: 9001
         env:
+          - name: QHOME
+            value: /etc/quorum/qdata
           - name: QUORUM_HOME
             value: /etc/quorum/qdata
           - name: DDIR
@@ -550,33 +681,36 @@ spec:
         - name: tessera-config
           mountPath: /etc/quorum/qdata/tm/tessera-config-enhanced.json.tmpl
           subPath: tessera-config-enhanced.json.tmpl
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
+          subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.1.1
+        image: quorumengineering/quorum:2.2.3
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
         # sleep to give constellation some time to start up and discover the other nodes.
+        #  --maxpeers 7
         args:
         - "-cx"
         - "
-           sleep 5;
-           PERM_NODE_TMPL=$(cat $QUORUM_DATA_DIR/permissioned-nodes.json.tmpl);
-           PERM_NODE_JSON=$(echo $PERM_NODE_TMPL |  sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" );
-           echo $PERM_NODE_JSON >  $QUORUM_DATA_DIR/permissioned-nodes.json;
-           cp $QUORUM_DATA_DIR/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
+           apk add curl;
+           apk add jq;
 
+           sh $QHOME/permission-nodes/permissioned-update.sh;
            rm -r /etc/quorum/qdata/contracts-tmp;
-
            echo what in this dir;
            ls  $QUORUM_DATA_DIR;
            cat /etc/quorum/genesis/genesis-geth.json;
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
+           until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:9001/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
+           echo transaction manager is up;
+
+
            touch $QUORUM_DATA_DIR/password.txt;
-           NETWORK_ID=1101
-         
-           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
-         
+           NETWORK_ID=10
+           args=\" --gcmode archive --raft  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -591,7 +725,8 @@ spec:
            --rpcaddr 0.0.0.0 \
            --rpcport 8546 \
            --port 21000 \
-           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log; " 
+            \
+           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
           - containerPort: 8546
@@ -603,8 +738,14 @@ spec:
           value: /etc/quorum/qdata/dd
         - name: QUORUM_HOME
           value: /etc/quorum/qdata
+        - name: QHOME
+          value: /etc/quorum/qdata
         - name: TM_HOME
           value: /etc/quorum/qdata/tm/
+        - name: THIS_NODE_ID
+          value: quorum-node3
+        - name: THIS_ENODE
+          value: 579f786d4e2830bbcc02815a27e8a9bacccc9605df4dc6f20bcc1a6eb391e7225fff7cb83e5b4ecd1f3a94d8b733803f2f66b7e871961e7b029e22c155c3a778
         volumeMounts:
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
@@ -621,19 +762,24 @@ spec:
         - name: quorum-nodekey
           mountPath: /etc/quorum/qdata/dd/geth/nodekey
           subPath: nodekey
+        - name: quorum-enode
+          mountPath: /etc/quorum/qdata/dd/geth/enode
+          subPath: enode
         - name: quorum-permissioned-config
-          mountPath: /etc/quorum/qdata/dd/permissioned-nodes.json.tmpl
-          subPath: permissioned-nodes.json
-        - name: quorum-permissioned-config
-          mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
-          subPath: permissioned-nodes.json
+          mountPath: /etc/quorum/qdata/permission-nodes
+          #subPath: permissioned-nodes.json
+       # - name: quorum-permissioned-config
+       #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
+       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:
           name: quorum-permissioned-config
           items:
           - key: permissioned-nodes.json
-            path: permissioned-nodes.json
+            path: permissioned-nodes.json.tmpl
+          - key: permissioned-update.sh
+            path: permissioned-update.sh
       - name: genesis-config-persistent-storage
         configMap:
           name: genesis-config
@@ -648,6 +794,8 @@ spec:
             path: tessera-config.json.tmpl
           - key: tessera-config-enhanced.json.tmpl
             path: tessera-config-enhanced.json.tmpl
+          - key: tessera-config-9.0.json.tmpl
+            path: tessera-config-9.0.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config
@@ -671,6 +819,15 @@ spec:
           items:
           - key: nodekey
             path: nodekey
+      - name: quorum-enode
+        configMap:
+          name: quorum-node3-enode-config
+          items:
+            - key: enode
+              path: enode
+      
+      # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
+     
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node3
@@ -680,8 +837,9 @@ spec:
       - name: quorum-logs-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node3-logs
-
-
+      
+---
+#3d9ca5956b38557aba991e31cf510d4df641dce9cc26bfeb7de082f0c07abb6ede3a58410c8f249dabeecee4ad3979929ac4c7c496ad20b8cfdd061b7401b4f5
 
 
 # The quorum deployment consists of
@@ -708,20 +866,24 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.1.1
+        image: quorumengineering/quorum:2.2.3
         command: [ "sh" ]
         args:
         - "-cx"
         - "if [ ! -f $QUORUM_DATA_DIR/genesis_created ]; then
               /usr/local/bin/geth --datadir $QUORUM_DATA_DIR init /etc/quorum/genesis/genesis-geth.json;
-              touch $QUORUM_DATA_DIR/genesis_created;
+              date > $QUORUM_DATA_DIR/genesis_created;
            fi;
            cp -r /etc/quorum/qdata/contracts-tmp /etc/quorum/qdata/contracts;
            chmod 755  /etc/quorum/qdata/contracts/runscript.sh;
+           chmod 755  /etc/quorum/qdata/contracts/raft_add_all_permissioned.sh;
+           chmod 755  /etc/quorum/qdata/contracts/raft_add_node.sh;
           "
         env:
           - name: QUORUM_DATA_DIR
             value: /etc/quorum/qdata/dd
+          - name: QHOME
+            value: /etc/quorum/qdata
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
@@ -732,28 +894,50 @@ spec:
           mountPath: /etc/quorum/qdata/contracts-tmp
           readOnly: false
       containers:
-    
-      - name: constellation
-        image: quorumengineering/constellation:0.3.2
+      - name: tessera
+        image: quorumengineering/tessera:0.9.2
         command: ["sh"]
         args:
         - "-cx"
         - "chmod 600 $QUORUM_HOME/tm/tm.key;
-           DDIR=$QUORUM_HOME/tm;
+           echo DDIR is $DDIR;
            printenv;
-           args=\" --url=https://$QUORUM_NODE4_SERVICE_HOST:9001/  \
-           --port=9001 \
-           --workdir=$DDIR \
-           --socket=$DDIR/tm.ipc \
-           --publickeys=$QUORUM_HOME/tm/tm.pub \
-           --privatekeys=$QUORUM_HOME/tm/tm.key \
-           --verbosity=9 \
-           --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:9001/ \";
-           /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
-     
+
+           TESSERA_VERSION=$(unzip -p /tessera/tessera-app.jar META-INF/MANIFEST.MF | grep Tessera-Version | cut -d\" \" -f2);
+           echo \"Tessera version (extracted from manifest file): ${TESSERA_VERSION}\";
+
+           TESSERA_VERSION=\"${TESSERA_VERSION}-suffix\";
+           Tess_Ver_First=$(echo ${TESSERA_VERSION} | awk -F. '{print $1}');
+           Tess_Ver_Second=$(echo ${TESSERA_VERSION} | awk -F. '{print $2}');
+           Tess_Ver_Third=$(echo ${TESSERA_VERSION} | awk -F. '{print $3}');
+           echo \"version: first [$Tess_Ver_First], second [$Tess_Ver_Second], third [$Tess_Ver_Third]\";
+           echo \"Tessera version - suffix ${TESSERA_VERSION}\";
+           TESSERA_CONFIG_TYPE=;
+
+           if [ \"${Tess_Ver_Second}\" -ge \"8\" ]; then TESSERA_CONFIG_TYPE=\"-enhanced\"; fi;
+           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then TESSERA_CONFIG_TYPE=\"-9.0\"; fi;
+
+           echo Config type [${TESSERA_CONFIG_TYPE}];
+
+           CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json.tmpl);
+
+           echo  \" sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" \";
+           CONFIG_WITH_OTHER_HOSTS=$(echo $CONFIG_TMPL |  sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" ) ;
+           CONFIG_WITH_ALL_HOSTS=$(echo $CONFIG_WITH_OTHER_HOSTS | sed \"s/%THIS_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\");
+           PRIV_KEY=$(cat $DDIR/tm.key)
+           PUB_KEY=$(cat $DDIR/tm.pub)
+           CONFIG_FINAL=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
+           CONFIG_FINAL_9_0=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
+           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
+           echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
+           cat  ${DDIR}/tessera-config-with-hosts.json;
+           java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json | tee -a ${QHOME}/logs/tessera.log;
+        "
         ports:
           - containerPort: 9001
         env:
+          - name: QHOME
+            value: /etc/quorum/qdata
           - name: QUORUM_HOME
             value: /etc/quorum/qdata
           - name: DDIR
@@ -777,33 +961,36 @@ spec:
         - name: tessera-config
           mountPath: /etc/quorum/qdata/tm/tessera-config-enhanced.json.tmpl
           subPath: tessera-config-enhanced.json.tmpl
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
+          subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.1.1
+        image: quorumengineering/quorum:2.2.3
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
         # sleep to give constellation some time to start up and discover the other nodes.
+        #  --maxpeers 7
         args:
         - "-cx"
         - "
-           sleep 5;
-           PERM_NODE_TMPL=$(cat $QUORUM_DATA_DIR/permissioned-nodes.json.tmpl);
-           PERM_NODE_JSON=$(echo $PERM_NODE_TMPL |  sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" );
-           echo $PERM_NODE_JSON >  $QUORUM_DATA_DIR/permissioned-nodes.json;
-           cp $QUORUM_DATA_DIR/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
+           apk add curl;
+           apk add jq;
 
+           sh $QHOME/permission-nodes/permissioned-update.sh;
            rm -r /etc/quorum/qdata/contracts-tmp;
-
            echo what in this dir;
            ls  $QUORUM_DATA_DIR;
            cat /etc/quorum/genesis/genesis-geth.json;
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
+           until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:9001/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
+           echo transaction manager is up;
+
+
            touch $QUORUM_DATA_DIR/password.txt;
-           NETWORK_ID=1101
-         
-           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
-         
+           NETWORK_ID=10
+           args=\" --gcmode archive --raft  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -818,7 +1005,8 @@ spec:
            --rpcaddr 0.0.0.0 \
            --rpcport 8546 \
            --port 21000 \
-           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log; " 
+            \
+           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
           - containerPort: 8546
@@ -830,8 +1018,14 @@ spec:
           value: /etc/quorum/qdata/dd
         - name: QUORUM_HOME
           value: /etc/quorum/qdata
+        - name: QHOME
+          value: /etc/quorum/qdata
         - name: TM_HOME
           value: /etc/quorum/qdata/tm/
+        - name: THIS_NODE_ID
+          value: quorum-node4
+        - name: THIS_ENODE
+          value: 3d9ca5956b38557aba991e31cf510d4df641dce9cc26bfeb7de082f0c07abb6ede3a58410c8f249dabeecee4ad3979929ac4c7c496ad20b8cfdd061b7401b4f5
         volumeMounts:
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
@@ -848,19 +1042,24 @@ spec:
         - name: quorum-nodekey
           mountPath: /etc/quorum/qdata/dd/geth/nodekey
           subPath: nodekey
+        - name: quorum-enode
+          mountPath: /etc/quorum/qdata/dd/geth/enode
+          subPath: enode
         - name: quorum-permissioned-config
-          mountPath: /etc/quorum/qdata/dd/permissioned-nodes.json.tmpl
-          subPath: permissioned-nodes.json
-        - name: quorum-permissioned-config
-          mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
-          subPath: permissioned-nodes.json
+          mountPath: /etc/quorum/qdata/permission-nodes
+          #subPath: permissioned-nodes.json
+       # - name: quorum-permissioned-config
+       #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
+       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:
           name: quorum-permissioned-config
           items:
           - key: permissioned-nodes.json
-            path: permissioned-nodes.json
+            path: permissioned-nodes.json.tmpl
+          - key: permissioned-update.sh
+            path: permissioned-update.sh
       - name: genesis-config-persistent-storage
         configMap:
           name: genesis-config
@@ -875,6 +1074,8 @@ spec:
             path: tessera-config.json.tmpl
           - key: tessera-config-enhanced.json.tmpl
             path: tessera-config-enhanced.json.tmpl
+          - key: tessera-config-9.0.json.tmpl
+            path: tessera-config-9.0.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config
@@ -898,6 +1099,15 @@ spec:
           items:
           - key: nodekey
             path: nodekey
+      - name: quorum-enode
+        configMap:
+          name: quorum-node4-enode-config
+          items:
+            - key: enode
+              path: enode
+      
+      # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
+     
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node4
@@ -907,8 +1117,9 @@ spec:
       - name: quorum-logs-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node4-logs
-
-
+      
+---
+#3701f007bfa4cb26512d7df18e6bbd202e8484a6e11d387af6e482b525fa25542d46ff9c99db87bd419b980c24a086117a397f6d8f88e74351b41693880ea0cb
 
 
 # The quorum deployment consists of
@@ -935,20 +1146,24 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.1.1
+        image: quorumengineering/quorum:2.2.3
         command: [ "sh" ]
         args:
         - "-cx"
         - "if [ ! -f $QUORUM_DATA_DIR/genesis_created ]; then
               /usr/local/bin/geth --datadir $QUORUM_DATA_DIR init /etc/quorum/genesis/genesis-geth.json;
-              touch $QUORUM_DATA_DIR/genesis_created;
+              date > $QUORUM_DATA_DIR/genesis_created;
            fi;
            cp -r /etc/quorum/qdata/contracts-tmp /etc/quorum/qdata/contracts;
            chmod 755  /etc/quorum/qdata/contracts/runscript.sh;
+           chmod 755  /etc/quorum/qdata/contracts/raft_add_all_permissioned.sh;
+           chmod 755  /etc/quorum/qdata/contracts/raft_add_node.sh;
           "
         env:
           - name: QUORUM_DATA_DIR
             value: /etc/quorum/qdata/dd
+          - name: QHOME
+            value: /etc/quorum/qdata
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
@@ -959,28 +1174,50 @@ spec:
           mountPath: /etc/quorum/qdata/contracts-tmp
           readOnly: false
       containers:
-    
-      - name: constellation
-        image: quorumengineering/constellation:0.3.2
+      - name: tessera
+        image: quorumengineering/tessera:0.9.2
         command: ["sh"]
         args:
         - "-cx"
         - "chmod 600 $QUORUM_HOME/tm/tm.key;
-           DDIR=$QUORUM_HOME/tm;
+           echo DDIR is $DDIR;
            printenv;
-           args=\" --url=https://$QUORUM_NODE5_SERVICE_HOST:9001/  \
-           --port=9001 \
-           --workdir=$DDIR \
-           --socket=$DDIR/tm.ipc \
-           --publickeys=$QUORUM_HOME/tm/tm.pub \
-           --privatekeys=$QUORUM_HOME/tm/tm.key \
-           --verbosity=9 \
-           --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:9001/ \";
-           /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
-     
+
+           TESSERA_VERSION=$(unzip -p /tessera/tessera-app.jar META-INF/MANIFEST.MF | grep Tessera-Version | cut -d\" \" -f2);
+           echo \"Tessera version (extracted from manifest file): ${TESSERA_VERSION}\";
+
+           TESSERA_VERSION=\"${TESSERA_VERSION}-suffix\";
+           Tess_Ver_First=$(echo ${TESSERA_VERSION} | awk -F. '{print $1}');
+           Tess_Ver_Second=$(echo ${TESSERA_VERSION} | awk -F. '{print $2}');
+           Tess_Ver_Third=$(echo ${TESSERA_VERSION} | awk -F. '{print $3}');
+           echo \"version: first [$Tess_Ver_First], second [$Tess_Ver_Second], third [$Tess_Ver_Third]\";
+           echo \"Tessera version - suffix ${TESSERA_VERSION}\";
+           TESSERA_CONFIG_TYPE=;
+
+           if [ \"${Tess_Ver_Second}\" -ge \"8\" ]; then TESSERA_CONFIG_TYPE=\"-enhanced\"; fi;
+           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then TESSERA_CONFIG_TYPE=\"-9.0\"; fi;
+
+           echo Config type [${TESSERA_CONFIG_TYPE}];
+
+           CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json.tmpl);
+
+           echo  \" sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" \";
+           CONFIG_WITH_OTHER_HOSTS=$(echo $CONFIG_TMPL |  sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" ) ;
+           CONFIG_WITH_ALL_HOSTS=$(echo $CONFIG_WITH_OTHER_HOSTS | sed \"s/%THIS_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\");
+           PRIV_KEY=$(cat $DDIR/tm.key)
+           PUB_KEY=$(cat $DDIR/tm.pub)
+           CONFIG_FINAL=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
+           CONFIG_FINAL_9_0=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
+           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
+           echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
+           cat  ${DDIR}/tessera-config-with-hosts.json;
+           java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json | tee -a ${QHOME}/logs/tessera.log;
+        "
         ports:
           - containerPort: 9001
         env:
+          - name: QHOME
+            value: /etc/quorum/qdata
           - name: QUORUM_HOME
             value: /etc/quorum/qdata
           - name: DDIR
@@ -1004,33 +1241,36 @@ spec:
         - name: tessera-config
           mountPath: /etc/quorum/qdata/tm/tessera-config-enhanced.json.tmpl
           subPath: tessera-config-enhanced.json.tmpl
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
+          subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.1.1
+        image: quorumengineering/quorum:2.2.3
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
         # sleep to give constellation some time to start up and discover the other nodes.
+        #  --maxpeers 7
         args:
         - "-cx"
         - "
-           sleep 5;
-           PERM_NODE_TMPL=$(cat $QUORUM_DATA_DIR/permissioned-nodes.json.tmpl);
-           PERM_NODE_JSON=$(echo $PERM_NODE_TMPL |  sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" );
-           echo $PERM_NODE_JSON >  $QUORUM_DATA_DIR/permissioned-nodes.json;
-           cp $QUORUM_DATA_DIR/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
+           apk add curl;
+           apk add jq;
 
+           sh $QHOME/permission-nodes/permissioned-update.sh;
            rm -r /etc/quorum/qdata/contracts-tmp;
-
            echo what in this dir;
            ls  $QUORUM_DATA_DIR;
            cat /etc/quorum/genesis/genesis-geth.json;
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
+           until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:9001/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
+           echo transaction manager is up;
+
+
            touch $QUORUM_DATA_DIR/password.txt;
-           NETWORK_ID=1101
-         
-           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
-         
+           NETWORK_ID=10
+           args=\" --gcmode archive --raft  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -1045,7 +1285,8 @@ spec:
            --rpcaddr 0.0.0.0 \
            --rpcport 8546 \
            --port 21000 \
-           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log; " 
+            \
+           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
           - containerPort: 8546
@@ -1057,8 +1298,14 @@ spec:
           value: /etc/quorum/qdata/dd
         - name: QUORUM_HOME
           value: /etc/quorum/qdata
+        - name: QHOME
+          value: /etc/quorum/qdata
         - name: TM_HOME
           value: /etc/quorum/qdata/tm/
+        - name: THIS_NODE_ID
+          value: quorum-node5
+        - name: THIS_ENODE
+          value: 3701f007bfa4cb26512d7df18e6bbd202e8484a6e11d387af6e482b525fa25542d46ff9c99db87bd419b980c24a086117a397f6d8f88e74351b41693880ea0cb
         volumeMounts:
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
@@ -1075,19 +1322,24 @@ spec:
         - name: quorum-nodekey
           mountPath: /etc/quorum/qdata/dd/geth/nodekey
           subPath: nodekey
+        - name: quorum-enode
+          mountPath: /etc/quorum/qdata/dd/geth/enode
+          subPath: enode
         - name: quorum-permissioned-config
-          mountPath: /etc/quorum/qdata/dd/permissioned-nodes.json.tmpl
-          subPath: permissioned-nodes.json
-        - name: quorum-permissioned-config
-          mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
-          subPath: permissioned-nodes.json
+          mountPath: /etc/quorum/qdata/permission-nodes
+          #subPath: permissioned-nodes.json
+       # - name: quorum-permissioned-config
+       #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
+       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:
           name: quorum-permissioned-config
           items:
           - key: permissioned-nodes.json
-            path: permissioned-nodes.json
+            path: permissioned-nodes.json.tmpl
+          - key: permissioned-update.sh
+            path: permissioned-update.sh
       - name: genesis-config-persistent-storage
         configMap:
           name: genesis-config
@@ -1102,6 +1354,8 @@ spec:
             path: tessera-config.json.tmpl
           - key: tessera-config-enhanced.json.tmpl
             path: tessera-config-enhanced.json.tmpl
+          - key: tessera-config-9.0.json.tmpl
+            path: tessera-config-9.0.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config
@@ -1125,6 +1379,15 @@ spec:
           items:
           - key: nodekey
             path: nodekey
+      - name: quorum-enode
+        configMap:
+          name: quorum-node5-enode-config
+          items:
+            - key: enode
+              path: enode
+      
+      # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
+     
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node5
@@ -1134,8 +1397,9 @@ spec:
       - name: quorum-logs-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node5-logs
-
-
+      
+---
+#eacaa74c4b0e7a9e12d2fe5fee6595eda841d6d992c35dbbcc50fcee4aa86dfbbdeff7dc7e72c2305d5a62257f82737a8cffc80474c15c611c037f52db1a3a7b
 
 
 # The quorum deployment consists of
@@ -1162,20 +1426,24 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.1.1
+        image: quorumengineering/quorum:2.2.3
         command: [ "sh" ]
         args:
         - "-cx"
         - "if [ ! -f $QUORUM_DATA_DIR/genesis_created ]; then
               /usr/local/bin/geth --datadir $QUORUM_DATA_DIR init /etc/quorum/genesis/genesis-geth.json;
-              touch $QUORUM_DATA_DIR/genesis_created;
+              date > $QUORUM_DATA_DIR/genesis_created;
            fi;
            cp -r /etc/quorum/qdata/contracts-tmp /etc/quorum/qdata/contracts;
            chmod 755  /etc/quorum/qdata/contracts/runscript.sh;
+           chmod 755  /etc/quorum/qdata/contracts/raft_add_all_permissioned.sh;
+           chmod 755  /etc/quorum/qdata/contracts/raft_add_node.sh;
           "
         env:
           - name: QUORUM_DATA_DIR
             value: /etc/quorum/qdata/dd
+          - name: QHOME
+            value: /etc/quorum/qdata
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
@@ -1186,28 +1454,50 @@ spec:
           mountPath: /etc/quorum/qdata/contracts-tmp
           readOnly: false
       containers:
-    
-      - name: constellation
-        image: quorumengineering/constellation:0.3.2
+      - name: tessera
+        image: quorumengineering/tessera:0.9.2
         command: ["sh"]
         args:
         - "-cx"
         - "chmod 600 $QUORUM_HOME/tm/tm.key;
-           DDIR=$QUORUM_HOME/tm;
+           echo DDIR is $DDIR;
            printenv;
-           args=\" --url=https://$QUORUM_NODE6_SERVICE_HOST:9001/  \
-           --port=9001 \
-           --workdir=$DDIR \
-           --socket=$DDIR/tm.ipc \
-           --publickeys=$QUORUM_HOME/tm/tm.pub \
-           --privatekeys=$QUORUM_HOME/tm/tm.key \
-           --verbosity=9 \
-           --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:9001/ \";
-           /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
-     
+
+           TESSERA_VERSION=$(unzip -p /tessera/tessera-app.jar META-INF/MANIFEST.MF | grep Tessera-Version | cut -d\" \" -f2);
+           echo \"Tessera version (extracted from manifest file): ${TESSERA_VERSION}\";
+
+           TESSERA_VERSION=\"${TESSERA_VERSION}-suffix\";
+           Tess_Ver_First=$(echo ${TESSERA_VERSION} | awk -F. '{print $1}');
+           Tess_Ver_Second=$(echo ${TESSERA_VERSION} | awk -F. '{print $2}');
+           Tess_Ver_Third=$(echo ${TESSERA_VERSION} | awk -F. '{print $3}');
+           echo \"version: first [$Tess_Ver_First], second [$Tess_Ver_Second], third [$Tess_Ver_Third]\";
+           echo \"Tessera version - suffix ${TESSERA_VERSION}\";
+           TESSERA_CONFIG_TYPE=;
+
+           if [ \"${Tess_Ver_Second}\" -ge \"8\" ]; then TESSERA_CONFIG_TYPE=\"-enhanced\"; fi;
+           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then TESSERA_CONFIG_TYPE=\"-9.0\"; fi;
+
+           echo Config type [${TESSERA_CONFIG_TYPE}];
+
+           CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json.tmpl);
+
+           echo  \" sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" \";
+           CONFIG_WITH_OTHER_HOSTS=$(echo $CONFIG_TMPL |  sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" ) ;
+           CONFIG_WITH_ALL_HOSTS=$(echo $CONFIG_WITH_OTHER_HOSTS | sed \"s/%THIS_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\");
+           PRIV_KEY=$(cat $DDIR/tm.key)
+           PUB_KEY=$(cat $DDIR/tm.pub)
+           CONFIG_FINAL=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
+           CONFIG_FINAL_9_0=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
+           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
+           echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
+           cat  ${DDIR}/tessera-config-with-hosts.json;
+           java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json | tee -a ${QHOME}/logs/tessera.log;
+        "
         ports:
           - containerPort: 9001
         env:
+          - name: QHOME
+            value: /etc/quorum/qdata
           - name: QUORUM_HOME
             value: /etc/quorum/qdata
           - name: DDIR
@@ -1231,33 +1521,36 @@ spec:
         - name: tessera-config
           mountPath: /etc/quorum/qdata/tm/tessera-config-enhanced.json.tmpl
           subPath: tessera-config-enhanced.json.tmpl
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
+          subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.1.1
+        image: quorumengineering/quorum:2.2.3
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
         # sleep to give constellation some time to start up and discover the other nodes.
+        #  --maxpeers 7
         args:
         - "-cx"
         - "
-           sleep 5;
-           PERM_NODE_TMPL=$(cat $QUORUM_DATA_DIR/permissioned-nodes.json.tmpl);
-           PERM_NODE_JSON=$(echo $PERM_NODE_TMPL |  sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" );
-           echo $PERM_NODE_JSON >  $QUORUM_DATA_DIR/permissioned-nodes.json;
-           cp $QUORUM_DATA_DIR/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
+           apk add curl;
+           apk add jq;
 
+           sh $QHOME/permission-nodes/permissioned-update.sh;
            rm -r /etc/quorum/qdata/contracts-tmp;
-
            echo what in this dir;
            ls  $QUORUM_DATA_DIR;
            cat /etc/quorum/genesis/genesis-geth.json;
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
+           until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:9001/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
+           echo transaction manager is up;
+
+
            touch $QUORUM_DATA_DIR/password.txt;
-           NETWORK_ID=1101
-         
-           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
-         
+           NETWORK_ID=10
+           args=\" --gcmode archive --raft  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -1272,7 +1565,8 @@ spec:
            --rpcaddr 0.0.0.0 \
            --rpcport 8546 \
            --port 21000 \
-           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log; " 
+            \
+           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
           - containerPort: 8546
@@ -1284,8 +1578,14 @@ spec:
           value: /etc/quorum/qdata/dd
         - name: QUORUM_HOME
           value: /etc/quorum/qdata
+        - name: QHOME
+          value: /etc/quorum/qdata
         - name: TM_HOME
           value: /etc/quorum/qdata/tm/
+        - name: THIS_NODE_ID
+          value: quorum-node6
+        - name: THIS_ENODE
+          value: eacaa74c4b0e7a9e12d2fe5fee6595eda841d6d992c35dbbcc50fcee4aa86dfbbdeff7dc7e72c2305d5a62257f82737a8cffc80474c15c611c037f52db1a3a7b
         volumeMounts:
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
@@ -1302,19 +1602,24 @@ spec:
         - name: quorum-nodekey
           mountPath: /etc/quorum/qdata/dd/geth/nodekey
           subPath: nodekey
+        - name: quorum-enode
+          mountPath: /etc/quorum/qdata/dd/geth/enode
+          subPath: enode
         - name: quorum-permissioned-config
-          mountPath: /etc/quorum/qdata/dd/permissioned-nodes.json.tmpl
-          subPath: permissioned-nodes.json
-        - name: quorum-permissioned-config
-          mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
-          subPath: permissioned-nodes.json
+          mountPath: /etc/quorum/qdata/permission-nodes
+          #subPath: permissioned-nodes.json
+       # - name: quorum-permissioned-config
+       #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
+       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:
           name: quorum-permissioned-config
           items:
           - key: permissioned-nodes.json
-            path: permissioned-nodes.json
+            path: permissioned-nodes.json.tmpl
+          - key: permissioned-update.sh
+            path: permissioned-update.sh
       - name: genesis-config-persistent-storage
         configMap:
           name: genesis-config
@@ -1329,6 +1634,8 @@ spec:
             path: tessera-config.json.tmpl
           - key: tessera-config-enhanced.json.tmpl
             path: tessera-config-enhanced.json.tmpl
+          - key: tessera-config-9.0.json.tmpl
+            path: tessera-config-9.0.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config
@@ -1352,6 +1659,15 @@ spec:
           items:
           - key: nodekey
             path: nodekey
+      - name: quorum-enode
+        configMap:
+          name: quorum-node6-enode-config
+          items:
+            - key: enode
+              path: enode
+      
+      # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
+     
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node6
@@ -1361,8 +1677,9 @@ spec:
       - name: quorum-logs-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node6-logs
-
-
+      
+---
+#239c1f044a2b03b6c4713109af036b775c5418fe4ca63b04b1ce00124af00ddab7cc088fc46020cdc783b6207efe624551be4c06a994993d8d70f684688fb7cf
 
 
 # The quorum deployment consists of
@@ -1389,20 +1706,24 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.1.1
+        image: quorumengineering/quorum:2.2.3
         command: [ "sh" ]
         args:
         - "-cx"
         - "if [ ! -f $QUORUM_DATA_DIR/genesis_created ]; then
               /usr/local/bin/geth --datadir $QUORUM_DATA_DIR init /etc/quorum/genesis/genesis-geth.json;
-              touch $QUORUM_DATA_DIR/genesis_created;
+              date > $QUORUM_DATA_DIR/genesis_created;
            fi;
            cp -r /etc/quorum/qdata/contracts-tmp /etc/quorum/qdata/contracts;
            chmod 755  /etc/quorum/qdata/contracts/runscript.sh;
+           chmod 755  /etc/quorum/qdata/contracts/raft_add_all_permissioned.sh;
+           chmod 755  /etc/quorum/qdata/contracts/raft_add_node.sh;
           "
         env:
           - name: QUORUM_DATA_DIR
             value: /etc/quorum/qdata/dd
+          - name: QHOME
+            value: /etc/quorum/qdata
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
@@ -1413,28 +1734,50 @@ spec:
           mountPath: /etc/quorum/qdata/contracts-tmp
           readOnly: false
       containers:
-    
-      - name: constellation
-        image: quorumengineering/constellation:0.3.2
+      - name: tessera
+        image: quorumengineering/tessera:0.9.2
         command: ["sh"]
         args:
         - "-cx"
         - "chmod 600 $QUORUM_HOME/tm/tm.key;
-           DDIR=$QUORUM_HOME/tm;
+           echo DDIR is $DDIR;
            printenv;
-           args=\" --url=https://$QUORUM_NODE7_SERVICE_HOST:9001/  \
-           --port=9001 \
-           --workdir=$DDIR \
-           --socket=$DDIR/tm.ipc \
-           --publickeys=$QUORUM_HOME/tm/tm.pub \
-           --privatekeys=$QUORUM_HOME/tm/tm.key \
-           --verbosity=9 \
-           --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:9001/ \";
-           /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
-     
+
+           TESSERA_VERSION=$(unzip -p /tessera/tessera-app.jar META-INF/MANIFEST.MF | grep Tessera-Version | cut -d\" \" -f2);
+           echo \"Tessera version (extracted from manifest file): ${TESSERA_VERSION}\";
+
+           TESSERA_VERSION=\"${TESSERA_VERSION}-suffix\";
+           Tess_Ver_First=$(echo ${TESSERA_VERSION} | awk -F. '{print $1}');
+           Tess_Ver_Second=$(echo ${TESSERA_VERSION} | awk -F. '{print $2}');
+           Tess_Ver_Third=$(echo ${TESSERA_VERSION} | awk -F. '{print $3}');
+           echo \"version: first [$Tess_Ver_First], second [$Tess_Ver_Second], third [$Tess_Ver_Third]\";
+           echo \"Tessera version - suffix ${TESSERA_VERSION}\";
+           TESSERA_CONFIG_TYPE=;
+
+           if [ \"${Tess_Ver_Second}\" -ge \"8\" ]; then TESSERA_CONFIG_TYPE=\"-enhanced\"; fi;
+           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then TESSERA_CONFIG_TYPE=\"-9.0\"; fi;
+
+           echo Config type [${TESSERA_CONFIG_TYPE}];
+
+           CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json.tmpl);
+
+           echo  \" sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" \";
+           CONFIG_WITH_OTHER_HOSTS=$(echo $CONFIG_TMPL |  sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" ) ;
+           CONFIG_WITH_ALL_HOSTS=$(echo $CONFIG_WITH_OTHER_HOSTS | sed \"s/%THIS_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\");
+           PRIV_KEY=$(cat $DDIR/tm.key)
+           PUB_KEY=$(cat $DDIR/tm.pub)
+           CONFIG_FINAL=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
+           CONFIG_FINAL_9_0=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
+           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
+           echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
+           cat  ${DDIR}/tessera-config-with-hosts.json;
+           java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json | tee -a ${QHOME}/logs/tessera.log;
+        "
         ports:
           - containerPort: 9001
         env:
+          - name: QHOME
+            value: /etc/quorum/qdata
           - name: QUORUM_HOME
             value: /etc/quorum/qdata
           - name: DDIR
@@ -1458,33 +1801,36 @@ spec:
         - name: tessera-config
           mountPath: /etc/quorum/qdata/tm/tessera-config-enhanced.json.tmpl
           subPath: tessera-config-enhanced.json.tmpl
+        - name: tessera-config
+          mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
+          subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.1.1
+        image: quorumengineering/quorum:2.2.3
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
         # sleep to give constellation some time to start up and discover the other nodes.
+        #  --maxpeers 7
         args:
         - "-cx"
         - "
-           sleep 5;
-           PERM_NODE_TMPL=$(cat $QUORUM_DATA_DIR/permissioned-nodes.json.tmpl);
-           PERM_NODE_JSON=$(echo $PERM_NODE_TMPL |  sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" );
-           echo $PERM_NODE_JSON >  $QUORUM_DATA_DIR/permissioned-nodes.json;
-           cp $QUORUM_DATA_DIR/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
+           apk add curl;
+           apk add jq;
 
+           sh $QHOME/permission-nodes/permissioned-update.sh;
            rm -r /etc/quorum/qdata/contracts-tmp;
-
            echo what in this dir;
            ls  $QUORUM_DATA_DIR;
            cat /etc/quorum/genesis/genesis-geth.json;
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
+           until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:9001/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
+           echo transaction manager is up;
+
+
            touch $QUORUM_DATA_DIR/password.txt;
-           NETWORK_ID=1101
-         
-           args=\" --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
-         
+           NETWORK_ID=10
+           args=\" --gcmode archive --raft  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -1499,7 +1845,8 @@ spec:
            --rpcaddr 0.0.0.0 \
            --rpcport 8546 \
            --port 21000 \
-           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log; " 
+            \
+           --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
           - containerPort: 8546
@@ -1511,8 +1858,14 @@ spec:
           value: /etc/quorum/qdata/dd
         - name: QUORUM_HOME
           value: /etc/quorum/qdata
+        - name: QHOME
+          value: /etc/quorum/qdata
         - name: TM_HOME
           value: /etc/quorum/qdata/tm/
+        - name: THIS_NODE_ID
+          value: quorum-node7
+        - name: THIS_ENODE
+          value: 239c1f044a2b03b6c4713109af036b775c5418fe4ca63b04b1ce00124af00ddab7cc088fc46020cdc783b6207efe624551be4c06a994993d8d70f684688fb7cf
         volumeMounts:
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
@@ -1529,19 +1882,24 @@ spec:
         - name: quorum-nodekey
           mountPath: /etc/quorum/qdata/dd/geth/nodekey
           subPath: nodekey
+        - name: quorum-enode
+          mountPath: /etc/quorum/qdata/dd/geth/enode
+          subPath: enode
         - name: quorum-permissioned-config
-          mountPath: /etc/quorum/qdata/dd/permissioned-nodes.json.tmpl
-          subPath: permissioned-nodes.json
-        - name: quorum-permissioned-config
-          mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
-          subPath: permissioned-nodes.json
+          mountPath: /etc/quorum/qdata/permission-nodes
+          #subPath: permissioned-nodes.json
+       # - name: quorum-permissioned-config
+       #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
+       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:
           name: quorum-permissioned-config
           items:
           - key: permissioned-nodes.json
-            path: permissioned-nodes.json
+            path: permissioned-nodes.json.tmpl
+          - key: permissioned-update.sh
+            path: permissioned-update.sh
       - name: genesis-config-persistent-storage
         configMap:
           name: genesis-config
@@ -1556,6 +1914,8 @@ spec:
             path: tessera-config.json.tmpl
           - key: tessera-config-enhanced.json.tmpl
             path: tessera-config-enhanced.json.tmpl
+          - key: tessera-config-9.0.json.tmpl
+            path: tessera-config-9.0.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config
@@ -1579,6 +1939,15 @@ spec:
           items:
           - key: nodekey
             path: nodekey
+      - name: quorum-enode
+        configMap:
+          name: quorum-node7-enode-config
+          items:
+            - key: enode
+              path: enode
+      
+      # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
+     
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node7
@@ -1588,4 +1957,5 @@ spec:
       - name: quorum-logs-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node7-logs
-
+      
+---

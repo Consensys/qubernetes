@@ -1,0 +1,63 @@
+
+
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: genesis-config
+  
+  labels:
+    app: qubernetes
+    name: genesis-config
+data:
+  genesis-geth.json: |-
+      
+      
+      {
+      "alloc": {
+          "0xed9d02e382b34818e88b88a309c7fe71e65f419d": {
+             "balance": "1000000000000000000000000000"
+          }, 
+          "0xca843569e3427144cead5e4d5999a3d0ccf92b8e": {
+             "balance": "1000000000000000000000000000"
+          }, 
+          "0x0fbdc686b912d7722dc86510934589e0aaf3b55a": {
+             "balance": "1000000000000000000000000000"
+          }, 
+          "0x9186eb3d20cbd1f5f992a950d808c4495153abd5": {
+             "balance": "1000000000000000000000000000"
+          }, 
+          "0x0638e1574728b6d862dd5d3a3e0942c3be47d996": {
+             "balance": "1000000000000000000000000000"
+          }, 
+          "0xae9bc6cd5145e67fbd1887a5145271fd182f0ee7": {
+             "balance": "1000000000000000000000000000"
+          }, 
+          "0xcc71c7546429a13796cf1bf9228bff213e7ae9cc": {
+             "balance": "1000000000000000000000000000"
+          }
+      
+        },
+        "coinbase": "0x0000000000000000000000000000000000000000",
+        "config": {
+          "byzantiumBlock": 0,
+          "constantinopleBlock": 0,
+          "chainId": 10,
+          "eip150block": 0,
+          "eip155block": 0,
+          "eip150hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "eip158block": 0,
+          "isQuorum":true
+        },
+        "difficulty": "0x0",
+        "extradata": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "gaslimit": "0xe0000000",
+        "mixhash": "0x00000000000000000000000000000000000000647572616c65787365646c6578",
+        "nonce": "0x0",
+        "parenthash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "timestamp": "0x00"
+      }
+      
+

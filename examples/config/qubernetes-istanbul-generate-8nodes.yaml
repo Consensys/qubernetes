@@ -29,6 +29,13 @@ quorum:
     Tm_Version: 0.9.2
     Port: 9001
     Tessera_Config_Dir: out/config
+  # for persistent storage can be host or Persistent Volume Claim.
+  # The data dir is persisted here
+  storage:
+    # Host (requires hostPath) || PVC (Persistent_Volume_Claim - tested with GCP).
+    Type: PVC
+    ## when redeploying cannot be less than previous values
+    Capacity: 200Mi
 
 # generic geth related options
 geth:

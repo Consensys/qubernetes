@@ -5,7 +5,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-permissioned-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-permissioned-config
@@ -34,7 +34,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: tessera-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: tessera-config
@@ -336,7 +336,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: contracts-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: contracts-config

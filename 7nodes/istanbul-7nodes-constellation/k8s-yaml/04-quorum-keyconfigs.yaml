@@ -9,7 +9,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node1-tm-key-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node1-tm-key-config
@@ -25,7 +25,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node1-nodekey-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node1-nodekey-config
@@ -40,7 +40,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node1-enode-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node1-enode-config
@@ -55,7 +55,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node1-account-key-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node1-account-key-config
@@ -74,7 +74,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node2-tm-key-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node2-tm-key-config
@@ -90,7 +90,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node2-nodekey-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node2-nodekey-config
@@ -105,7 +105,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node2-enode-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node2-enode-config
@@ -120,7 +120,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node2-account-key-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node2-account-key-config
@@ -139,7 +139,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node3-tm-key-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node3-tm-key-config
@@ -155,7 +155,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node3-nodekey-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node3-nodekey-config
@@ -170,7 +170,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node3-enode-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node3-enode-config
@@ -185,7 +185,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node3-account-key-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node3-account-key-config
@@ -204,7 +204,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node4-tm-key-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node4-tm-key-config
@@ -220,7 +220,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node4-nodekey-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node4-nodekey-config
@@ -235,7 +235,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node4-enode-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node4-enode-config
@@ -250,7 +250,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node4-account-key-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node4-account-key-config
@@ -269,7 +269,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node5-tm-key-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node5-tm-key-config
@@ -285,7 +285,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node5-nodekey-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node5-nodekey-config
@@ -300,7 +300,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node5-enode-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node5-enode-config
@@ -315,7 +315,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node5-account-key-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node5-account-key-config
@@ -334,7 +334,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node6-tm-key-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node6-tm-key-config
@@ -350,7 +350,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node6-nodekey-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node6-nodekey-config
@@ -365,7 +365,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node6-enode-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node6-enode-config
@@ -380,7 +380,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node6-account-key-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node6-account-key-config
@@ -399,7 +399,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node7-tm-key-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node7-tm-key-config
@@ -415,7 +415,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node7-nodekey-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node7-nodekey-config
@@ -430,7 +430,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node7-enode-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node7-enode-config
@@ -445,7 +445,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: quorum-node7-account-key-config
-  namespace: quorum-test
+  
   labels:
     app: qubernetes
     name: quorum-node7-account-key-config

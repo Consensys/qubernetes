@@ -11,7 +11,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: quorum-node1-deployment
-  namespace: quorum-test
+  
 spec:
   strategy:
     type: RollingUpdate
@@ -312,7 +312,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: quorum-node2-deployment
-  namespace: quorum-test
+  
 spec:
   strategy:
     type: RollingUpdate
@@ -613,7 +613,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: quorum-node3-deployment
-  namespace: quorum-test
+  
 spec:
   strategy:
     type: RollingUpdate
@@ -914,7 +914,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: quorum-node4-deployment
-  namespace: quorum-test
+  
 spec:
   strategy:
     type: RollingUpdate
@@ -1215,7 +1215,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: quorum-node5-deployment
-  namespace: quorum-test
+  
 spec:
   strategy:
     type: RollingUpdate
@@ -1516,7 +1516,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: quorum-node6-deployment
-  namespace: quorum-test
+  
 spec:
   strategy:
     type: RollingUpdate
@@ -1817,7 +1817,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: quorum-node7-deployment
-  namespace: quorum-test
+  
 spec:
   strategy:
     type: RollingUpdate

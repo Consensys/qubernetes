@@ -3,9 +3,9 @@ def set_node_template_vars(values)
     @Node_UserIdent = values["Node_UserIdent"]
     return
 end
-
-@Capacity = "1Gi"
-if @config["quorum"]["storage"]["Capacity"]
+# default the capacity to 200Mi if not set in qubernetes.yaml file.
+@Capacity = "200Mi"
+if @config["quorum"]["storage"] && @config["quorum"]["storage"]["Capacity"]
   @Capacity = @config["quorum"]["storage"]["Capacity"]
 end
 -%>

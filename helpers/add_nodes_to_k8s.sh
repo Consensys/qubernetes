@@ -55,8 +55,17 @@ while [ -z $POD ]; do
 done
 
 echo
-printf " ${GREEN} Running update on POD [$POD] but first sleeping for 10 more seconds to startup:${NC} \n"
-sleep 10
+printf " ${GREEN} waiting for quorum on Pod [$POD] to startup:${NC} \n"
+
+RES=1;
+while [ ${RES} -ne 0 ]; do
+  kubectl $NAMESPACE exec -it $POD -c quorum /geth-helpers/geth-exec.sh "eth.blockNumber"
+  RES=$?
+  echo "RES IS $RES"
+  sleep 2
+done
+
+printf " ${GREEN} Quorum is back up. Running update on POD [$POD] ${NC} \n"
 
 CONTINUE=false;
 while ! ${CONTINUE}; do

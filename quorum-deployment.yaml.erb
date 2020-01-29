@@ -275,6 +275,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: <%= @Node_DataDir%>/permission-nodes
+        - name: geth-helpers
+          mountPath: /geth-helpers
         <%- if @config["quorum"]["consensus"] == "istanbul" -%>
         - name: istanbul-validator-config
           mountPath: <%= @Node_DataDir%>/istanbul-validator-config.toml
@@ -343,6 +345,15 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: geth-helpers
+        configMap:
+          name: geth-helpers
+          items:
+            - key: geth-attach.sh
+              path: geth-attach.sh
+            - key: geth-exec.sh
+              path: geth-exec.sh
+          defaultMode: 0777
       <% if @config["quorum"]["consensus"] == "istanbul" %>
       - name: istanbul-validator-config
         configMap:

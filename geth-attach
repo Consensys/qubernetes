@@ -1,0 +1,20 @@
+#!/bin/bash
+
+if [ "$#" -lt 1 ]; then
+  echo " ./geth-attach $NODE_NUM"
+  echo "  example: "
+  echo " ./geth-attach node2"
+  exit 1
+fi
+
+if [ "$#" -eq 2 ]; then
+   echo "setting namespace to $2"
+   NAMESPACE="--namespace=$2"
+fi
+
+POD=$(kubectl get pods $NAMESPACE | grep Running | grep $1 |  awk '{print $1}')
+echo "connecting to POD [$POD]"
+
+kubectl $NAMESPACE exec -it $POD -c quorum /geth-helpers/geth-attach.sh
+
+

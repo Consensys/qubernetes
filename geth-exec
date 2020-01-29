@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [ "$#" -lt 1 ]; then
+  echo " ./geth-exec $NODE_NUM"
+  echo "  example: "
+  echo ' ./geth-exec node1 "admin.peers.length"'
+  exit 1
+fi
+
+if [ "$#" -eq 2 ]; then
+   GETH_CMD=$2
+   echo "GETH_CMD [$GETH_CMD]"
+fi
+
+if [ "$#" -eq 3 ]; then
+   echo "setting namespace to $3"
+   NAMESPACE="--namespace=$3"
+fi
+
+POD=$(kubectl get pods $NAMESPACE | grep Running | grep $1 |  awk '{print $1}')
+echo "executing geth command [$GETH_CMD] on POD [$POD]"
+
+kubectl $NAMESPACE exec -it $POD -c quorum /geth-helpers/geth-exec.sh "$GETH_CMD"

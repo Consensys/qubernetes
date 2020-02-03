@@ -72,7 +72,7 @@ Once the pods are deployed, if you wish to interact with them see [Accessing Quo
 
 ### Install [minikube](https://kubernetes.io/docs/setup/minikube/) for your distro.
 ```shell
-$> brew cask install minikube
+$> brew install minikube
 ```
 
 ### Once Minikube is install: Start local minikube cluster and deploy 7nodes example. 

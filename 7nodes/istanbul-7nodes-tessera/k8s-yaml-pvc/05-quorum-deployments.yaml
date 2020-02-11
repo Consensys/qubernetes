@@ -7,7 +7,7 @@
 # 2. the quorum node container
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quorum-node1-deployment
@@ -16,6 +16,9 @@ spec:
   strategy:
     type: RollingUpdate
   replicas: 1
+  selector:
+    matchLabels:
+      name: quorum-node1-deployment
   template:
     metadata:
       name:  quorum-node1-deployment
@@ -207,6 +210,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: /etc/quorum/qdata/permission-nodes
+        - name: geth-helpers
+          mountPath: /geth-helpers
         - name: istanbul-validator-config
           mountPath: /etc/quorum/qdata/istanbul-validator-config.toml
         - name: node-management
@@ -273,6 +278,15 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: geth-helpers
+        configMap:
+          name: geth-helpers
+          items:
+            - key: geth-attach.sh
+              path: geth-attach.sh
+            - key: geth-exec.sh
+              path: geth-exec.sh
+          defaultMode: 0777
       
       - name: istanbul-validator-config
         configMap:
@@ -288,7 +302,8 @@ spec:
            defaultMode: 0777
       
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
-     
+      # default is Host if not set.
+      
       - name: quorum-persistent-storage
         persistentVolumeClaim:
           claimName: quorum-node1-quorum
@@ -298,7 +313,6 @@ spec:
       - name: quorum-logs-persistent-storage
         persistentVolumeClaim:
           claimName: quorum-node1-log-pvc
-      # default is Host if not set.
       
 ---
 #0ba6b9f606a43a95edc6247cdb1c1e105145817be7bcafd6b2c0ba15d58145f0dc1a194f70ba73cd6f4cdd6864edc7687f311254c7555cc32e4d45aeb1b80416
@@ -309,7 +323,7 @@ spec:
 # 2. the quorum node container
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quorum-node2-deployment
@@ -318,6 +332,9 @@ spec:
   strategy:
     type: RollingUpdate
   replicas: 1
+  selector:
+    matchLabels:
+      name: quorum-node2-deployment
   template:
     metadata:
       name:  quorum-node2-deployment
@@ -509,6 +526,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: /etc/quorum/qdata/permission-nodes
+        - name: geth-helpers
+          mountPath: /geth-helpers
         - name: istanbul-validator-config
           mountPath: /etc/quorum/qdata/istanbul-validator-config.toml
         - name: node-management
@@ -575,6 +594,15 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: geth-helpers
+        configMap:
+          name: geth-helpers
+          items:
+            - key: geth-attach.sh
+              path: geth-attach.sh
+            - key: geth-exec.sh
+              path: geth-exec.sh
+          defaultMode: 0777
       
       - name: istanbul-validator-config
         configMap:
@@ -590,7 +618,8 @@ spec:
            defaultMode: 0777
       
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
-     
+      # default is Host if not set.
+      
       - name: quorum-persistent-storage
         persistentVolumeClaim:
           claimName: quorum-node2-quorum
@@ -600,7 +629,6 @@ spec:
       - name: quorum-logs-persistent-storage
         persistentVolumeClaim:
           claimName: quorum-node2-log-pvc
-      # default is Host if not set.
       
 ---
 #579f786d4e2830bbcc02815a27e8a9bacccc9605df4dc6f20bcc1a6eb391e7225fff7cb83e5b4ecd1f3a94d8b733803f2f66b7e871961e7b029e22c155c3a778
@@ -611,7 +639,7 @@ spec:
 # 2. the quorum node container
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quorum-node3-deployment
@@ -620,6 +648,9 @@ spec:
   strategy:
     type: RollingUpdate
   replicas: 1
+  selector:
+    matchLabels:
+      name: quorum-node3-deployment
   template:
     metadata:
       name:  quorum-node3-deployment
@@ -811,6 +842,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: /etc/quorum/qdata/permission-nodes
+        - name: geth-helpers
+          mountPath: /geth-helpers
         - name: istanbul-validator-config
           mountPath: /etc/quorum/qdata/istanbul-validator-config.toml
         - name: node-management
@@ -877,6 +910,15 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: geth-helpers
+        configMap:
+          name: geth-helpers
+          items:
+            - key: geth-attach.sh
+              path: geth-attach.sh
+            - key: geth-exec.sh
+              path: geth-exec.sh
+          defaultMode: 0777
       
       - name: istanbul-validator-config
         configMap:
@@ -892,7 +934,8 @@ spec:
            defaultMode: 0777
       
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
-     
+      # default is Host if not set.
+      
       - name: quorum-persistent-storage
         persistentVolumeClaim:
           claimName: quorum-node3-quorum
@@ -902,7 +945,6 @@ spec:
       - name: quorum-logs-persistent-storage
         persistentVolumeClaim:
           claimName: quorum-node3-log-pvc
-      # default is Host if not set.
       
 ---
 #3d9ca5956b38557aba991e31cf510d4df641dce9cc26bfeb7de082f0c07abb6ede3a58410c8f249dabeecee4ad3979929ac4c7c496ad20b8cfdd061b7401b4f5
@@ -913,7 +955,7 @@ spec:
 # 2. the quorum node container
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quorum-node4-deployment
@@ -922,6 +964,9 @@ spec:
   strategy:
     type: RollingUpdate
   replicas: 1
+  selector:
+    matchLabels:
+      name: quorum-node4-deployment
   template:
     metadata:
       name:  quorum-node4-deployment
@@ -1113,6 +1158,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: /etc/quorum/qdata/permission-nodes
+        - name: geth-helpers
+          mountPath: /geth-helpers
         - name: istanbul-validator-config
           mountPath: /etc/quorum/qdata/istanbul-validator-config.toml
         - name: node-management
@@ -1179,6 +1226,15 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: geth-helpers
+        configMap:
+          name: geth-helpers
+          items:
+            - key: geth-attach.sh
+              path: geth-attach.sh
+            - key: geth-exec.sh
+              path: geth-exec.sh
+          defaultMode: 0777
       
       - name: istanbul-validator-config
         configMap:
@@ -1194,7 +1250,8 @@ spec:
            defaultMode: 0777
       
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
-     
+      # default is Host if not set.
+      
       - name: quorum-persistent-storage
         persistentVolumeClaim:
           claimName: quorum-node4-quorum
@@ -1204,7 +1261,6 @@ spec:
       - name: quorum-logs-persistent-storage
         persistentVolumeClaim:
           claimName: quorum-node4-log-pvc
-      # default is Host if not set.
       
 ---
 #3701f007bfa4cb26512d7df18e6bbd202e8484a6e11d387af6e482b525fa25542d46ff9c99db87bd419b980c24a086117a397f6d8f88e74351b41693880ea0cb
@@ -1215,7 +1271,7 @@ spec:
 # 2. the quorum node container
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quorum-node5-deployment
@@ -1224,6 +1280,9 @@ spec:
   strategy:
     type: RollingUpdate
   replicas: 1
+  selector:
+    matchLabels:
+      name: quorum-node5-deployment
   template:
     metadata:
       name:  quorum-node5-deployment
@@ -1415,6 +1474,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: /etc/quorum/qdata/permission-nodes
+        - name: geth-helpers
+          mountPath: /geth-helpers
         - name: istanbul-validator-config
           mountPath: /etc/quorum/qdata/istanbul-validator-config.toml
         - name: node-management
@@ -1481,6 +1542,15 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: geth-helpers
+        configMap:
+          name: geth-helpers
+          items:
+            - key: geth-attach.sh
+              path: geth-attach.sh
+            - key: geth-exec.sh
+              path: geth-exec.sh
+          defaultMode: 0777
       
       - name: istanbul-validator-config
         configMap:
@@ -1496,7 +1566,8 @@ spec:
            defaultMode: 0777
       
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
-     
+      # default is Host if not set.
+      
       - name: quorum-persistent-storage
         persistentVolumeClaim:
           claimName: quorum-node5-quorum
@@ -1506,7 +1577,6 @@ spec:
       - name: quorum-logs-persistent-storage
         persistentVolumeClaim:
           claimName: quorum-node5-log-pvc
-      # default is Host if not set.
       
 ---
 #eacaa74c4b0e7a9e12d2fe5fee6595eda841d6d992c35dbbcc50fcee4aa86dfbbdeff7dc7e72c2305d5a62257f82737a8cffc80474c15c611c037f52db1a3a7b
@@ -1517,7 +1587,7 @@ spec:
 # 2. the quorum node container
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quorum-node6-deployment
@@ -1526,6 +1596,9 @@ spec:
   strategy:
     type: RollingUpdate
   replicas: 1
+  selector:
+    matchLabels:
+      name: quorum-node6-deployment
   template:
     metadata:
       name:  quorum-node6-deployment
@@ -1717,6 +1790,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: /etc/quorum/qdata/permission-nodes
+        - name: geth-helpers
+          mountPath: /geth-helpers
         - name: istanbul-validator-config
           mountPath: /etc/quorum/qdata/istanbul-validator-config.toml
         - name: node-management
@@ -1783,6 +1858,15 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: geth-helpers
+        configMap:
+          name: geth-helpers
+          items:
+            - key: geth-attach.sh
+              path: geth-attach.sh
+            - key: geth-exec.sh
+              path: geth-exec.sh
+          defaultMode: 0777
       
       - name: istanbul-validator-config
         configMap:
@@ -1798,7 +1882,8 @@ spec:
            defaultMode: 0777
       
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
-     
+      # default is Host if not set.
+      
       - name: quorum-persistent-storage
         persistentVolumeClaim:
           claimName: quorum-node6-quorum
@@ -1808,7 +1893,6 @@ spec:
       - name: quorum-logs-persistent-storage
         persistentVolumeClaim:
           claimName: quorum-node6-log-pvc
-      # default is Host if not set.
       
 ---
 #239c1f044a2b03b6c4713109af036b775c5418fe4ca63b04b1ce00124af00ddab7cc088fc46020cdc783b6207efe624551be4c06a994993d8d70f684688fb7cf
@@ -1819,7 +1903,7 @@ spec:
 # 2. the quorum node container
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quorum-node7-deployment
@@ -1828,6 +1912,9 @@ spec:
   strategy:
     type: RollingUpdate
   replicas: 1
+  selector:
+    matchLabels:
+      name: quorum-node7-deployment
   template:
     metadata:
       name:  quorum-node7-deployment
@@ -2019,6 +2106,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: /etc/quorum/qdata/permission-nodes
+        - name: geth-helpers
+          mountPath: /geth-helpers
         - name: istanbul-validator-config
           mountPath: /etc/quorum/qdata/istanbul-validator-config.toml
         - name: node-management
@@ -2085,6 +2174,15 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: geth-helpers
+        configMap:
+          name: geth-helpers
+          items:
+            - key: geth-attach.sh
+              path: geth-attach.sh
+            - key: geth-exec.sh
+              path: geth-exec.sh
+          defaultMode: 0777
       
       - name: istanbul-validator-config
         configMap:
@@ -2100,7 +2198,8 @@ spec:
            defaultMode: 0777
       
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
-     
+      # default is Host if not set.
+      
       - name: quorum-persistent-storage
         persistentVolumeClaim:
           claimName: quorum-node7-quorum
@@ -2110,6 +2209,5 @@ spec:
       - name: quorum-logs-persistent-storage
         persistentVolumeClaim:
           claimName: quorum-node7-log-pvc
-      # default is Host if not set.
       
 ---

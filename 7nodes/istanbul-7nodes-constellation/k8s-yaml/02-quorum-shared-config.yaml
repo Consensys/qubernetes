@@ -511,3 +511,34 @@ data:
     "0xb131288F355BC27090E542aE0be213c20350B767",
     ]
 
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: geth-helpers
+    
+  labels:
+    app: qubernetes
+    name: geth-helpers
+data:
+  geth-attach.sh: |-
+    #!/bin/sh
+    
+    # helper for connecting to geth from
+    # outside the container
+    # kubectl exec -it $POD -c quorum /geth-helpers/geth-attach.sh
+    echo "connecting to geth $QHOME"
+    geth attach $QHOME/dd/geth.ipc
+  geth-exec.sh: |-
+    #!/bin/sh
+    
+    # helper for connecting to geth from
+    # outside the container
+    # kubectl exec -it $POD -c quorum /geth-helpers/geth-exec.sh "admin.peers.length"
+    
+    GETH_CMD="eth.blockNumber"
+    if [ "$#" -gt 0 ]; then
+      GETH_CMD=$1
+    fi
+    geth --exec $GETH_CMD  attach $QHOME/dd/geth.ipc

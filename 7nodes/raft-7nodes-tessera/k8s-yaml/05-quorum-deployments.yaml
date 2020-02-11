@@ -7,7 +7,7 @@
 # 2. the quorum node container
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quorum-node1-deployment
@@ -16,6 +16,9 @@ spec:
   strategy:
     type: RollingUpdate
   replicas: 1
+  selector:
+    matchLabels:
+      name: quorum-node1-deployment
   template:
     metadata:
       name:  quorum-node1-deployment
@@ -207,6 +210,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: /etc/quorum/qdata/permission-nodes
+        - name: geth-helpers
+          mountPath: /geth-helpers
           #subPath: permissioned-nodes.json
        # - name: quorum-permissioned-config
        #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
@@ -265,9 +270,19 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: geth-helpers
+        configMap:
+          name: geth-helpers
+          items:
+            - key: geth-attach.sh
+              path: geth-attach.sh
+            - key: geth-exec.sh
+              path: geth-exec.sh
+          defaultMode: 0777
       
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
-     
+      # default is Host if not set.
+      
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node1
@@ -287,7 +302,7 @@ spec:
 # 2. the quorum node container
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quorum-node2-deployment
@@ -296,6 +311,9 @@ spec:
   strategy:
     type: RollingUpdate
   replicas: 1
+  selector:
+    matchLabels:
+      name: quorum-node2-deployment
   template:
     metadata:
       name:  quorum-node2-deployment
@@ -487,6 +505,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: /etc/quorum/qdata/permission-nodes
+        - name: geth-helpers
+          mountPath: /geth-helpers
           #subPath: permissioned-nodes.json
        # - name: quorum-permissioned-config
        #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
@@ -545,9 +565,19 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: geth-helpers
+        configMap:
+          name: geth-helpers
+          items:
+            - key: geth-attach.sh
+              path: geth-attach.sh
+            - key: geth-exec.sh
+              path: geth-exec.sh
+          defaultMode: 0777
       
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
-     
+      # default is Host if not set.
+      
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node2
@@ -567,7 +597,7 @@ spec:
 # 2. the quorum node container
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quorum-node3-deployment
@@ -576,6 +606,9 @@ spec:
   strategy:
     type: RollingUpdate
   replicas: 1
+  selector:
+    matchLabels:
+      name: quorum-node3-deployment
   template:
     metadata:
       name:  quorum-node3-deployment
@@ -767,6 +800,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: /etc/quorum/qdata/permission-nodes
+        - name: geth-helpers
+          mountPath: /geth-helpers
           #subPath: permissioned-nodes.json
        # - name: quorum-permissioned-config
        #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
@@ -825,9 +860,19 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: geth-helpers
+        configMap:
+          name: geth-helpers
+          items:
+            - key: geth-attach.sh
+              path: geth-attach.sh
+            - key: geth-exec.sh
+              path: geth-exec.sh
+          defaultMode: 0777
       
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
-     
+      # default is Host if not set.
+      
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node3
@@ -847,7 +892,7 @@ spec:
 # 2. the quorum node container
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quorum-node4-deployment
@@ -856,6 +901,9 @@ spec:
   strategy:
     type: RollingUpdate
   replicas: 1
+  selector:
+    matchLabels:
+      name: quorum-node4-deployment
   template:
     metadata:
       name:  quorum-node4-deployment
@@ -1047,6 +1095,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: /etc/quorum/qdata/permission-nodes
+        - name: geth-helpers
+          mountPath: /geth-helpers
           #subPath: permissioned-nodes.json
        # - name: quorum-permissioned-config
        #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
@@ -1105,9 +1155,19 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: geth-helpers
+        configMap:
+          name: geth-helpers
+          items:
+            - key: geth-attach.sh
+              path: geth-attach.sh
+            - key: geth-exec.sh
+              path: geth-exec.sh
+          defaultMode: 0777
       
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
-     
+      # default is Host if not set.
+      
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node4
@@ -1127,7 +1187,7 @@ spec:
 # 2. the quorum node container
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quorum-node5-deployment
@@ -1136,6 +1196,9 @@ spec:
   strategy:
     type: RollingUpdate
   replicas: 1
+  selector:
+    matchLabels:
+      name: quorum-node5-deployment
   template:
     metadata:
       name:  quorum-node5-deployment
@@ -1327,6 +1390,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: /etc/quorum/qdata/permission-nodes
+        - name: geth-helpers
+          mountPath: /geth-helpers
           #subPath: permissioned-nodes.json
        # - name: quorum-permissioned-config
        #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
@@ -1385,9 +1450,19 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: geth-helpers
+        configMap:
+          name: geth-helpers
+          items:
+            - key: geth-attach.sh
+              path: geth-attach.sh
+            - key: geth-exec.sh
+              path: geth-exec.sh
+          defaultMode: 0777
       
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
-     
+      # default is Host if not set.
+      
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node5
@@ -1407,7 +1482,7 @@ spec:
 # 2. the quorum node container
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quorum-node6-deployment
@@ -1416,6 +1491,9 @@ spec:
   strategy:
     type: RollingUpdate
   replicas: 1
+  selector:
+    matchLabels:
+      name: quorum-node6-deployment
   template:
     metadata:
       name:  quorum-node6-deployment
@@ -1607,6 +1685,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: /etc/quorum/qdata/permission-nodes
+        - name: geth-helpers
+          mountPath: /geth-helpers
           #subPath: permissioned-nodes.json
        # - name: quorum-permissioned-config
        #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
@@ -1665,9 +1745,19 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: geth-helpers
+        configMap:
+          name: geth-helpers
+          items:
+            - key: geth-attach.sh
+              path: geth-attach.sh
+            - key: geth-exec.sh
+              path: geth-exec.sh
+          defaultMode: 0777
       
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
-     
+      # default is Host if not set.
+      
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node6
@@ -1687,7 +1777,7 @@ spec:
 # 2. the quorum node container
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quorum-node7-deployment
@@ -1696,6 +1786,9 @@ spec:
   strategy:
     type: RollingUpdate
   replicas: 1
+  selector:
+    matchLabels:
+      name: quorum-node7-deployment
   template:
     metadata:
       name:  quorum-node7-deployment
@@ -1887,6 +1980,8 @@ spec:
           subPath: enode
         - name: quorum-permissioned-config
           mountPath: /etc/quorum/qdata/permission-nodes
+        - name: geth-helpers
+          mountPath: /geth-helpers
           #subPath: permissioned-nodes.json
        # - name: quorum-permissioned-config
        #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
@@ -1945,9 +2040,19 @@ spec:
           items:
             - key: enode
               path: enode
+      - name: geth-helpers
+        configMap:
+          name: geth-helpers
+          items:
+            - key: geth-attach.sh
+              path: geth-attach.sh
+            - key: geth-exec.sh
+              path: geth-exec.sh
+          defaultMode: 0777
       
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
-     
+      # default is Host if not set.
+      
       - name: quorum-persistent-storage
         hostPath:
           path: /var/lib/docker/geth-storage/quorum-node7

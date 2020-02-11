@@ -3,8 +3,16 @@
 require "yaml"
 require "erb"
 
-# generic variables
-@config     = YAML.load_file("qubernetes.yaml")
+@CONFIG_FILE = "qubernetes.yaml"
+@OPTIONAL_CONFIG_FILE=ARGV[0]
+ARGV.clear
+
+if @OPTIONAL_CONFIG_FILE != nil
+  @CONFIG_FILE = @OPTIONAL_CONFIG_FILE
+end
+puts "using config file: " + @CONFIG_FILE
+
+@config     = YAML.load_file(@CONFIG_FILE)
 @nodes      = YAML.load_file("nodes.yaml")["nodes"]
 
 File.open("gen-node-keys.sh", "w") do |f|

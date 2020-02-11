@@ -3,7 +3,17 @@
 require "yaml"
 require "erb"
 
-@config                = YAML.load_file("qubernetes.yaml")
+# setup the config file to use to generate the quorum resources and kubernetes API resources.
+@CONFIG_FILE = "qubernetes.yaml"
+@OPTIONAL_CONFIG_FILE=ARGV[0]
+ARGV.clear
+
+if @OPTIONAL_CONFIG_FILE != nil
+  @CONFIG_FILE = @OPTIONAL_CONFIG_FILE
+end
+puts "using config file: " + @CONFIG_FILE
+
+@config                = YAML.load_file(@CONFIG_FILE)
 # Generate deployments in a single file, or in separate files.
 @sep_deployment_files=false
 if @config["sep_deployment_files"] != nil
@@ -42,7 +52,7 @@ mkdir -p out/config
 # generate the nodes.yaml
 # file for the set number of
 # nodes.
-./quorum-create-nodes
+./quorum-create-nodes #{@CONFIG_FILE}
 
 `
 puts ""
@@ -51,15 +61,17 @@ puts "  Generating keys..."
 # generate the keygen script
 # to generate nodekey, account keys, and
 # quorum transaction manger (tm.pub,tm.key) keys.
-./quorum-keygen
+./quorum-keygen #{@CONFIG_FILE}
 `
 
 puts "  Generating Quorum configs..."
 `
 # generate the appropriate config files:
 #   permissioned-nodes.json
-#   genesis.json 
-./quorum-config
+#   genesis.json
+echo "CONFIG FILE <---" > tmplibby.see
+echo #{@CONFIG_FILE} >> tmplibby.see
+./quorum-config #{@CONFIG_FILE}
 `
 
 puts ""
@@ -67,7 +79,7 @@ puts  "  Base quorum resources have been generated. "
 puts  "  Running ./qubernetes to generate Kubernetes resources."
 puts ""
 `
-./qubernetes
+./qubernetes #{@CONFIG_FILE}
 `
 @Kubectl_Cmd="  $> kubectl apply -f out"
 if @sep_deployment_files

@@ -4,7 +4,16 @@ require "yaml"
 require "erb"
 
 # generic variables
-@config     = YAML.load_file("qubernetes.yaml")
+@CONFIG_FILE = "qubernetes.yaml"
+@OPTIONAL_CONFIG_FILE=ARGV[0]
+ARGV.clear
+
+if @OPTIONAL_CONFIG_FILE != nil
+  @CONFIG_FILE = @OPTIONAL_CONFIG_FILE
+end
+puts "using config file: " + @CONFIG_FILE
+
+@config     = YAML.load_file(@CONFIG_FILE)
 @nodes      = YAML.load_file("nodes.yaml")["nodes"]
 
 @Raft_Port                  = @config["quorum"]["quorum"]["Raft_Port"]
@@ -25,7 +34,7 @@ require "erb"
 # create genesis files with all discovered keystore accounts pre alloc with funds.
 puts(@Genesis_File)
 File.open(@Genesis_File, "w") do |f|
-  f.puts (ERB.new(File.read("genesis.json.erb"), nil, "-").result)
+  f.puts (ERB.new(File.read("genesis.json.erb"), nil, "-").result(binding))
 end
 
 # create permission nodes file containing all the nodes.

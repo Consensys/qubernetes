@@ -3,12 +3,39 @@
 require "yaml"
 require "erb"
 
-# generic variables
-@config     = YAML.load_file("qubernetes.yaml")
+# setup up default config, or get passed in config to use.
+@CONFIG_FILE = "qubernetes.yaml"
+@OPTIONAL_CONFIG_FILE=ARGV[0]
+ARGV.clear
 
-File.open("out/config/nodes.yaml", "w") do |f|
-  f.puts (ERB.new(File.read("nodes.yaml.erb"), nil, "-").result)
+if @OPTIONAL_CONFIG_FILE != nil
+  @CONFIG_FILE = @OPTIONAL_CONFIG_FILE
+end
+puts "using config file: " + @CONFIG_FILE
+
+@config     = YAML.load_file(@CONFIG_FILE)
+
+# if nodes.yaml exists already, only append from last number, nodes will monotonically increase in number.
+# Read in nodes.yaml if it exists.
+@Node_File="out/config/nodes.yaml"
+
+if File.file?(@Node_File)
+  puts "node file exists!!"
+  @node_config = YAML.load_file(@Node_File)
+  @nodes = @node_config["nodes"]
+  puts @nodes.length
+  @nodes.each do |node|
+    puts node.values.first["Node_UserIdent"]
+  end
+  # TODO: pass in len + 1 to nodes.yaml.erb
+else
+  # else write the whole file in.
+  puts "doesn't exist will create"
+  File.open(@Node_File, "w") do |f|
+    f.puts (ERB.new(File.read("nodes.yaml.erb"), nil, "-").result)
+  end
 end
 
+# update sym link in home directory.
 `rm nodes.yaml | true`
 `ln -s out/config/nodes.yaml .`

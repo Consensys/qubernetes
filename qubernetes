@@ -4,8 +4,17 @@ require "yaml"
 require "erb"
 require 'colorize'
 
-# generic variables
-@config                = YAML.load_file("qubernetes.yaml")
+# setup the config file to use to generate the kubernetes API resources.
+@CONFIG_FILE = "qubernetes.yaml"
+@OPTIONAL_CONFIG_FILE=ARGV[0]
+ARGV.clear
+
+if @OPTIONAL_CONFIG_FILE != nil
+  @CONFIG_FILE = @OPTIONAL_CONFIG_FILE
+end
+puts "using config file: " + @CONFIG_FILE
+@config                = YAML.load_file(@CONFIG_FILE)
+
 @nodes                 = YAML.load_file("nodes.yaml")["nodes"]
 @Raft_Port             = @config["quorum"]["quorum"]["Raft_Port"]
 @Node_WSPort           = @config["geth"]["Node_WSPort"]

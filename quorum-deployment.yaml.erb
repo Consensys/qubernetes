@@ -41,7 +41,7 @@ end
 # 2. the quorum node container
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: <%= @Node_UserIdent %>-deployment
@@ -50,6 +50,9 @@ spec:
   strategy:
     type: RollingUpdate
   replicas: 1
+  selector:
+    matchLabels:
+      name: <%= @Node_UserIdent %>-deployment
   template:
     metadata:
       name:  <%= @Node_UserIdent %>-deployment

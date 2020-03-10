@@ -4,3 +4,4 @@ out/
 .idea/
 qubernetes.yaml
 nodes.yaml
+testing/*-out

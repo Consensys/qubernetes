@@ -69,8 +69,6 @@ puts "  Generating Quorum configs..."
 # generate the appropriate config files:
 #   permissioned-nodes.json
 #   genesis.json
-echo "CONFIG FILE <---" > tmplibby.see
-echo #{@CONFIG_FILE} >> tmplibby.see
 ./quorum-config #{@CONFIG_FILE}
 `
 

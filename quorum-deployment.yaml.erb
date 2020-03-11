@@ -372,18 +372,6 @@ spec:
            defaultMode: 0777
       <% end %>
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
-      # default is Host if not set.
-      <% if @Storage_Type == "HOST" %>
-      - name: quorum-persistent-storage
-        hostPath:
-          path: <%= @DataDir%>/<%= @Node_UserIdent %>
-      - name: tm-persistent-storage
-        hostPath:
-          path: <%= @DataDir%>/tm-<%= @Node_UserIdent %>
-      - name: quorum-logs-persistent-storage
-        hostPath:
-          path: <%= @DataDir%>/<%= @Node_UserIdent %>-logs
-      <% else %>
       - name: quorum-persistent-storage
         persistentVolumeClaim:
           claimName: <%= @Node_UserIdent %>-quorum
@@ -393,4 +381,3 @@ spec:
       - name: quorum-logs-persistent-storage
         persistentVolumeClaim:
           claimName: <%= @Node_UserIdent %>-log-pvc
-      <% end %>

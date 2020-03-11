@@ -16,7 +16,7 @@ including:
   This is also recommended get started way if you do not have a running Kubernetes cluster yet.   
   **see** [Quickstart with minikube](#quickstart-with-minikube).  
 
-## Install 
+## Install
 ```shell
 $> brew install ruby
 
@@ -27,18 +27,18 @@ $> gem install colorize
 ```
 
 ## 7 Nodes Examples
-[quorum-examples 7nodes](https://github.com/jpmorganchase/quorum-examples/tree/master/examples/7nodes) has been ported to k8s resources.
-There are k8s resource files in the qubernetes repo's [7nodes](7nodes) directory for deploying quorum on kubernetes with 
-tessera or constellation as the transaction manager, and raft or istanbul as the consensus engines.  
+[quorum-examples 7nodes](https://github.com/jpmorganchase/quorum-examples/tree/master/examples/7nodes) has been ported 
+to k8s resources.  There are k8s resource files in the qubernetes repo's [7nodes](7nodes) directory for deploying 
+quorum on kubernetes with tessera or constellation as the transaction manager, and raft or istanbul as the consensus engines.  
 
 This assume you have a running k8s cluster which you can connect to via `kubectl`.
 
-There are two sets of configs generated, one that uses `HostPath` storage, and one that uses `PVC`(Persistent Volume Claims) storage.
-The recommend storage option is `PVC` as this will be automatically deleted when the deployment is deleted.
+For presistent storage `PVC`(Persistent Volume Claims) are used/recommended, `PVC` will be automatically created when 
+the deployment is created and deleted when the deployment is deleted (`kubectl delete -f YOUR_DEPLOYMENT_YAML/`).
 
-**note** when using `HostPath` storage, when the deployment is deleted `kubectl delete -f YOUR_DEPLOYMENT_YAML/` YOU MUST ALSO remove 
-the `/var/lib/docker/geth-storage` directory from the host.
-PVC storage will be deleted by Kubernetes when you delete the deployment (`kubectl delete -f YOUR_DEPLOYMENT_YAML/`).
+
+**note** [HostPath](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath) persistent storage is no longer supported 
+after commit [536e1084e362cb3db87003c36f1fdffaa4f9da64](commit/536e1084e362cb3db87003c36f1fdffaa4f9da64) Wed Mar 11 17:03:21 2020 -0400
 
 Examples below are for deploying 7nodes using PVC (Persistent Volume Claims):
 
@@ -136,13 +136,6 @@ $> minikube delete
 ```shell
 $> kubectl delete -f PATH/TO/K8S-YAML-DIR/
 ```
-1a. **If using HostPath storage** Delete the files on the host machine, by default under `/var/lib/docker/geth-storage`.
-example for minikube.
-```
-$> minikube ssh
-$> sudo su
-$> rm -r /var/lib/docker/geth-storage
-```
 
 ## Accessing Quorum and Transaction Manager Containers on K8s
 
@@ -224,10 +217,10 @@ quorum:
     Tm_Version: 0.11
     Port: 9001
     Tessera_Config_Dir: 7nodes
-  # for persistent storage can be host or Persistent Volume Claim.
-  # The data dir is persisted here
+  # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+  # test locally and on GCP
   storage:
-    # Host (requires hostPath) || PVC (Persistent_Volume_Claim - tested with GCP).
+    # PVC (Persistent_Volume_Claim - tested with GCP).
     Type: PVC
     ## when redeploying cannot be less than previous values
     Capacity: 200Mi
@@ -504,7 +497,6 @@ $> kubectl apply -f out
 ```shell
 $> kubectl delete -f out
 ```
-* **If using `hostStorage`** Delete the files on the host machine, by default under `/var/lib/docker/geth-storage`.
 
 ## Thanks! And Additional Resources 
 Thanks to [Maximilian Meister blog and code](https://medium.com/@cryptoctl) which provided and awesome starting point!

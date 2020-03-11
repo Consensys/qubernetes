@@ -29,7 +29,6 @@ quorum:
     #       in that case.
     Tm_Version: 0.3.2
     Port: 9001
-
 # generic geth related options
 geth:
   Node_RPCPort: 8545

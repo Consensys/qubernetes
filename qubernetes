@@ -36,15 +36,8 @@ if @config["namespace"] != nil
 end
 
 # What kind of persistent storage is desired?
-# Default to PVC, if not explicitly set.
+# Supported storage type as of 2020 March 11 is only Persistant Volume Claims, and hostPath is no longer supported.
 @Storage_Type          = "PVC"
-if  @config["quorum"]["storage"]
-  if @config["quorum"]["storage"]["Type"].upcase == "HOST"
-    @Storage_Type = "Host"
-  elsif @config["quorum"]["storage"]["Type"].upcase == "PVC"
-    @Storage_Type = "PVC"
-  end
-end
 
 #####################
 # Create config files for each node

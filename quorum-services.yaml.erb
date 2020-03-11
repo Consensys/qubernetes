@@ -11,7 +11,7 @@ end
 <%
     @Service_Prefix        = (@Node_UserIdent.upcase).gsub("-", "_")
     @TM_Port               = @config["quorum"]["tm"]["Port"]
-    @Node_WSPort           = @config["geth"]["Node_WSPort"]
+    @Node_RPCPort          = @config["geth"]["Node_RPCPort"]
     @NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
 %>
 
@@ -45,8 +45,8 @@ spec:
     # default 8545
     - name: wsrpc-listener
       protocol: TCP
-      port: <%= @Node_WSPort %>
-      targetPort: <%= @Node_WSPort %>
+      port: <%= @Node_RPCPort %>
+      targetPort: <%= @Node_RPCPort %>
     - name: quorum-listener
       protocol: TCP
       port: <%= @NodeP2P_ListenAddr %>

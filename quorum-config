@@ -22,7 +22,7 @@ puts "using config file: " + @CONFIG_FILE
 
 @Tessera_Config_Dir         = @config["quorum"]["tm"]["Tessera_Config_Dir"]
 
-@Node_WSPort                = @config["geth"]["Node_WSPort"]
+@Node_RPCPort               = @config["geth"]["Node_RPCPort"]
 @NodeP2P_ListenAddr         = @config["geth"]["NodeP2P_ListenAddr"]
 
 #####################################################

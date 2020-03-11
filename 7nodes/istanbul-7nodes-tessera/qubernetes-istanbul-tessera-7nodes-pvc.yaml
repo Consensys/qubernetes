@@ -38,7 +38,7 @@ quorum:
     Capacity: 200Mi
 # generic geth related options
 geth:
-  Node_WSPort: 8546
+  Node_RPCPort: 8546
   NodeP2P_ListenAddr: 21000
   network:
     # network id (1: mainnet, 3: ropsten, 4: rinkeby ... )

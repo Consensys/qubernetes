@@ -17,7 +17,7 @@ puts "using config file: " + @CONFIG_FILE
 
 @nodes                 = YAML.load_file("nodes.yaml")["nodes"]
 @Raft_Port             = @config["quorum"]["quorum"]["Raft_Port"]
-@Node_WSPort           = @config["geth"]["Node_WSPort"]
+@Node_RPCPort          = @config["geth"]["Node_RPCPort"]
 @NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
 
 

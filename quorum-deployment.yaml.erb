@@ -3,7 +3,7 @@
 @Service_Prefix = (@Node_UserIdent.upcase).gsub("-", "_")
 @Geth_Verbosity        = @config["geth"]["verbosity"]
 @Geth_Network_Id       = @config["geth"]["network"]["id"]
-@Node_WSPort           = @config["geth"]["Node_WSPort"]
+@Node_RPCPort           = @config["geth"]["Node_RPCPort"]
 @NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
 
 if @config["geth"]["Geth_Startup_Params"]
@@ -234,13 +234,13 @@ spec:
            --emitcheckpoints \
            --rpc \
            --rpcaddr 0.0.0.0 \
-           --rpcport <%= @Node_WSPort %> \
+           --rpcport <%= @Node_RPCPort %> \
            --port <%= @NodeP2P_ListenAddr %> \
            <%= @Geth_Startup_Params %> \
            --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a <%= @Node_DataDir%>/logs/quorum.log;"
         ports:
           - containerPort: <%= @Raft_Port %>
-          - containerPort: <%= @Node_WSPort %>
+          - containerPort: <%= @Node_RPCPort %>
           - containerPort: <%= @NodeP2P_ListenAddr %>
         env:
         - name: PRIVATE_CONFIG

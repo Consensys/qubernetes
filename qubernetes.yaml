@@ -47,7 +47,7 @@ quorum:
 
 # generic geth related options
 geth:
-  Node_WSPort: 8545
+  Node_RPCPort: 8545
   NodeP2P_ListenAddr: 30303
   network:
     # network id (1: mainnet, 3: ropsten, 4: rinkeby ... )

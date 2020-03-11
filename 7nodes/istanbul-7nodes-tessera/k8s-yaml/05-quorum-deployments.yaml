@@ -29,7 +29,7 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -58,7 +58,7 @@ spec:
           readOnly: false
       containers:
       - name: tessera
-        image: quorumengineering/tessera:0.9.2
+        image: quorumengineering/tessera:0.11
         command: ["sh"]
         args:
         - "-cx"
@@ -128,7 +128,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
           subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -345,7 +345,7 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -374,7 +374,7 @@ spec:
           readOnly: false
       containers:
       - name: tessera
-        image: quorumengineering/tessera:0.9.2
+        image: quorumengineering/tessera:0.11
         command: ["sh"]
         args:
         - "-cx"
@@ -444,7 +444,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
           subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -661,7 +661,7 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -690,7 +690,7 @@ spec:
           readOnly: false
       containers:
       - name: tessera
-        image: quorumengineering/tessera:0.9.2
+        image: quorumengineering/tessera:0.11
         command: ["sh"]
         args:
         - "-cx"
@@ -760,7 +760,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
           subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -977,7 +977,7 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -1006,7 +1006,7 @@ spec:
           readOnly: false
       containers:
       - name: tessera
-        image: quorumengineering/tessera:0.9.2
+        image: quorumengineering/tessera:0.11
         command: ["sh"]
         args:
         - "-cx"
@@ -1076,7 +1076,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
           subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -1293,7 +1293,7 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -1322,7 +1322,7 @@ spec:
           readOnly: false
       containers:
       - name: tessera
-        image: quorumengineering/tessera:0.9.2
+        image: quorumengineering/tessera:0.11
         command: ["sh"]
         args:
         - "-cx"
@@ -1392,7 +1392,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
           subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -1609,7 +1609,7 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -1638,7 +1638,7 @@ spec:
           readOnly: false
       containers:
       - name: tessera
-        image: quorumengineering/tessera:0.9.2
+        image: quorumengineering/tessera:0.11
         command: ["sh"]
         args:
         - "-cx"
@@ -1708,7 +1708,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
           subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -1925,7 +1925,7 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -1954,7 +1954,7 @@ spec:
           readOnly: false
       containers:
       - name: tessera
-        image: quorumengineering/tessera:0.9.2
+        image: quorumengineering/tessera:0.11
         command: ["sh"]
         args:
         - "-cx"
@@ -2024,7 +2024,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
           subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");

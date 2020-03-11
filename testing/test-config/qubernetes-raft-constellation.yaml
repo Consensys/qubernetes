@@ -21,7 +21,7 @@ quorum:
   quorum:
     Raft_Port: 50401
     # container images at https://hub.docker.com/u/quorumengineering/ 2.2.5
-    Quorum_Version: 2.4.0
+    Quorum_Version: 2.5.0
   # related to transaction manager containers
   tm:
     # container images at https://hub.docker.com/u/quorumengineering/

@@ -20,13 +20,13 @@ quorum:
   quorum:
     Raft_Port: 50401
     # container images at https://hub.docker.com/u/quorumengineering/
-    Quorum_Version: 2.2.3
+    Quorum_Version: 2.5.0
   # related to transaction manager containers
   tm:
     # (tessera|constellation)
     # container images at https://hub.docker.com/u/quorumengineering/
     Name: tessera 
-    Tm_Version: 0.9.2
+    Tm_Version: 0.11
     Port: 9001
     Tessera_Config_Dir: 7nodes
   storage:

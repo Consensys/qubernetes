@@ -29,7 +29,7 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -97,7 +97,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
       - name: quorum
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -293,7 +293,7 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -361,7 +361,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
       - name: quorum
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -557,7 +557,7 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -625,7 +625,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
       - name: quorum
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -821,7 +821,7 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -889,7 +889,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
       - name: quorum
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -1085,7 +1085,7 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -1153,7 +1153,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
       - name: quorum
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -1349,7 +1349,7 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -1417,7 +1417,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
       - name: quorum
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -1613,7 +1613,7 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -1681,7 +1681,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
       - name: quorum
-        image: quorumengineering/quorum:2.2.3
+        image: quorumengineering/quorum:2.5.0
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");

@@ -29,10 +29,10 @@ quorum:
     Tm_Version: 0.3.2
     Port: 9001
     Tessera_Config_Dir: 7nodes
-  # for persistent storage can be host or Persistent Volume Claim.
-  # The data dir is persisted here
+  # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+  # test locally and on GCP
   storage:
-    # Host (requires hostPath) || PVC (Persistent_Volume_Claim - tested with GCP).
+    # PVC (Persistent_Volume_Claim - tested with GCP).
     Type: PVC
     ## when redeploying cannot be less than previous values
     Capacity: 200Mi

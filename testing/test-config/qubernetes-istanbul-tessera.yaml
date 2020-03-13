@@ -30,20 +30,13 @@ quorum:
     Tm_Version: 0.11
     Port: 9001
     Tessera_Config_Dir: out/config
-  #Data_Dir: /var/lib/docker/geth-storage6
-  # for persistent storage can be host or Persistent Volume Claim (GCP).
+  # for persistent is handled with Persistent Volume Claim (PVC) test locally and on GCP.
   # The data dir is persisted here
   storage:
-    # Host (requires hostPath) || PVC (Persistent_Volume_Claim - tested with GCP).
+    # PVC (Persistent_Volume_Claim - tested with GCP).
     Type: PVC
     ## when redeploying cannot be less than previous values
     Capacity: 300Mi
-    #storage:
-  ## Host (requires hostPath) || PVC (Persistent_Volume_Claim - tested with GCP).
-    #Type: Host
-    ## hostPath
-    #Data_Dir: /var/lib/docker/geth-storage-libby
-
 # generic geth related options
 geth:
   Node_RPCPort: 8545

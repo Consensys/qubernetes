@@ -27,6 +27,7 @@ fi
 CONFIG_DIR=testing/${CONFIG_PREFIX}-config/
 OUT_DIR=testing/${CONFIG_PREFIX}-out
 
+echo "CONFIG $CONFIG_DIR"
 # remove out dir if it exist
 rm -rf out
 rm -rf $OUT_DIR
@@ -36,6 +37,6 @@ do
  echo "Config file: ${CONFIG_FILE}"
  NAMESPACE=$(echo $CONFIG_FILE | sed 's/.yaml//g' | sed "s|$CONFIG_DIR||g")
  ./quorum-init ${CONFIG_FILE} &&
- rm -rf $OUT_DIR/out.$NAMESPACE
- mv out $OUT_DIR/out.$NAMESPACE
+ rm -rf $OUT_DIR/$NAMESPACE
+ mv out $OUT_DIR/$NAMESPACE
 done

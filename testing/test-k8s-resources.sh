@@ -54,13 +54,13 @@ function run_test_qnet() {
  fi
 }
 
-# TODO: check if the file exists, and if not return proper error message.
-CONFIG_DIR=testing/${CONFIG_PREFIX}-config/
+# Test will be run against the out put directories under the base output directory. These are directories that hold
+# the kubernetes API resource files.
 OUT_DIR_BASE=testing/${CONFIG_PREFIX}-out
 
 restart_k8s_cluster
 
-TOTAL_TEST_NUM=$(ls -1 $CONFIG_DIR | wc -l | sed 's| ||g')
+TOTAL_TEST_NUM=$(ls -1 $OUT_DIR_BASE | wc -l | sed 's| ||g')
 printf "${GREEN} Testing ${TOTAL_TEST_NUM} test networks. ${NC}\n"
 
 # now go through the examples and test k8s-yaml set of resources
@@ -68,17 +68,17 @@ printf "${GREEN} Testing ${TOTAL_TEST_NUM} test networks. ${NC}\n"
 CT=0
 SUCCESS=0
 FAILURES=0
-for CONFIG_FILE in $CONFIG_DIR*;
+for OUT_DIR in $OUT_DIR_BASE/*;
 do
  ((CT=CT+1))
- printf "${GREEN} Running Testing $CT out of ${TOTAL_TEST_NUM} ${CONFIG_FILE}${NC}\n"
+ printf "${GREEN} Running Testing $CT out of ${TOTAL_TEST_NUM} ${OUT_DIR}${NC}\n"
  printf "${GREEN}Total Successful networks: ${SUCCESS}${NC}\n"
  printf "${RED}Total Failed networks: ${FAILURES}${NC}\n"
- # remove CONFIG_DIR and .yaml from the string to create the namespace
- echo $CONFIG_FILE | sed 's/.yaml//g' | sed 's|$CONFIG_DIR||g'
- NAMESPACE=$(echo $CONFIG_FILE | sed 's/.yaml//g' | sed "s|$CONFIG_DIR||g")
+ # remove $OUT_DIR_BASE from the string to create the namespace
+ echo $OUT_DIR | sed "s|$OUT_DIR_BASE||g" | sed 's|/||g'
+ NAMESPACE=$(echo $OUT_DIR | sed "s|$OUT_DIR_BASE||g" | sed 's|/||g')
  echo $NAMESPACE
- CUR_OUT_DIR=${OUT_DIR_BASE}/out.$NAMESPACE
+ CUR_OUT_DIR=${OUT_DIR_BASE}/$NAMESPACE
 
  # Create namespace for this run
  kubectl delete namespace $NAMESPACE

@@ -1,0 +1,42 @@
+# Workflow to test the generation of 7nodes examples against the most recently committed qubernetes files:
+#
+# 1. Generates the necessary K8s resource files for various quorum networks configurations:
+#    Privacy Manger (tessera and constellation) and  consensus (IBFT and Raft).
+# 2. Deploys each network to a running kubernetes service (kind) and tests deploying a contract (private and public).
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on all push events and on pull requests to the master branch
+# https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
+on:
+  push:
+    branches: '*'
+  pull_request:
+    branches: [ master ]
+
+# This workflow has one job run sequentially which installs kind (K8s service), generates fresh 7nodes examples, and
+# deployes all 7nodes quorum networks to kinds testing public and private transaction on them.
+jobs:
+  # This workflow contains a single job called "test-7nodes"
+  test-7nodes:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out qubernetes under $GITHUB_WORKSPACE, so this job can access it
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+      - name: Install latest version of Kind
+        run: |
+          GO111MODULE=on go get sigs.k8s.io/kind
+      # https://help.github.com/en/actions/building-actions/creating-a-docker-container-action
+      - name: Generate k8s resources via qubernetes docker
+        uses: ./.github/actions/qube-gen-k8s
+        with:
+          config-prefix: 7nodes
+      # output files should now be in the working directory /home/runner/work/qubernetes/qubernetes
+      - name: Run 7nodes example on K8s (kind)
+        run: $GITHUB_WORKSPACE/testing/test-k8s-resources.sh 7nodes

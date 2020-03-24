@@ -70,71 +70,79 @@ SUCCESS=0
 FAILURES=0
 for OUT_DIR in $OUT_DIR_BASE/*;
 do
- ((CT=CT+1))
- printf "${GREEN} Running Testing $CT out of ${TOTAL_TEST_NUM} ${OUT_DIR}${NC}\n"
- printf "${GREEN}Total Successful networks: ${SUCCESS}${NC}\n"
- printf "${RED}Total Failed networks: ${FAILURES}${NC}\n"
- # remove $OUT_DIR_BASE from the string to create the namespace
- echo $OUT_DIR | sed "s|$OUT_DIR_BASE||g" | sed 's|/||g'
- NAMESPACE=$(echo $OUT_DIR | sed "s|$OUT_DIR_BASE||g" | sed 's|/||g')
- echo $NAMESPACE
- CUR_OUT_DIR=${OUT_DIR_BASE}/$NAMESPACE
+  ((CT=CT+1))
+  printf "${GREEN} Running Testing $CT out of ${TOTAL_TEST_NUM} ${OUT_DIR}${NC}\n"
+  printf "${GREEN}Total Successful networks: ${SUCCESS}${NC}\n"
+  printf "${RED}Total Failed networks: ${FAILURES}${NC}\n"
+  # remove $OUT_DIR_BASE from the string to create the namespace
+  echo $OUT_DIR | sed "s|$OUT_DIR_BASE||g" | sed 's|/||g'
+  NAMESPACE=$(echo $OUT_DIR | sed "s|$OUT_DIR_BASE||g" | sed 's|/||g')
+  echo $NAMESPACE
+  CUR_OUT_DIR=${OUT_DIR_BASE}/$NAMESPACE
 
- # Create namespace for this run
- kubectl delete namespace $NAMESPACE
- kubectl create namespace $NAMESPACE &&
+  # Create namespace for this run
+  kubectl delete namespace $NAMESPACE
+  kubectl create namespace $NAMESPACE &&
 
- # test if /deployments directory exists in the case where the kubernetes resources were generated with separate
- # deployment files.
- if [[ -d $CUR_OUT_DIR/deployments ]];
- then
-   printf "${GREEN}kubectl apply -f $CUR_OUT_DIR -f $CUR_OUT_DIR/deployments --namespace=$NAMESPACE ${NC}\n"
-   kubectl apply -f $CUR_OUT_DIR -f $CUR_OUT_DIR/deployments --namespace=$NAMESPACE > /dev/null
- else
-   printf "${GREEN}kubectl apply -f $CUR_OUT_DIR --namespace=$NAMESPACE ${NC}\n"
-   kubectl apply -f $CUR_OUT_DIR --namespace=$NAMESPACE > /dev/null
- fi
+  # test if /deployments directory exists in the case where the kubernetes resources were generated with separate
+  # deployment files.
+  if [[ -d $CUR_OUT_DIR/deployments ]];
+  then
+    printf "${GREEN}kubectl apply -f $CUR_OUT_DIR -f $CUR_OUT_DIR/deployments --namespace=$NAMESPACE ${NC}\n"
+    kubectl apply -f $CUR_OUT_DIR -f $CUR_OUT_DIR/deployments --namespace=$NAMESPACE > /dev/null
+  else
+    printf "${GREEN}kubectl apply -f $CUR_OUT_DIR --namespace=$NAMESPACE ${NC}\n"
+    kubectl apply -f $CUR_OUT_DIR --namespace=$NAMESPACE > /dev/null
+  fi
 
-## Depending on the service used it may take a while for the PODS to appear
-EXIT_CODE=1
-while [[ $EXIT_CODE -ne 0 ]];
-do
-  # Test the now deployed quorum network
-  EXIT_CODE=1
-  echo testing/test-qnet.sh $NAMESPACE
-  testing/test-qnet.sh $NAMESPACE &&
+  # if there was an error applying the resources, exit the script returning the error.
   EXIT_CODE=$?
-  # if there is an error exit code wait for some manual checking
   if [[ $EXIT_CODE -ne 0 ]];
   then
-    # Wait here to allow for manual checking / testing.
-    echo "Issue running test: Hit 1 to run txs again any key to record failure"
-    read RES
-    # run again?
-    if [[ $RES -eq 1 ]];
-    then
-      echo "Trying again..."
-    else
-      break
-    fi
+    printf "${RED} ERROR: error applying k8s resources  ${NC}\n"
+    exit 1
   fi
-done
 
-# record result of running the test
-if [[ $EXIT_CODE -ne 0 ]];
-then
-  ((FAILURES=FAILURES+1))
-else
-  ((SUCCESS=SUCCESS+1))
-fi
- kubectl delete namespace $NAMESPACE
- HOST_STORAGE=$(echo $NAMESPACE | grep host)
- if [[ ! -z "$HOST_STORAGE" ]];
+  ## Depending on the K8s service used it may take a while for the PODS to appear
+  EXIT_CODE=1
+  while [[ $EXIT_CODE -ne 0 ]];
+  do
+    # Test the now deployed quorum network
+    EXIT_CODE=1
+    echo testing/test-qnet.sh $NAMESPACE
+    testing/test-qnet.sh $NAMESPACE &&
+    EXIT_CODE=$?
+    # if there is an error exit code wait for some manual checking
+    if [[ $EXIT_CODE -ne 0 ]];
+    then
+      # Wait here to allow for manual checking / testing.
+      echo "Issue running test: Hit 1 to run txs again any key to record failure"
+      read RES
+      # run again?
+      if [[ $RES -eq 1 ]];
+      then
+        echo "Trying again..."
+      else
+        break
+      fi
+    fi
+ done
+
+ # record result of running the test
+ if [[ $EXIT_CODE -ne 0 ]];
  then
-   printf "${RED}Deleting kubernetes deployment because this test run used host storage${NC}\n"
-   restart_k8s_cluster
-   echo "restarted cluster"
+   ((FAILURES=FAILURES+1))
+ else
+   ((SUCCESS=SUCCESS+1))
  fi
+  kubectl delete namespace $NAMESPACE
+  HOST_STORAGE=$(echo $NAMESPACE | grep host)
+  if [[ ! -z "$HOST_STORAGE" ]];
+  then
+    printf "${RED}Deleting kubernetes deployment because this test run used host storage${NC}\n"
+    restart_k8s_cluster
+    echo "restarted cluster"
+  fi
 done
 
 printf "${GREEN}Total Successful networks: ${SUCCESS}${NC}\n"

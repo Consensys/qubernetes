@@ -1,0 +1,12 @@
+name: 'Quorum k8s resource generator'
+description: 'Qubernetes Docker image for generating K8s resources'
+inputs:
+  config-prefix:  # id of input which we can be passed to Docker.
+    description: 'config directory prefix used to generate the k8s resources.'
+    required: true
+    default: '7nodes'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.config-prefix }}

@@ -1,437 +1,213 @@
 ## Qubernetes
 
-A project for deploying [Quorum](https://github.com/jpmorganchase/quorum) on [Kubernetes](https://github.com/kubernetes/kubernetes),
+A project for deploying and running [Quorum](https://github.com/jpmorganchase/quorum) on [Kubernetes](https://github.com/kubernetes/kubernetes),
 including: 
 
-* Kubernetes resource yaml for [quorum-examples 7nodes](https://github.com/jpmorganchase/quorum-examples/tree/master/examples/7nodes)
-  This assumes you have a running Kubernetes cluster.  
-  **see** [7 node example](#7-nodes-examples).
-* Generating the necessary Quorum resource (keys, configs, etc.) and Kubernetes API resource yamls for a new N node quorum 
-  deployment using a minimal config [`qubernetes.yaml`](qubernetes.yaml).    
-  **see** [Generating Quorum k8s Resources From Custom Configs](#generating-quroum-k8s-resources-from-custom-configs). 
-* Generating Kuberenetes API resource yaml from already existing Quorum setup: keys, config, etc.   
-  **see** [Generating Kubernetes Object yaml From Existing Quorum Resources](#generating-kubernetes-object-yaml-from-existing-quorum-resources) 
-* Quickstart for running on minikube. This is the recommended way to run intial tests and to get familiar with the 
-  project and Kubernetes, as some Cloud provider Kubernetes services or clusters may vary from vanilla Kubernetes.
-  This is also recommended get started way if you do not have a running Kubernetes cluster yet.   
-  **see** [Quickstart with minikube](#quickstart-with-minikube).  
+* [Quickest Start](#quickest-start) Requires docker to be running on your machine aynd have sufficient memory ~8GB for a
+  7 node cluster.    
+  To deploy 7nodes tessera IBFT run: `./quickest-start.sh`  
+  To create and deploy an N node Quorum network run: `./quickest-start.sh $NUM`   
+  To terminate the network run `./quickest-stop.sh`
 
-## Install
-```shell
-$> brew install ruby
+* [7 node example on K8s](docs/7nodes-on-k8s.md)   
+  Provides the necessary Kubernetes resource yaml files to run [quorum-examples 7nodes](https://github.com/jpmorganchase/quorum-examples/tree/master/examples/7nodes) on Kubernetes.
+  If Kubernetes is setup on your machine , e.g. `kind cluster create`, minikube, GKE, etc. run:   
+  ```bash
+  $> git clone https://github.com/jpmorganchase/qubernetes.git
+  $> cd qubernetes 
+  qubernetes$> kubectl apply -f 7nodes/istanbul-7nodes-tessera/k8s-yaml-pvc
+  ```   
+  
+* [N Node Quorum Netowrk On K8s](#generating-quorum-and-k8s-resources-from-custom-configs)
+  Generates the necessary Quorum resources (keys, configs - genesis, istanbul, etc.) and Kubernetes API resource yaml 
+  for a configurable N node Quorum Network based on a minimal config [`qubernetes.yaml`](qubernetes.yaml).    
+   
+   
 
-# check ruby version > 2.6
-$> ruby --version
-   ruby 2.6.3
-$> gem install colorize
+## Additional Resources   
+* [Quickstart with minikube](docs/minikube-docs.md)
+  Quickstart for running a Quorum network on minikube.
+ 
+* [Running on GKE](docs/gke-hosted-kubernetes.md) 
+
+* [Quorum Network From Existing Quorum Resources](docs/qubernetes-config.md#generating-kubernetes-object-yaml-from-existing-quorum-resources)  
+Generates Kuberenetes API resources from existing Quorum resources: keys, config, etc.
+
+## Quickest Start
+
+1. Installs [Kind](https://kubernetes.io/docs/setup/learning-environment/kind/) a tool for running Kubernetes in Docker
+2. Delete existing kind cluster
+3. Creates a new kind cluster
+4. Deploys a 7 node quorum network configured to use Tessera as the Transaction Manger, and IBFT as the consensus algorithm.
+
+```bash
+$> ./quickest-start.sh
 ```
 
-## 7 Nodes Examples
-[quorum-examples 7nodes](https://github.com/jpmorganchase/quorum-examples/tree/master/examples/7nodes) has been ported 
-to k8s resources.  There are k8s resource files in the qubernetes repo's [7nodes](7nodes) directory for deploying 
-quorum on kubernetes with tessera or constellation as the transaction manager, and raft or istanbul as the consensus engines.  
+### 🎥 Step 1 start kind k8s cluster (bottom screen) & deploy 7nodes (IBFT & Tessera)
+[![qubes-7nodes-kind](docs/resources/7node-kind-to-pending-play.png)](http://blog.libbykent.com/action-time/7node-kind-to-pending.webm)
 
-This assume you have a running k8s cluster which you can connect to via `kubectl`.
+### 🎥 Deploy a public and private transaction from node1
+continued from above
+[![qubes-7nodes-run-contract](docs/resources/7node-run-contracts-play.png)](http://blog.libbykent.com/action-time/7node-run-contracts.webm)
 
-For presistent storage `PVC`(Persistent Volume Claims) are used/recommended, `PVC` will be automatically created when 
-the deployment is created and deleted when the deployment is deleted (`kubectl delete -f YOUR_DEPLOYMENT_YAML/`).
-
-
-**note** [HostPath](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath) persistent storage is no longer supported 
-after commit [536e1084e362cb3db87003c36f1fdffaa4f9da64](commit/536e1084e362cb3db87003c36f1fdffaa4f9da64) Wed Mar 11 17:03:21 2020 -0400
-
-Examples below are for deploying 7nodes using PVC (Persistent Volume Claims):
-
-* [istanbul tessera k8s resource yaml (PVC)](7nodes/istanbul-7nodes-tessera/k8s-yaml-pvc)
-```shell
-$> kubectl apply -f 7nodes/istanbul-7nodes-tessera/k8s-yaml-pvc
-$> kubectl delete -f 7nodes/istanbul-7nodes-tessera/k8s-yaml-pvc
-```
-* [istanbul constellation k8s resource yaml (PVC)](7nodes/istanbul-7nodes-constellation/k8s-yaml-pvc)
-```shell
-$> kubectl apply -f 7nodes/istanbul-7nodes-constellation/k8s-yaml-pvc
-$> kubectl delete -f 7nodes/istanbul-7nodes-constellation/k8s-yaml-pvc
-```
-* [raft tessera k8s resource yaml (PVC)](7nodes/raft-7nodes-tessera/k8s-yaml-pvc)
-```shell
-$> kubectl apply -f 7nodes/raft-7nodes-tessera/k8s-yaml-pvc
-$> kubectl delete -f 7nodes/raft-7nodes-tessera/k8s-yaml-pvc
-```
-* [raft constellation k8s resource yaml (PVC)](7nodes/raft-7nodes-constellation/k8s-yaml-pvc)
-```shell
-$> kubectl apply -f 7nodes/raft-7nodes-constellation/k8s-yaml-pvc
-$> kubectl delete -f 7nodes/raft-7nodes-constellation/k8s-yaml-pvc
-```
-
-## Quickstart with minikube
-
-This section demonstrates how to deploy a 7 node quorum network to [minikube](https://github.com/kubernetes/minikube) a local
-kubernetes cluster. 
-
-Once the pods are deployed, if you wish to interact with them see [Accessing Quorum and Transaction Manager Containers on K8s](#accessing-quorum-and-transaction-manager-containers-on-k8s).
-
-### Install [minikube](https://kubernetes.io/docs/setup/minikube/) for your distro.
-```shell
-$> brew install minikube
-```
-
-### Once Minikube is install: Start local minikube cluster and deploy 7nodes example. 
-
-For this example we will deploy [istanbul tessera k8s resource yaml (PVC)](7nodes/istanbul-7nodes-tessera/k8s-yaml-pvc).
-
-```shell
-
-$> minikube start --memory 6144
-
-# you should be able to ssh into minikube
-$> minikube ssh
-
-# update your kubectl command see: https://stackoverflow.com/questions/55417410/kubernetes-create-deployment-unexpected-schemaerror 
-$> rm /usr/local/bin/kubectl
-$> brew link --overwrite kubernetes-cli
-
-# version tested with
-$> kubectl version
-Client Version: version.Info{Major:"1", Minor:"14", GitVersion:"v1.14.3", GitCommit:"5e53fd6bc17c0dec8434817e69b04a25d8ae0ff0", GitTreeState:"clean", BuildDate:"2019-06-07T09:55:27Z", GoVersion:"go1.12.5", Compiler:"gc", Platform:"darwin/amd64"}
-Server Version: version.Info{Major:"1", Minor:"14", GitVersion:"v1.14.2", GitCommit:"66049e3b21efe110454d67df4fa62b08ea79a19b", GitTreeState:"clean", BuildDate:"2019-05-16T16:14:56Z", GoVersion:"go1.12.5", Compiler:"gc", Platform:"linux/amd64"}
-
-# deploy istanbul/tessera 7node network to local minikube cluster in the default namespace. 
-$> kubectl apply -f 7nodes/istanbul-7nodes-tessera/k8s-yaml-pvc
-persistentvolumeclaim/quorum-node1-quorum created
-persistentvolumeclaim/quorum-node1-tm-pvc created
-persistentvolumeclaim/quorum-node1-log-pvc created
-persistentvolumeclaim/quorum-node2-quorum created
-persistentvolumeclaim/quorum-node2-tm-pvc created
-persistentvolumeclaim/quorum-node2-log-pvc created
-persistentvolumeclaim/quorum-node3-quorum created
-persistentvolumeclaim/quorum-node3-tm-pvc created
-persistentvolumeclaim/quorum-node3-log-pvc created
-...
-
-# you should now see your pods running.
-$> kubectl get pods
-NAME                                       READY   STATUS    RESTARTS   AGE
-quorum-node1-deployment-67766d6d54-vm4ms   2/2     Running   0          63s
-quorum-node2-deployment-dcf7d9557-ttqk6    2/2     Running   0          63s
-quorum-node3-deployment-cf64579d7-hhlrw    2/2     Running   0          63s
-quorum-node4-deployment-7667977997-r5z62   2/2     Running   0          63s
-quorum-node5-deployment-bd8f859bb-qcxb4    2/2     Running   0          62s
-quorum-node6-deployment-787d95bdb7-2k9tc   2/2     Running   0          62s
-quorum-node7-deployment-89c58598d-5rbbl    2/2     Running   0          62s
-
-# delete minikube k8s deployment
-$> kubectl delete -f 7nodes/istanbul-7nodes-tessera/k8s-yaml-pvc
-
-```
-
-### Shutdown minikube
-```shell
-$> minikube stop
-$> minikube delete
-```
-
-### Deleting Kubernetes Deployment
-
-1. Delete the kubernetes resources:
-```shell
-$> kubectl delete -f PATH/TO/K8S-YAML-DIR/
-```
+### 🎥 Attach to the geth console
+continued from above 
+part 1 attach to geth from inside the container
+part 2 use helper `./geth-attach node1`
+[![qubes-7nodes-attach-geth](docs/resources/7node-attach-geth-play.png)](http://blog.libbykent.com/action-time/7node-attach-geth.webm)
 
 ## Accessing Quorum and Transaction Manager Containers on K8s
 
-**note** this assumes that the quorum deployment was deployed to the `default` namespace or that namespace that the 
-Quorum cluster was deployed to is set as the default, 
-e.g. `kubectl config set-context $(kubectl config current-context) --namespace=$YOUR_NAMESPACE`
+**note** this assumes that the quorum deployment was deployed to the `default` namespace.
 
 ```shell
 $> kubectl get pods
 NAME                                       READY   STATUS    RESTARTS   AGE
 quorum-node1-deployment-57b6588b6b-5tqdr   1/2     Running   1          40s
 quorum-node2-deployment-5f776b479c-f7kxs   2/2     Running   2          40s
+....
 
-$> POD_NAME=$(kubectl get pods | grep node1 | awk '{print $1}')
-$> kubectl  exec -it $POD_NAME -c quorum /bin/ash
+# connnect to the running transaction manager on node1 (quorum-node1-deployment-57b6588b6b-5tqdr).
+# assuming tessera was deployed as the transaction manger.
+$> ./connect.sh node1 tessera
+connecting to POD [quorum-node1-deployment-676684fddf-9gwxk]
+/ >
 
-# now you are inside the quorum container
+# connect to the running quorum container
+$> ./connect.sh node1 quorum
+connecting to POD [quorum-node1-deployment-676684fddf-9gwxk]
+/ >
 
-> geth attach $QHOME/dd/geth.ipc
+# once inside the quorum container you can run transactions and connect to the geth console.
+
+/ > geth attach $QHOME/dd/geth.ipc
 > eth.blockNumber
 > 0
+> exit
 
-/> cd $QHOME/contracts
-/> ./runscript.sh public_contract.js
-/> ./runscript.sh private_contract.js
+# create some contracts (public and private)
+/ > cd $QHOME/contracts
+/ > ./runscript.sh public_contract.js
+/ > ./runscript.sh private_contract.js
 
 # you should now see the transactions go through
-# note: if you are running IBFT (Istanbul BFT consensus) the blockNumber will automaticly increment at a steady 
-(configured) time interval.
+# note: if you are running IBFT (Istanbul BFT consensus) the blockNumber will increment at the user defined  
+# (configureable) time interval.
 
-\> geth attach $QHOME/dd/geth.ipc
+/ > geth attach $QHOME/dd/geth.ipc
 > eth.blockNumber
 > 2
 
 # show connected peers
 > admin.peers.length
 6
+> exit
 
 ```
 
-## Configuration Details
-The main configuration files are [`qubernetes.yaml`](7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yaml) and [`nodes.yaml`](7nodes/nodes-7.yaml). 
-These two configuration yaml files must exist in the base directory.
-
-
-### Generating Kubernetes Object yaml From Existing Quorum Resources.
-
-This example will demo (re)generating the Quorum Kubernetes yaml (tessera/IBFT) from the 7nodes quorum resources (keys, configs, etc.). 
-
-There are qubernetes config files in the [7nodes](7nodes) directory for the various deployment configurations: tessera, constellation, IBFT, raft, PVC, host, etc.   
-This example uses [7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-tessera-7nodes-pvc.yaml](7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-tessera-7nodes-pvc.yaml)
-
-```yaml
-nodes:
-  number: 7
-service:
-  # NodePort | ClusterIP
-  type: ClusterIP
-quorum:
-  # supported: raft | istanbul
-  consensus: istanbul
-  # base quorum data dir as set inside each container.
-  Node_DataDir: /etc/quorum/qdata
-  # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
-  # Either full or relative paths on the machine generating the config
-  Key_Dir_Base: 7nodes
-  Permissioned_Nodes_File: 7nodes/permissioned-nodes.json
-  Genesis_File: 7nodes/istanbul-genesis.json
-  # related to quorum containers
-  quorum:
-    Raft_Port: 50401
-    # container images at https://hub.docker.com/u/quorumengineering/
-    Quorum_Version: 2.5.0
-  # related to transaction manager containers
-  tm:
-    # (tessera|constellation)
-    # container images at https://hub.docker.com/u/quorumengineering/
-    Name: tessera
-    Tm_Version: 0.11
-    Port: 9001
-    Tessera_Config_Dir: 7nodes
-  # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
-  # test locally and on GCP
-  storage:
-    # PVC (Persistent_Volume_Claim - tested with GCP).
-    Type: PVC
-    ## when redeploying cannot be less than previous values
-    Capacity: 200Mi
-# generic geth related options
-geth:
-  Node_RPCPort: 8546
-  NodeP2P_ListenAddr: 21000
-  network:
-    # network id (1: mainnet, 3: ropsten, 4: rinkeby ... )
-    id: 10
-    # public (true|false) is it a public network?
-    public: false
-  # general verbosity of geth [1..5]
-  verbosity: 9
-```
-
-Replace the `qubernetes.yaml` in the qubernetes base directory with [7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-tessera-7nodes-pvc.yaml](7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-tessera-7nodes-pvc.yaml), e.g. create a symlink to `qubernetes-istanbul-tessera-7nodes-pvc.yaml`
- 
-```
-$> pwd
-~qubernetes
-$> rm qubernetes.yaml
-
-## Create the symlink
-$> ln -s 7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-tessera-7nodes-pvc.yaml qubernetes.yaml
-
-$> ls -la qubernetes.yaml
-qubernetes.yaml -> 7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-tessera-7nodes-pvc.yaml
- 
-```
-
-Inside the `qubernetes.yaml` config file, the paths of the existing resources are set:
-```yaml
-  Key_Dir_Base: 7nodes
-  Permissioned_Nodes_File: 7nodes/permissioned-nodes.json
-  Genesis_File: 7nodes/istanbul-genesis.json
-```
-There are keys already generated in the 7nodes directory in sub directories: key1, key2 ... key7. These will be used when
-generating the the kubernetes resource yaml.
+There is also a helper to attach to the geth console directly
 ```shell
-$> ls 7nodes/key
-key1/  key2/  key3/  key4/  key5/  key6/  key7/
+# from the root of the quberenetes repository
+qubernetes $>  ./geth-attach node1
+
+ datadir: /etc/quorum/qdata/dd
+ modules: admin:1.0 debug:1.0 eth:1.0 istanbul:1.0 miner:1.0 net:1.0 personal:1.0 rpc:1.0 txpool:1.0 web3:1.0
+
+> eth.blockNumber
+2
+
 ```
+## Generating Quorum and K8s Resources From Custom Configs
 
-The `permissioned-nodes.json` and `istanbul-genesis.json` already exist as well, and are also inside the 7nodes directory.
-```shell
-$> ls 7nodes/permissioned-nodes.json
-7nodes/permissioned-nodes.json
+Qubernetes enables the creation of customized Quorum networks run on Kubernetes: configurable number of Quorum and Transaction 
+Manager nodes, creating the associated genesis config, transaction manager config, permissioned-nodes.json, required keys, services, etc. 
 
-$> ls 7nodes/istanbul-genesis.json
-7nodes/istanbul-genesis.json
-```
-
-Finally, there needs to be a file `nodes.yaml`, in the qubernetes base directory, which specifies the key directory for each node.
-nodes.yaml  
-```shell
-nodes:
-
-- member:
-    Node_UserIdent: quorum-node1
-    Key_Dir: key1
-
-- member:
-    Node_UserIdent: quorum-node2
-    Key_Dir: key2
-...
-```
-
-When generating a fresh deployment, the `node.yaml` file will be generated, but since this example is creating 
-Kubernetes API resources from existing resources this file needs to be present.
-
-Create a symlink to link `7nodes/nodes-7.yaml` file to `nodes.yaml` in the base directory. 
-```shell
-$> ln -s 7nodes/nodes-7.yaml nodes.yaml
-```
-
-All set! Now we can run the `./qubernetes` command to (re) generate the kubernetes yaml, by default this command will create 
-a directory `out` and place the generated file in the `out` directory:
-
-```shell
- $> ./qubernetes
-   
-     Success!
-   
-     Quorum Kubernetes resource files have been generated in the `out/` directory.
-   
-     To deploy to kubernetes run:
-   
-     $> kubectl apply -f out
-```
-
-The Kubernetes resource yaml will now be inside the `out` directory, which should be the same as the files in the
-`7nodes/istanbul-7nodes-tessera/k8s-yaml-pvc` directory.
-  
-```shell
-$> ls out
-00-quorum-persistent-volumes.yaml 01-quorum-genesis.yaml            02-quorum-shared-config.yaml      03-quorum-services.yaml           04-quorum-keyconfigs.yaml         05-quorum-deployments.yaml
-
-$> ls 7nodes/istanbul-7nodes-tessera/k8s-yaml-pvc
-00-quorum-persistent-volumes.yaml 01-quorum-genesis.yaml            02-quorum-shared-config.yaml      03-quorum-services.yaml           04-quorum-keyconfigs.yaml         05-quorum-deployments.yaml
-```
-
-To deploy the regenerated Kubernetes resource files to a running cluster:
-```
-$> kubectl apply -f out
-persistentvolumeclaim/quorum-node1-quorum created
-persistentvolumeclaim/quorum-node1-tm-pvc created
-persistentvolumeclaim/quorum-node1-log-pvc created
-persistentvolumeclaim/quorum-node2-quorum created
-persistentvolumeclaim/quorum-node2-tm-pvc created
-persistentvolumeclaim/quorum-node2-log-pvc created
-persistentvolumeclaim/quorum-node3-quorum created
-persistentvolumeclaim/quorum-node3-tm-pvc created
-...
-# when finished you can delete the cluster.
-$> kubectl delete -f out
-```
-
-## Generating Quroum K8s Resources From Custom Configs
-
-This section describes how to deploy a more customized kubernetes deployment with a varying number of quorum and transaction 
-manager nodes, including generating the appropriate genesis config, required keys, services, etc. 
-
-In order to do this, various tools need to be install, if you have Docker then you are all set! Use the [Docker Bootstrap Container](#docker-bootstrap-container)
-if you do not wish to install Docker, follow the instruction in [Install Prerequisites without Docker](#install-prerequisites-without-docker).
+If you have Docker installed, you are all set! Use the [Docker Bootstrap Container](#docker-bootstrap-container)
+If you do not wish to install Docker, follow the instructions in [Install Prerequisites without Docker](docs/installing-on-host.md).
 
 Once you have the prerequists set up see [Generating Your Own K8s Resources](#generating-your-own-k8s-resources) for more 
 information about configuring a custom deployment.
 
 ### Docker Bootstrap Container
 
-To avoid installing all the prerequisites, you can use a docker container with all prerequisites already installed.
+The Docker container `quorumengineering/qubernetes` has the necessary binaries install to generate the necessary Quorum resources. 
+If you have docker running, you don't have ot worry about installing anything else.
 
 Usage:
-```
-docker run -ti quorumengineering/qubernetes
-./quorum-init
-# point kubectl to a correct cluster
-# for example for k8s on gcloud do `gcloud init` and paste config command from "connect" button in UI
-kubectl apply -f out
-```
+
 **note**: `qubernetes.yaml` is not added to the the docker container, as this file will change between various deployments.
-It can by included by mounting a directory containing the desired `qubernetes.yaml` files. For example, if you have qubernetes 
-checked out and with custom configs, you can mount it to a container adding `-v $(pwd):/qubernetes` to your `docker run` command:
+           The `qubernetes.yaml` file and the desired `out` directory will need to be mounted on the `quorumengineering/qubernetes` container  
+           using `-v $PATH/ON/HOST/qubernetes.yaml:$PATH/ON/CONTAINTER/qubernetes.yaml`, e.g. `-v $(pwd)/cool-qubernetes.yaml:/qubernetes/qubernetes.yaml`
+           see below. 
+1.  Use the default `qubernetes.yaml` in the base of the quberentes repository.  You may edit this file to create your custom quorum network 
+```bash
+$> git clone https://github.com/jpmorganchase/qubernetes.git
+$> cd qubernetes
+qubernetes $> docker run -v $(pwd)/qubernetes.yaml:/qubernetes/qubernetes.yaml -v $(pwd)/out:/qubernetes/out -it  quorumengineering/qubernetes ./quorum-init qubernetes.yaml
+qubernetes $> ls out 
+``` 
+[![docker-quberentes-boot-1](docs/resources/docker-quberentes-boot-1-play.png)](http://blog.libbykent.com/action-time/docker-quberentes-boot-1.webm)
+2.   Generate Quorum and Kubernetes resources files from any directory using a custom configuration file, e.g. `cool-qubernetes.yaml`,
+you do not need to clone the repo, but mount the file `cool-qubernetes.yaml` and the `out` directory on the `quorumengineering/qubernetes` container, 
+so the resources will be available after the container exits.
+```shell
+# from some directory containing a config file cool-qubernetes.yaml 
+myDir$> ls
+cool-qubernetes.yaml
+
+# run docker and mount cool-qubernetes.yaml and the out directory
+# a prompt will appear enter 1 to Delete the 'out' directory and generate new resources. 
+myDir$> docker run -v $(pwd)/cool-qubernetes.yaml:/qubernetes/cool-qubernetes.yaml -v $(pwd)/out:/qubernetes/out -it  quorumengineering/qubernetes ./quorum-init cool-qubernetes.yaml
+using config file: cool-qubernetes.yaml
+
+ The 'out' directory already exist.
+ Please select the action you wish to take:
+
+ [1] Delete the 'out' directory and generate new resources.
+ [2] Update / add nodes that don't already exist.
+ [3] Cancel.
+
+1 
+
+# The generated files and the k8s-yaml will be in the out directory.
+myDir$> ls
+cool-qubernetes.yaml out
 
 ```
-$> docker run -v $(pwd):/qubernetes -ti quorumengineering/qubernetes
+[![docker-quberentes-boot-2](docs/resources/docker-quberentes-boot-2-play.png)](http://blog.libbykent.com/action-time/docker-quberentes-boot-2.webm)
+
+3.  Exec into the `quorumengineering/qubernetes` container to run commands inside. This is useful for testing out changes 
+to the local ruby generator files. 
+In this example, we are running the container from inside the base qubernetes directory, and mounting the entire directory,
+so it is as if we were running on our local host: the files from the host will be used, and generated files will be continue to exist after the container exists.
+
 ```
+$> git clone https://github.com/jpmorganchase/qubernetes.git
+$> cd qubernetes 
+qubernetes $> docker run -v $(pwd):/qubernetes -ti quorumengineering/qubernetes
+root@4eb772b14086:/qubernetes# ./quorum-init
 
-### Install Prerequisites without Docker 
-* [`bootnode`](https://github.com/ethereum/go-ethereum/tree/master/cmd/bootnode) (geth) for generating keys. 
-   ```
-     # what you should see if installed.
-     $> bootnode
-     Fatal: Use -nodekey or -nodekeyhex to specify a private key
-   ```
-   
-   If you have geth source on your machine: 
-   ```
-    $> cd go-ethereum 
-    go-ethereum $> make all
-    # or place this in your .bash_profile or equivalent file
-    $> export PATH="~/go/src/github.com/ethereum/go-ethereum/build/bin:$PATH"
-   ```
-* [nodejs](https://nodejs.org/en/download/) Istanbul only.
-  ```
-   # tested with version 10.15
-   $> node --version
-   v10.15.
-   ```
-* web3 `$> npm web3` Istanbul only.
-
-* [constellation-node](https://github.com/jpmorganchase/constellation)
-  ```
-  $> brew install berkeley-db leveldb libsodium
-  $> brew install haskell-stack
-  $> git clone https://github.com/jpmorganchase/constellation.git WHATEVER/DIRECTORY
-  $> cd constellation
-  constellation $> stack setup
-  constellation $> stack install
-  ```
-
-* [istanbul-tools](https://github.com/jpmorganchase/istanbul-tools) Istanbul only.
-  ```
-   # install
-   $> go get github.com/jpmorganchase/istanbul-tools/cmd/istanbul  
-   ```
-   
-### Generating Your Own K8s Resources
-
-Once the install prerequisites are on your machine, the k8s resources can now be generated to run an arbitrary number of nodes.
-   
-1. There are example `qubernetes.yaml` configs in [`examples/config`](examples/config). 
-   Let's run the 8nodes example: 
+root@4eb772b14086:/qubernetes# ls out/
+00-quorum-persistent-volumes.yaml  01-quorum-genesis.yaml  02-quorum-shared-config.yaml  03-quorum-services.yaml  04-quorum-keyconfigs.yaml  config  deployments
 ```
- $> rm qubernetes.yaml
- $> ln -s examples/config/qubernetes-istanbul-generate-8nodes.yaml qubernetes.yaml
- 
-```  
-The most basic thing to modify in `qubernetes.yaml` is the number of nodes you wish to deploy: 
+[![docker-quberentes-boot-3](docs/resources/docker-quberentes-boot-3-play.png)](http://blog.libbykent.com/action-time/docker-quberentes-boot-3.webm)
+
+### Modifying the qubernetes Config File
+example [qubernetes.yaml](qubernetes.yaml)
+![qubernetes-yaml-marked](docs/resources/qubernetes-yaml-marked.png)
+
+The most natural thing to modify in your [`qubernetes.yaml`](qubernetes.yaml) is the number of nodes you wish to deploy: 
 ```yaml
 # number of nodes to deploy
 nodes:
   number: 8
 ```
 
-2. Run `./quorum-init` to generate the necessary quorum keys (**note**: this requires the geth `bootnode` command to be on your path),
- genesis.json, permissioned-nodes.json, etc. needed for the quorum deployment.
+2. Run `./quorum-init` to generate everything needed for the quorum deployment: quorum keys, genesis.json, istanbul-config.json, permissioned-nodes.json, etc. 
   
- These resources will be written to (and read from) the directories specified in the `qubernetes.yaml` the default [`qubernetes.yaml`](config/qubernetes.yaml)
- is configured to write theses to the `./out/config` directory.
+ These resources will be written and read from the directories specified in the `qubernetes.yaml` file.
+ The default [`qubernetes.yaml`](qubernetes.yaml) is configured to write theses to the `./out/config` directory.
  ```yaml
  Key_Dir_Base: out/config 
  Permissioned_Nodes_File: out/config/permissioned-nodes.json
@@ -459,14 +235,15 @@ nodes:
  INFO [01-14|17:05:13.160] Maximum peer count                       ETH=25 LES=0 total=25
 ```
 
- After the quorum  resources have been generated, the necessary k8s resources will be created in the `out` directory:
+ After the Quorum resources have been generated, the necessary K8s resources will be created in the `out` directory:
 ```shell
-# if you want to check out the generated quorum resources
+# list the  generated Quorum resources
 $> ls out/config
 genesis.json                   key2                           key5                           key8                           tessera-config-9.0.json
 istanbul-validator-config.toml key3                           key6                           nodes.yaml                     tessera-config-enhanced.json
 key1                           key4                           key7                           permissioned-nodes.json        tessera-config.json
 
+# list the Kubernetes yaml files
 $> ls out
 00-quorum-persistent-volumes.yaml 02-quorum-shared-config.yaml      04-quorum-keyconfigs.yaml         config
 01-quorum-genesis.yaml            03-quorum-services.yaml           05-quorum-deployments.yaml
@@ -475,12 +252,12 @@ $> ls out
 $> kubectl apply -f out
 ```
 
-3. Once the Quorum resources have been generated, the `./quberetes` command can be run to generator variations of the Kubernetes
+3. Once the Quorum resources have been generated, the `./qubernetes` command can be run to generate variations of the Kubernetes
 Resources, e.g. `ClusterIP` vs `NodePort`. The `./qubernetes` command can be run multiple times and is idempotent as long as the 
 underlying Quorum resources do not change.
 
 ```shell
-# Generate the kubernetes resources necessary to support a Quorum deploy
+# Generate the Kubernetes resources necessary to support a Quorum deployment
 # this will be written to the `out` dir.
 $> ./qubernetes
 

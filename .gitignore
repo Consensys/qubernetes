@@ -5,3 +5,6 @@ out/
 qubernetes.yaml
 nodes.yaml
 testing/*-out
+.DS_Store
+docs/.DS_Store
+quickest-start.yaml

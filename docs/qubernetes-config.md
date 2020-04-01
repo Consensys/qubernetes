@@ -1,6 +1,6 @@
 
 ## Configuration Details
-The main configuration files are [`qubernetes.yaml`](7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yaml) and [`nodes.yaml`](7nodes/nodes-7.yaml). 
+The main configuration files are [`qubernetes.yaml`](../7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yaml) and [`nodes.yaml`](../7nodes/nodes-7.yaml). 
 These two configuration yaml files must exist in the base directory.
 
 
@@ -8,8 +8,8 @@ These two configuration yaml files must exist in the base directory.
 
 This example will demo (re)generating the Quorum Kubernetes yaml (tessera/IBFT) from the 7nodes quorum resources (keys, configs, etc.). 
 
-There are qubernetes config files in the [7nodes](7nodes) directory for the various deployment configurations: tessera, constellation, IBFT, raft, PVC, host, etc.   
-This example uses [7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-tessera-7nodes-pvc.yaml](7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-tessera-7nodes-pvc.yaml)
+There are qubernetes config files in the [7nodes](../7nodes) directory for the various deployment configurations: tessera, constellation, IBFT, raft, PVC, host, etc.   
+This example uses [7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-tessera-7nodes-pvc.yaml](../7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-tessera-7nodes-pvc.yaml)
 
 ```yaml
 nodes:

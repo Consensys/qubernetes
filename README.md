@@ -1,66 +1,59 @@
 ## Qubernetes
 
-A project for deploying and running [Quorum](https://github.com/jpmorganchase/quorum) on [Kubernetes](https://github.com/kubernetes/kubernetes),
+[Quorum](https://github.com/jpmorganchase/quorum) on [Kubernetes](https://github.com/kubernetes/kubernetes),
 including: 
 
-* [Quickest Start](#quickest-start) Requires docker to be running on your machine and have sufficient memory ~8GB for a
-  7 node cluster.    
-  To deploy 7nodes tessera IBFT run: `./quickest-start.sh`  
+* [Quickest Start](#quickest-start):    
+  To deploy 7nodes Tessera with IBFT run: `./quickest-start.sh`  
   To create and deploy an N node Quorum network run: `./quickest-start.sh $NUM`   
   To terminate the network run `./quickest-stop.sh`
 
-* [7 node example on K8s](docs/7nodes-on-k8s.md)   
-  Provides the necessary Kubernetes resource yaml files to run [quorum-examples 7nodes](https://github.com/jpmorganchase/quorum-examples/tree/master/examples/7nodes) on Kubernetes.
-  If Kubernetes is setup on your machine , e.g. `kind cluster create`, minikube, GKE, etc. run:   
-  ```bash
-  $> git clone https://github.com/jpmorganchase/qubernetes.git
-  $> cd qubernetes 
-  qubernetes$> kubectl apply -f 7nodes/istanbul-7nodes-tessera/k8s-yaml-pvc
-  ```   
+* [7 Node Example On K8s](docs/7nodes-on-k8s.md): &nbsp;&nbsp; runs [quorum-examples](https://github.com/jpmorganchase/quorum-examples/tree/master/examples/7nodes) on K8s.  
+  🎬 &nbsp;&nbsp;[7nodes Demo](#-step-1-deploy-7nodes)  
   
-* [N Node Quorum Network On K8s](#generating-quorum-and-k8s-resources-from-custom-configs)
+* [N Node Quorum Network On K8s](#generating-quorum-and-k8s-resources-from-custom-configs):
   Generates the necessary Quorum resources (keys, configs - genesis, istanbul, etc.) and Kubernetes API resource yaml 
   for a configurable N node Quorum Network based on a minimal config [`qubernetes.yaml`](qubernetes.yaml).    
    
    
 
 ## Additional Resources   
-* [Quickstart with minikube](docs/minikube-docs.md)
+* [Quickstart With Minikube](docs/minikube-docs.md):
   Quickstart for running a Quorum network on minikube.
  
-* [Running on GKE](docs/gke-hosted-kubernetes.md) 
+* [Running On GKE](docs/gke-hosted-kubernetes.md) 
 
-* [Quorum Network From Existing Quorum Resources](docs/qubernetes-config.md#generating-kubernetes-object-yaml-from-existing-quorum-resources)  
+* [Quorum Network From Existing Quorum Resources](docs/qubernetes-config.md#generating-kubernetes-object-yaml-from-existing-quorum-resources):  
 Generates Kuberenetes API resources from existing Quorum resources: keys, config, etc.
 
 ## Quickest Start
-
+Requires docker to be running on your machine with sufficient memory ~8GB for a 7 node cluster. 
 ```bash
+# default 7nodes
 $> ./quickest-start.sh
 ```
 
+```bash 
+# N node network
+$> ./quickest-start.sh 3
+```
+
+```bash
+# terminate
+$> ./quickest-stop.sh
+````
+
 This:
 
-1. Installs [Kind](https://kubernetes.io/docs/setup/learning-environment/kind/), a tool for running Kubernetes in Docker
-2. Deletes any existing Kind cluster
-3. Creates a new Kind cluster
-4. Deploys a 7 node quorum network configured to use Tessera as the Transaction Manger, and IBFT as the consensus algorithm.
+1. Installs [Kind](https://kubernetes.io/docs/setup/learning-environment/kind/), a tool for running Kubernetes in Docker.
+2. Deletes any existing kind cluster named `quickest-qube` if it exist locally.
+3. Creates a new Kind cluster named `quickest-qube`.
+4. Deploys a 7 node quorum network (or an N node network) configured to use Tessera as the Transaction Manger, and IBFT as the consensus algorithm.
 
+⭕️&nbsp;&nbsp;**note**: if memory constrained, run `./quickest-start.sh 3` to create a 3 node network instead of the default 7node network.
 
-### 🎥 Step 1: Start Kind k8s cluster (bottom screen) & deploy 7nodes (IBFT & Tessera)
-[![qubes-7nodes-kind](docs/resources/7node-kind-to-pending-play.png)](http://blog.libbykent.com/action-time/7node-kind-to-pending.webm)
-
-### 🎥 Step 2: Deploy a public and private transaction from node1
-continued from above
-[![qubes-7nodes-run-contract](docs/resources/7node-run-contracts-play.png)](http://blog.libbykent.com/action-time/7node-run-contracts.webm)
-
-### 🎥 Step 3: Attach to the geth console
-continued from above 
-part 1 attach to geth from inside the container
-part 2 use helper `./geth-attach node1`
-[![qubes-7nodes-attach-geth](docs/resources/7node-attach-geth-play.png)](http://blog.libbykent.com/action-time/7node-attach-geth.webm)
-
-## Accessing Quorum and Transaction Manager Containers on K8s
+## Accessing Nodes on K8s
+e.g. The Quorum and Transaction Manager Containers
 
 > **Note:** The below commands assume that the quorum deployment was deployed to the `default` namespace.
 
@@ -109,7 +102,8 @@ connecting to POD [quorum-node1-deployment-676684fddf-9gwxk]
 
 ```
 
-There is also a helper to attach to the geth console directly
+There is also a helper to attach to the geth console directly.   
+🎬 &nbsp; &nbsp;  [Geth Attach Demo](#-step-3-attach-to-the-geth-console)
 ```shell
 # from the root of the quberenetes repository
 qubernetes $>  ./geth-attach node1
@@ -121,6 +115,23 @@ qubernetes $>  ./geth-attach node1
 2
 
 ```
+
+## Demos  
+
+### 🎥 Step 1 Deploy 7nodes
+Starts Kind K8s cluster (bottom screen) & deploy 7nodes (IBFT & Tessera)
+[![qubes-7nodes-kind](docs/resources/7node-kind-to-pending-play.png)](http://blog.libbykent.com/action-time/7node-kind-to-pending.webm)
+
+### 🎥 Step 2: Deploy a public and private transaction from node1
+continued from above
+[![qubes-7nodes-run-contract](docs/resources/7node-run-contracts-play.png)](http://blog.libbykent.com/action-time/7node-run-contracts.webm)
+
+### 🎥 Step 3: Attach to the geth console
+continued from above 
+part 1 attach to geth from inside the container
+part 2 use helper `./geth-attach node1`
+[![qubes-7nodes-attach-geth](docs/resources/7node-attach-geth-play.png)](http://blog.libbykent.com/action-time/7node-attach-geth.webm)
+
 ## Generating Quorum and K8s Resources From Custom Configs
 
 Qubernetes enables the creation of customized Quorum networks run on Kubernetes, providing a configurable number of Quorum and Transaction Manager nodes, and creating the associated genesis config, transaction manager config, permissioned-nodes.json, required keys, services, etc. to start the network. 
@@ -129,7 +140,7 @@ If you have Docker installed, you are all set! Use the [Docker Bootstrap Contain
 
 If you do not wish to install Docker, follow the instructions in [Install Prerequisites without Docker](docs/installing-on-host.md).
 
-Once you have the prerequisites set up see [Modifying the qubernetes config file](#modifying-the-qubernetes-config-file) for more 
+Once you have the prerequisites set up see [Modifying The Qubernetes Config File](#modifying-the-qubernetes-config-file) for more 
 information about configuring a custom deployment.
 
 ### Docker Bootstrap Container
@@ -196,7 +207,7 @@ root@4eb772b14086:/qubernetes# ls out/
 ```
 [![docker-quberentes-boot-3](docs/resources/docker-quberentes-boot-3-play.png)](http://blog.libbykent.com/action-time/docker-quberentes-boot-3.webm)
 
-### Modifying the qubernetes Config File
+### Modifying The Qubernetes Config File
 example [qubernetes.yaml](qubernetes.yaml)
 ![qubernetes-yaml-marked](docs/resources/qubernetes-yaml-marked.png)
 

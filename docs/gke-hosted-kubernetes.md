@@ -1,4 +1,6 @@
-## GCP (Google Cloud Platform) and GKE (Google Kubernetes Engine) 
+## GKE (Google Kubernetes Engine) 
+
+Running on GKE inside GCP (Google Cloud Platform)
 
 ### Docker Container
 

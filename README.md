@@ -3,7 +3,7 @@
 A project for deploying and running [Quorum](https://github.com/jpmorganchase/quorum) on [Kubernetes](https://github.com/kubernetes/kubernetes),
 including: 
 
-* [Quickest Start](#quickest-start) Requires docker to be running on your machine aynd have sufficient memory ~8GB for a
+* [Quickest Start](#quickest-start) Requires docker to be running on your machine and have sufficient memory ~8GB for a
   7 node cluster.    
   To deploy 7nodes tessera IBFT run: `./quickest-start.sh`  
   To create and deploy an N node Quorum network run: `./quickest-start.sh $NUM`   
@@ -18,7 +18,7 @@ including:
   qubernetes$> kubectl apply -f 7nodes/istanbul-7nodes-tessera/k8s-yaml-pvc
   ```   
   
-* [N Node Quorum Netowrk On K8s](#generating-quorum-and-k8s-resources-from-custom-configs)
+* [N Node Quorum Network On K8s](#generating-quorum-and-k8s-resources-from-custom-configs)
   Generates the necessary Quorum resources (keys, configs - genesis, istanbul, etc.) and Kubernetes API resource yaml 
   for a configurable N node Quorum Network based on a minimal config [`qubernetes.yaml`](qubernetes.yaml).    
    
@@ -35,23 +35,26 @@ Generates Kuberenetes API resources from existing Quorum resources: keys, config
 
 ## Quickest Start
 
-1. Installs [Kind](https://kubernetes.io/docs/setup/learning-environment/kind/) a tool for running Kubernetes in Docker
-2. Delete existing kind cluster
-3. Creates a new kind cluster
-4. Deploys a 7 node quorum network configured to use Tessera as the Transaction Manger, and IBFT as the consensus algorithm.
-
 ```bash
 $> ./quickest-start.sh
 ```
 
-### 🎥 Step 1 start kind k8s cluster (bottom screen) & deploy 7nodes (IBFT & Tessera)
+This:
+
+1. Installs [Kind](https://kubernetes.io/docs/setup/learning-environment/kind/), a tool for running Kubernetes in Docker
+2. Deletes any existing Kind cluster
+3. Creates a new Kind cluster
+4. Deploys a 7 node quorum network configured to use Tessera as the Transaction Manger, and IBFT as the consensus algorithm.
+
+
+### 🎥 Step 1: Start Kind k8s cluster (bottom screen) & deploy 7nodes (IBFT & Tessera)
 [![qubes-7nodes-kind](docs/resources/7node-kind-to-pending-play.png)](http://blog.libbykent.com/action-time/7node-kind-to-pending.webm)
 
-### 🎥 Deploy a public and private transaction from node1
+### 🎥 Step 2: Deploy a public and private transaction from node1
 continued from above
 [![qubes-7nodes-run-contract](docs/resources/7node-run-contracts-play.png)](http://blog.libbykent.com/action-time/7node-run-contracts.webm)
 
-### 🎥 Attach to the geth console
+### 🎥 Step 3: Attach to the geth console
 continued from above 
 part 1 attach to geth from inside the container
 part 2 use helper `./geth-attach node1`
@@ -59,7 +62,7 @@ part 2 use helper `./geth-attach node1`
 
 ## Accessing Quorum and Transaction Manager Containers on K8s
 
-**note** this assumes that the quorum deployment was deployed to the `default` namespace.
+> **Note:** The below commands assume that the quorum deployment was deployed to the `default` namespace.
 
 ```shell
 $> kubectl get pods
@@ -93,7 +96,7 @@ connecting to POD [quorum-node1-deployment-676684fddf-9gwxk]
 
 # you should now see the transactions go through
 # note: if you are running IBFT (Istanbul BFT consensus) the blockNumber will increment at the user defined  
-# (configureable) time interval.
+# (configurable) time interval.
 
 / > geth attach $QHOME/dd/geth.ipc
 > eth.blockNumber
@@ -120,27 +123,27 @@ qubernetes $>  ./geth-attach node1
 ```
 ## Generating Quorum and K8s Resources From Custom Configs
 
-Qubernetes enables the creation of customized Quorum networks run on Kubernetes: configurable number of Quorum and Transaction 
-Manager nodes, creating the associated genesis config, transaction manager config, permissioned-nodes.json, required keys, services, etc. 
+Qubernetes enables the creation of customized Quorum networks run on Kubernetes, providing a configurable number of Quorum and Transaction Manager nodes, and creating the associated genesis config, transaction manager config, permissioned-nodes.json, required keys, services, etc. to start the network. 
 
-If you have Docker installed, you are all set! Use the [Docker Bootstrap Container](#docker-bootstrap-container)
+If you have Docker installed, you are all set! Use the [Docker Bootstrap Container](#docker-bootstrap-container).
+
 If you do not wish to install Docker, follow the instructions in [Install Prerequisites without Docker](docs/installing-on-host.md).
 
-Once you have the prerequists set up see [Generating Your Own K8s Resources](#generating-your-own-k8s-resources) for more 
+Once you have the prerequisites set up see [Modifying the qubernetes config file](#modifying-the-qubernetes-config-file) for more 
 information about configuring a custom deployment.
 
 ### Docker Bootstrap Container
 
-The Docker container `quorumengineering/qubernetes` has the necessary binaries install to generate the necessary Quorum resources. 
-If you have docker running, you don't have ot worry about installing anything else.
+The Docker container `quorumengineering/qubernetes` has the necessary binaries installed to generate the necessary Quorum resources. 
+If you have docker running, you don't have to worry about installing anything else.
 
 Usage:
 
-**note**: `qubernetes.yaml` is not added to the the docker container, as this file will change between various deployments.
-           The `qubernetes.yaml` file and the desired `out` directory will need to be mounted on the `quorumengineering/qubernetes` container  
-           using `-v $PATH/ON/HOST/qubernetes.yaml:$PATH/ON/CONTAINTER/qubernetes.yaml`, e.g. `-v $(pwd)/cool-qubernetes.yaml:/qubernetes/qubernetes.yaml`
-           see below. 
-1.  Use the default `qubernetes.yaml` in the base of the quberentes repository.  You may edit this file to create your custom quorum network 
+> **Note:** `qubernetes.yaml` is not added to the docker container, as this file will change between various deployments.
+
+The `qubernetes.yaml` file and the desired `out` directory will need to be mounted on the `quorumengineering/qubernetes` container using `-v $PATH/ON/HOST/qubernetes.yaml:$PATH/ON/CONTAINTER/qubernetes.yaml`, e.g. `-v $(pwd)/cool-qubernetes.yaml:/qubernetes/qubernetes.yaml`, see below:
+ 
+1.  Use the default `qubernetes.yaml` in the base of the qubernetes repository.  You may edit this file to create your custom quorum network 
 ```bash
 $> git clone https://github.com/jpmorganchase/qubernetes.git
 $> cd qubernetes
@@ -177,7 +180,7 @@ cool-qubernetes.yaml out
 ```
 [![docker-quberentes-boot-2](docs/resources/docker-quberentes-boot-2-play.png)](http://blog.libbykent.com/action-time/docker-quberentes-boot-2.webm)
 
-3.  Exec into the `quorumengineering/qubernetes` container to run commands inside. This is useful for testing out changes 
+3.  Exec into the `quorumengineering/qubernetes` container to run commands inside. This is useful for testing changes 
 to the local ruby generator files. 
 In this example, we are running the container from inside the base qubernetes directory, and mounting the entire directory,
 so it is as if we were running on our local host: the files from the host will be used, and generated files will be continue to exist after the container exists.
@@ -276,5 +279,5 @@ $> kubectl delete -f out
 ```
 
 ## Thanks! And Additional Resources 
-Thanks to [Maximilian Meister blog and code](https://medium.com/@cryptoctl) which provided and awesome starting point!
-and is a good read to undestand the different components.
+Thanks to [Maximilian Meister blog and code](https://medium.com/@cryptoctl) which provided an awesome starting point!
+and is a good read to understand the different components.

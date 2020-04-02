@@ -1,6 +1,6 @@
 
 ## Configuration Details
-The main configuration files are [`qubernetes.yaml`](../7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-7nodes.yaml) and [`nodes.yaml`](../7nodes/nodes-7.yaml). 
+The main configuration files are [`qubernetes.yaml`](../7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-tessera-7nodes-pvc.yaml) and [`nodes.yaml`](../7nodes/nodes-7.yaml). 
 These two configuration yaml files must exist in the base directory.
 
 
@@ -60,7 +60,7 @@ geth:
   verbosity: 9
 ```
 
-Replace the `qubernetes.yaml` in the qubernetes base directory with [7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-tessera-7nodes-pvc.yaml](7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-tessera-7nodes-pvc.yaml), e.g. create a symlink to `qubernetes-istanbul-tessera-7nodes-pvc.yaml`
+Replace the `qubernetes.yaml` in the qubernetes base directory with [7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-tessera-7nodes-pvc.yaml](../7nodes/istanbul-7nodes-tessera/qubernetes-istanbul-tessera-7nodes-pvc.yaml), e.g. create a symlink to `qubernetes-istanbul-tessera-7nodes-pvc.yaml`
  
 ```
 $> pwd

@@ -3,7 +3,7 @@
 This section demonstrates how to deploy a 7 node quorum network to [minikube](https://github.com/kubernetes/minikube) a local
 kubernetes cluster. 
 
-Once the pods are deployed, if you wish to interact with them see [Accessing Quorum and Transaction Manager Containers on K8s](../#accessing-nodes-on-k8s).
+Once the pods are deployed, if you wish to interact with them see [Accessing Quorum and Transaction Manager Containers on K8s](..#accessing-nodes-on-k8s).
 
 ### Install [minikube](https://kubernetes.io/docs/setup/minikube/) for your distro.
 ```shell

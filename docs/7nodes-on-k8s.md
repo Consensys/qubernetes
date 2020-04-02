@@ -1,7 +1,7 @@
 ## 7 Nodes Examples
 
 [quorum-examples 7nodes](https://github.com/jpmorganchase/quorum-examples/tree/master/examples/7nodes) has been ported 
-to k8s resources.  There are k8s resource files in the qubernetes repo's [7nodes](7nodes) directory for deploying 
+to k8s resources.  There are k8s resource files in the qubernetes repo's [7nodes](../7nodes) directory for deploying 
 quorum on kubernetes with tessera or constellation as the transaction manager, and raft or istanbul as the consensus engines.  
 
 This assume you have a running k8s cluster which you can connect to via `kubectl`.
@@ -11,7 +11,7 @@ the deployment is created and deleted when the deployment is deleted (`kubectl d
 
 
 **note** [HostPath](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath) persistent storage is no longer supported 
-after commit [536e1084e362cb3db87003c36f1fdffaa4f9da64](commit/536e1084e362cb3db87003c36f1fdffaa4f9da64) Wed Mar 11 17:03:21 2020 -0400
+after commit [4f8229cf2dce6c7f28020c84a2b5344050867fc1](../commit/4f8229cf2dce6c7f28020c84a2b5344050867fc1) Wed Mar 11 17:03:21 2020 -0400
 
 Examples below are for deploying 7nodes using PVC (Persistent Volume Claims):
 

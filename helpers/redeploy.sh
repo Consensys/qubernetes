@@ -22,7 +22,7 @@ fi
 
 PODS=$(kubectl get pod $NAMESPACE | grep $POD_PATTERN |  awk '{print $1}')
 for POD in $PODS; do
-  ENODE_ID=$(kubectl exec $POD -c quorum env | grep THIS_ENODE | awk -F= '{print $2}')
+  ENODE_ID=$(kubectl exec $POD -c quorum -- env | grep THIS_ENODE | awk -F= '{print $2}')
   DEPLOYMENT_FILE=$(grep -ls  $ENODE_ID out/deployments/{*,.*})
   echo "Redeploying enodeID $ENODE_ID, Deployment File: $DEPLOYMENT_FILE"
   kubectl apply -f $DEPLOYMENT_FILE

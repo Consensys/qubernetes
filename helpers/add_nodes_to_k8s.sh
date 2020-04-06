@@ -59,7 +59,7 @@ printf " ${GREEN} waiting for quorum on Pod [$POD] to startup:${NC} \n"
 
 RES=1;
 while [ ${RES} -ne 0 ]; do
-  kubectl $NAMESPACE exec -it $POD -c quorum /geth-helpers/geth-exec.sh "eth.blockNumber"
+  kubectl $NAMESPACE exec -it $POD -c quorum -- /geth-helpers/geth-exec.sh "eth.blockNumber"
   RES=$?
   echo "RES IS $RES"
   sleep 2
@@ -70,8 +70,8 @@ printf " ${GREEN} Quorum is back up. Running update on POD [$POD] ${NC} \n"
 CONTINUE=false;
 while ! ${CONTINUE}; do
   echo " checking if pod is back up.."
-  #kubectl exec $POD -c quorum cat /etc/quorum/qdata/dd/^
-  kubectl exec $POD -c quorum /etc/quorum/qdata/contracts/raft_add_all_permissioned.sh
+  #kubectl exec $POD -c quorum -- cat /etc/quorum/qdata/dd/^
+  kubectl exec $POD -c quorum -- /etc/quorum/qdata/contracts/raft_add_all_permissioned.sh
   RES=$?
   echo "CONTINUE is $CONTINUE"
   echo "RES is $RES"

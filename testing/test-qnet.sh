@@ -14,8 +14,8 @@ function usage() {
 # get_block_number NAMESPACE
 function get_block_number() {
   NAMESPACE=$1
-  kubectl exec -it $POD -c quorum /geth-helpers/geth-exec.sh "eth.blockNumber" $NAMESPACE
-  BLOCK_NUM=$(kubectl exec -it $POD -c quorum /geth-helpers/geth-exec.sh "eth.blockNumber" $NAMESPACE)
+  kubectl $NAMESPACE exec -it $POD -c quorum -- /geth-helpers/geth-exec.sh "eth.blockNumber"
+  BLOCK_NUM=$(kubectl $NAMESPACE exec -it $POD -c quorum -- /geth-helpers/geth-exec.sh "eth.blockNumber")
   echo $BLOCK_NUM > block.tmp
   # FIXME: this is really annoying, but removes the color return from the block number.
   BLOCK_NUM=$(cat -v block.tmp | sed 's/\^M//g' | sed  's|0m||g' | sed 's|31m||g' | sed 's|\^||g' | sed 's|\[||g')
@@ -85,7 +85,7 @@ do
   echo "ALL_RUNNING == ${ALL_RUNNING}"
   sleep 5
 done
-
+echo "ALL_RUNNING == ${ALL_RUNNING}"
 echo "Attempts: $CT -ge $MAX_ATTEMPTS"
 # Pods haven't come up in a timely matter, something is amiss.
 if [[ "$CT" -ge "$MAX_ATTEMPTS" ]];
@@ -101,8 +101,8 @@ printf "${GREEN}Running on pod $POD ${NC}\n"
 
 EXIT_CODE=1;
 while [ ${EXIT_CODE} -ne 0 ]; do
-  echo kubectl exec -it $POD -c quorum /geth-helpers/geth-exec.sh "eth.blockNumber" $NAMESPACE
-  kubectl exec -it $POD -c quorum /geth-helpers/geth-exec.sh "eth.blockNumber" $NAMESPACE
+  echo kubectl $NAMESPACE exec -it $POD -c quorum -- /geth-helpers/geth-exec.sh "eth.blockNumber"
+  kubectl $NAMESPACE exec -it $POD -c quorum -- /geth-helpers/geth-exec.sh "eth.blockNumber"
   EXIT_CODE=$?
   echo "EXIT_CODE IS $EXIT_CODE"
   sleep 2

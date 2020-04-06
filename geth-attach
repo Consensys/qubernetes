@@ -15,6 +15,6 @@ fi
 POD=$(kubectl get pods $NAMESPACE | grep Running | grep $1 |  awk '{print $1}')
 echo "connecting to POD [$POD]"
 
-kubectl $NAMESPACE exec -it $POD -c quorum /geth-helpers/geth-attach.sh
+kubectl $NAMESPACE exec -it $POD -c quorum -- /geth-helpers/geth-attach.sh
 
 

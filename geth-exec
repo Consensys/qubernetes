@@ -36,4 +36,4 @@ if [ -z "$SILENT" ]; then
   echo "executing geth command [$GETH_CMD] on POD [$POD]"
 fi
 
-kubectl $NAMESPACE exec -it $POD -c quorum /geth-helpers/geth-exec.sh "$GETH_CMD"
+kubectl $NAMESPACE exec -it $POD -c quorum -- /geth-helpers/geth-exec.sh "$GETH_CMD"

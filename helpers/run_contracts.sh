@@ -24,10 +24,10 @@ echo "connecting to POD [$POD]"
 
 if [ "$CONTRACT_TYPE" == "priv" ] || [ "$CONTRACT_TYPE" == "both" ]; then
   echo "running private contract"
-  kubectl $NAMESPACE exec -it $POD -c quorum /etc/quorum/qdata/contracts/runscript.sh /etc/quorum/qdata/contracts/private_contract.js
+  kubectl $NAMESPACE exec -it $POD -c quorum -- /etc/quorum/qdata/contracts/runscript.sh /etc/quorum/qdata/contracts/private_contract.js
 fi
 
 if [ "$CONTRACT_TYPE" == "pub" ] || [ "$CONTRACT_TYPE" == "both" ]; then
   echo "running public contract"
-  kubectl $NAMESPACE exec -it $POD -c quorum /etc/quorum/qdata/contracts/runscript.sh /etc/quorum/qdata/contracts/public_contract.js
+  kubectl $NAMESPACE exec -it $POD -c quorum -- /etc/quorum/qdata/contracts/runscript.sh /etc/quorum/qdata/contracts/public_contract.js
 fi

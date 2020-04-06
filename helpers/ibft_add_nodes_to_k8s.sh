@@ -36,7 +36,7 @@ echo "Step 2: proposing IBFT validators to the network."
 POD_PATTERN=quorum
 PODS=$(kubectl get pods $NAMESPACE | grep $POD_PATTERN | grep Running | awk '{print $1}')
 for POD in $PODS; do
-  kubectl exec $POD -c quorum /etc/quorum/qdata/node-management/ibft_propose_all.sh
+  kubectl exec $POD -c quorum -- /etc/quorum/qdata/node-management/ibft_propose_all.sh
 done
 
 RED='\033[0;31m'

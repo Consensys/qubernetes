@@ -53,11 +53,12 @@ fi
 function wait_for_running_pods() {
  # make sure all the pods come up and are in a RUNNING state.
   CT=0
-  MAX_ATTEMPTS=20
+  MAX_ATTEMPTS=11
   ALL_RUNNING="false"
-  while [[ ${ALL_RUNNING} != "true" || $CT -gt $MAX_ATTEMPTS ]]
+  while [[ ${ALL_RUNNING} != "true" && $CT -lt $MAX_ATTEMPTS ]]
   do
     ((CT=CT+1))
+    echo "Attempt $CT"
     printf "${GREEN}Waiting for all PODs to be in the RUNNING state.${NC} \n"
     RUNNING="true"
     # PODS is POD_NAME and POD_STATUS (Running | Pending, etc) NAME%%STATUS
@@ -65,7 +66,12 @@ function wait_for_running_pods() {
     # Set up the returned pods so we can loop through them [NAME%%STATUS].
     PODS_NAME_STATUS=$(kubectl get pods $NAMESPACE | grep quorum | awk '{print $1"%%"$3}')
     # echo "PODS_NAME_STATUS: [$PODS_NAME_STATUS]"
-
+    RES=$?
+    if [[ $RES -gt 0 ]];
+    then
+      printf "${RED}Issue applying pods, exiting.${NC}\n"
+      exit 1
+    fi
     # if there are no pods returned, this may be because the kuberentes backend is taking a bit
     # longer to initialize the PODs, wait for a few loops:
     # TODO: terminate after several attempts with a failure code.
@@ -97,7 +103,7 @@ function wait_for_running_pods() {
     sleep 10
   done
 
-  if [[ $CT -gt $MAX_ATTEMPTS ]];
+  if [[ $CT -ge $MAX_ATTEMPTS ]];
   then
     printf "${RED}ISSUE: The pods are taking a long time to get to the RUNNING state${NC}"
     echo " Potential issue: docker does not have enough memory to run the desireed network. "

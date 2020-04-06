@@ -40,10 +40,15 @@ else
 fi
 
 # make sure all the pods come up and are in a RUNNING state.
+CT=0
+MAX_ATTEMPTS=50
 ALL_RUNNING="false"
-while [[ ${ALL_RUNNING} != "true" ]]
+while [[ ${ALL_RUNNING} != "true" && "$CT" -lt "$MAX_ATTEMPTS" ]]
 do
+  echo  "${CT} -lt ${MAX_ATTEMPTS}"
+  ((CT=CT+1))
   RUNNING="true"
+  echo "Attempt $CT"
   # PODS is POD_NAME and POD_STATUS (Running | Pending, etc) NAME%%STATUS
   # get all pods NAME%%STATUS in order to test if all pods are running yet.
   # Set up the returned pods so we can loop through them [NAME%%STATUS].
@@ -80,6 +85,14 @@ do
   echo "ALL_RUNNING == ${ALL_RUNNING}"
   sleep 5
 done
+
+echo "Attempts: $CT -ge $MAX_ATTEMPTS"
+# Pods haven't come up in a timely matter, something is amiss.
+if [[ "$CT" -ge "$MAX_ATTEMPTS" ]];
+then
+  printf "${RED}ISSUE: The pods are taking a long time to get to the RUNNING state${NC}"
+  exit 1
+fi
 
 printf "${GREEN}OK all pods up and ready for action! ${NC}\n"
 #echo "kubectl get pods $NAMESPACE | grep quorum | grep node1 | awk '{print $1}'"

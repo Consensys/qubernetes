@@ -28,32 +28,32 @@ puts "using config file: " + @CONFIG_FILE
 #####################################################
 # Generate genesis.json and permissioned-nodes.json
 #####################################################
-
+@base_template_path = "templates/quorum"
 `mkdir -p out/config`
 
 # create genesis files with all discovered keystore accounts pre alloc with funds.
 puts(@Genesis_File)
 File.open(@Genesis_File, "w") do |f|
-  f.puts (ERB.new(File.read("genesis.json.erb"), nil, "-").result(binding))
+  f.puts (ERB.new(File.read(@base_template_path + "/genesis.json.erb"), nil, "-").result(binding))
 end
 
 # create permission nodes file containing all the nodes.
 puts(@Permissioned_Nodes_File)
 File.open(@Permissioned_Nodes_File , "w") do |f|
-  f.puts (ERB.new(File.read("permissioned-nodes.json.erb"), nil, "-").result)
+  f.puts (ERB.new(File.read(@base_template_path + "/permissioned-nodes.json.erb"), nil, "-").result)
 end
 
 # create tessera config.
 puts(@Tessera_Config_Dir + "/tessera-config.json")
 File.open(@Tessera_Config_Dir + "/tessera-config.json" , "w") do |f|
-  f.puts (ERB.new(File.read("tessera-config.json.erb"), nil, "-").result)
+  f.puts (ERB.new(File.read(@base_template_path + "/tessera-config.json.erb"), nil, "-").result)
 end
 puts(@Tessera_Config_Dir + "/tessera-config-enhanced.json")
 File.open(@Tessera_Config_Dir + "/tessera-config-enhanced.json" , "w") do |f|
-  f.puts (ERB.new(File.read("tessera-config-enhanced.json.erb"), nil, "-").result)
+  f.puts (ERB.new(File.read(@base_template_path + "/tessera-config-enhanced.json.erb"), nil, "-").result)
 end
 # Add support for tessera 9.0+ configs
 puts(@Tessera_Config_Dir + "/tessera-config-9.0.json")
 File.open(@Tessera_Config_Dir + "/tessera-config-9.0.json" , "w") do |f|
-  f.puts (ERB.new(File.read("tessera-config-9.0.json.erb"), nil, "-").result)
+  f.puts (ERB.new(File.read(@base_template_path + "/tessera-config-9.0.json.erb"), nil, "-").result)
 end

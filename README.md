@@ -158,7 +158,7 @@ The `qubernetes.yaml` file and the desired `out` directory will need to be mount
 ```bash
 $> git clone https://github.com/jpmorganchase/qubernetes.git
 $> cd qubernetes
-qubernetes $> docker run -v $(pwd)/qubernetes.yaml:/qubernetes/qubernetes.yaml -v $(pwd)/out:/qubernetes/out -it  quorumengineering/qubernetes ./quorum-init qubernetes.yaml
+qubernetes $> docker run --rm -it -v $(pwd)/qubernetes.yaml:/qubernetes/qubernetes.yaml -v $(pwd)/out:/qubernetes/out  quorumengineering/qubernetes ./quorum-init qubernetes.yaml
 qubernetes $> ls out 
 ``` 
 [![docker-quberentes-boot-1](docs/resources/docker-quberentes-boot-1-play.png)](http://blog.libbykent.com/action-time/docker-quberentes-boot-1.webm)
@@ -172,7 +172,7 @@ cool-qubernetes.yaml
 
 # run docker and mount cool-qubernetes.yaml and the out directory
 # a prompt will appear enter 1 to Delete the 'out' directory and generate new resources. 
-myDir$> docker run -v $(pwd)/cool-qubernetes.yaml:/qubernetes/cool-qubernetes.yaml -v $(pwd)/out:/qubernetes/out -it  quorumengineering/qubernetes ./quorum-init cool-qubernetes.yaml
+myDir$> docker run --rm -it -v $(pwd)/cool-qubernetes.yaml:/qubernetes/cool-qubernetes.yaml -v $(pwd)/out:/qubernetes/out quorumengineering/qubernetes ./quorum-init cool-qubernetes.yaml
 using config file: cool-qubernetes.yaml
 
  The 'out' directory already exist.
@@ -199,7 +199,7 @@ so it is as if we were running on our local host: the files from the host will b
 ```
 $> git clone https://github.com/jpmorganchase/qubernetes.git
 $> cd qubernetes 
-qubernetes $> docker run -v $(pwd):/qubernetes -ti quorumengineering/qubernetes
+qubernetes $> docker run --rm -it -v $(pwd):/qubernetes -ti quorumengineering/qubernetes
 root@4eb772b14086:/qubernetes# ./quorum-init
 
 root@4eb772b14086:/qubernetes# ls out/

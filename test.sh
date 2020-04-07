@@ -24,5 +24,5 @@ else
   exit 1
 fi
 
-docker run -v $(pwd):/qubernetes -ti quorumengineering/qubernetes testing/gen-configs.sh ${CONFIG_PREFIX}
+docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes testing/gen-configs.sh ${CONFIG_PREFIX}
 testing/test-k8s-resources.sh ${CONFIG_PREFIX}

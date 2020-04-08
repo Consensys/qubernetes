@@ -42,18 +42,20 @@ end
   },
   "coinbase": "0x0000000000000000000000000000000000000000",
   "config": {
+    "homesteadBlock": 0,
     "byzantiumBlock": 0,
     "constantinopleBlock": 0,
-    "chainId": <%= @Geth_Network_Id %>,
     "eip150block": 0,
-    "eip155block": 0,
     "eip150hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "eip155block": 0,
     "eip158block": 0,
+    "maxCodeSize": 35,
+    "chainId": <%= @Geth_Network_Id %>,
     "isQuorum":true
   },
   "difficulty": "0x0",
   "extradata": "0x0000000000000000000000000000000000000000000000000000000000000000",
-  "gaslimit": "0xe0000000",
+  "gaslimit": "0xE0000000",
   "mixhash": "0x00000000000000000000000000000000000000647572616c65787365646c6578",
   "nonce": "0x0",
   "parenthash": "0x0000000000000000000000000000000000000000000000000000000000000000",
@@ -88,6 +90,7 @@ end
   },
   "coinbase": "0x0000000000000000000000000000000000000000",
   "config": {
+    "homesteadBlock": 0,
     "byzantiumBlock": 0,
     "constantinopleBlock": 0,
     "eip150Block": 0,
@@ -98,8 +101,9 @@ end
       "epoch": 30000,
       "policy": 0
     },
-    "isQuorum": true,
-    "chainId": <%= @Geth_Network_Id %>
+    "maxCodeSize": 35,
+    "chainId": <%= @Geth_Network_Id %>,
+    "isQuorum": true
   },
 
   <%-
@@ -139,9 +143,9 @@ end
    extraData=extraData.strip
    puts("Generated istanbul \"extraData\"=\"" + extraData + "\"")
    -%>
-  "extraData": "<%= extraData%>",
-  "gasLimit": "0x47b760",
   "difficulty": "0x1",
+  "extraData": "<%= extraData%>",
+  "gasLimit": "0xE0000000",
   "mixHash": "0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365",
   "nonce": "0x0",
   "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",

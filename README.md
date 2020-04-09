@@ -120,17 +120,17 @@ qubernetes $>  ./geth-attach node1
 
 ### 🎥 Step 1 Deploy 7nodes
 Starts Kind K8s cluster (bottom screen) & deploy 7nodes (IBFT & Tessera)
-[![qubes-7nodes-kind](docs/resources/7node-kind-to-pending-play.png)](http://blog.libbykent.com/action-time/7node-kind-to-pending.webm)
+[![qubes-7nodes-kind](docs/resources/7node-kind-to-pending-play.png)](https://jpmorganchase.github.io/qubernetes/resources/7node-kind-to-pending.webm)
 
 ### 🎥 Step 2: Deploy a public and private transaction from node1
 continued from above
-[![qubes-7nodes-run-contract](docs/resources/7node-run-contracts-play.png)](http://blog.libbykent.com/action-time/7node-run-contracts.webm)
+[![qubes-7nodes-run-contract](docs/resources/7node-run-contracts-play.png)](https://jpmorganchase.github.io/qubernetes/resources/7node-run-contracts.webm)
 
 ### 🎥 Step 3: Attach to the geth console
 continued from above 
 part 1 attach to geth from inside the container
 part 2 use helper `./geth-attach node1`
-[![qubes-7nodes-attach-geth](docs/resources/7node-attach-geth-play.png)](http://blog.libbykent.com/action-time/7node-attach-geth.webm)
+[![qubes-7nodes-attach-geth](docs/resources/7node-attach-geth-play.png)](https://jpmorganchase.github.io/qubernetes/resources/7node-attach-geth.webm)
 
 ## Generating Quorum and K8s Resources From Custom Configs
 
@@ -161,7 +161,7 @@ $> cd qubernetes
 qubernetes $> docker run --rm -it -v $(pwd)/qubernetes.yaml:/qubernetes/qubernetes.yaml -v $(pwd)/out:/qubernetes/out  quorumengineering/qubernetes ./quorum-init qubernetes.yaml
 qubernetes $> ls out 
 ``` 
-[![docker-quberentes-boot-1](docs/resources/docker-quberentes-boot-1-play.png)](http://blog.libbykent.com/action-time/docker-quberentes-boot-1.webm)
+[![docker-quberentes-boot-1](docs/resources/docker-quberentes-boot-1-play.png)](https://jpmorganchase.github.io/qubernetes/resources/docker-quberentes-boot-1.webm)
 2.   Generate Quorum and Kubernetes resources files from any directory using a custom configuration file, e.g. `cool-qubernetes.yaml`,
 you do not need to clone the repo, but mount the file `cool-qubernetes.yaml` and the `out` directory on the `quorumengineering/qubernetes` container, 
 so the resources will be available after the container exits.
@@ -189,7 +189,7 @@ myDir$> ls
 cool-qubernetes.yaml out
 
 ```
-[![docker-quberentes-boot-2](docs/resources/docker-quberentes-boot-2-play.png)](http://blog.libbykent.com/action-time/docker-quberentes-boot-2.webm)
+[![docker-quberentes-boot-2](docs/resources/docker-quberentes-boot-2-play.png)](https://jpmorganchase.github.io/qubernetes/resources/docker-quberentes-boot-2.webm)
 
 3.  Exec into the `quorumengineering/qubernetes` container to run commands inside. This is useful for testing changes 
 to the local ruby generator files. 
@@ -205,7 +205,7 @@ root@4eb772b14086:/qubernetes# ./quorum-init
 root@4eb772b14086:/qubernetes# ls out/
 00-quorum-persistent-volumes.yaml  01-quorum-genesis.yaml  02-quorum-shared-config.yaml  03-quorum-services.yaml  04-quorum-keyconfigs.yaml  config  deployments
 ```
-[![docker-quberentes-boot-3](docs/resources/docker-quberentes-boot-3-play.png)](http://blog.libbykent.com/action-time/docker-quberentes-boot-3.webm)
+[![docker-quberentes-boot-3](docs/resources/docker-quberentes-boot-3-play.png)](https://jpmorganchase.github.io/qubernetes/resources/docker-quberentes-boot-3.webm)
 
 ### Modifying The Qubernetes Config File
 example [qubernetes.yaml](qubernetes.yaml)

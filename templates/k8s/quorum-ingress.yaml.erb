@@ -1,0 +1,85 @@
+<%-
+def set_node_template_vars(values)
+    @Node_UserIdent = values["Node_UserIdent"]
+    return
+end
+
+@Service_Prefix        = (@Node_UserIdent.upcase).gsub("-", "_")
+@TM_Port               = @config["quorum"]["tm"]["Port"]
+@Node_RPCPort          = @config["geth"]["Node_RPCPort"]
+@NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
+# NodePort | ClusterIP | Loadbalancer
+@Service_Type          = @config["service"]["type"]
+
+if @Service_Type == "NodePort" and @config["service"]["Ingress"] then
+   @Ingress = true
+   # OneForAll
+   @IngressStrategy = @config["service"]["Ingress"]["Strategy"]
+   if @config["service"]["Ingress"]["Host"]  then
+     @Ingress_Host = @config["service"]["Ingress"]["Host"]
+   end
+end
+
+-%>
+
+<%# Strategy OneToOne - this will create one Ingress per node service in the cluster %>
+<%# in this strategy each node will get its own FQDN with the nodeId as the first part of the domain %>
+<%- if @Ingress and @IngressStrategy == "OneToOne" -%>
+<%- @nodes.each do |node| -%>
+<%= set_node_template_vars(node.values.first) -%>
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+    <%= @Namespace %>
+  name: <%= @Node_UserIdent %>
+spec:
+  rules:
+      <%- if @Ingress_Host -%>
+    - host:  <%= @Node_UserIdent %>.<%= @Ingress_Host %>
+      http:
+        paths:
+          - path: /rpc
+            backend:
+              serviceName: <%= @Node_UserIdent %>
+              servicePort: <%= @Node_RPCPort %>
+      <%- else -%>
+    - http:
+        paths:
+          - path: /rpc
+            backend:
+              serviceName: <%= @Node_UserIdent %>
+              servicePort: <%= @Node_RPCPort %>
+          <%- end -%> <%# End Host conditional %>
+     <% end -%> <%# end this node iteration %>
+<%- end -%> <%# End Ingress OneForEach (this node's ingress) %>
+
+
+
+<%# If an ingresses has been specified with strategy OneToMany, create a single Ingress for all the nodes in the cluster %>
+<% if @Ingress and @IngressStrategy == "OneToMany" %>
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+    <%= @Namespace %>
+  name: quorum-ingress
+spec:
+  rules:
+      <%- if @Ingress_Host -%>
+    - host: <%= @Ingress_Host %>
+      http:
+      <%- else -%>
+    - http:
+          <%- end -%> <%# end  Host conditional%>
+        paths:
+            <%- # create paths for each node -%>
+            <%- @nodes.each do |node| -%>
+            <%- set_node_template_vars(node.values.first) -%>
+          - path: /<%= @Node_UserIdent %>/rpc
+            backend:
+              serviceName: <%= @Node_UserIdent %>
+              servicePort: <%= @Node_RPCPort %>
+          <%- end -%> <%# end setting path for each node %>
+    <%- end %> <%# end  Ingress conditional%>

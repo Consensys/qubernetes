@@ -1,0 +1,58 @@
+#namespace:
+# name: quorum-test
+# number of nodes to deploy
+sep_deployment_files: true
+nodes:
+  number: 3
+service:
+  # NodePort | ClusterIP | LoadBalancer
+  type: NodePort
+  Ingress:
+    # OneToMany | OneToOne
+    Strategy: OneToMany
+    Host: "quorum.testnet.com"
+quorum:
+  # supported: (raft | istanbul)
+  consensus: istanbul
+  # base quorum data dir as set inside each container.
+  Node_DataDir: /etc/quorum/qdata
+  # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
+  # Either full or relative paths on the machine generating the config
+  Key_Dir_Base: out/config
+  Permissioned_Nodes_File: out/config/permissioned-nodes.json
+  Genesis_File: out/config/genesis.json
+  # related to quorum containers
+  quorum:
+    Raft_Port: 50401
+    # container images at https://hub.docker.com/u/quorumengineering/
+    Quorum_Version: 2.2.5
+  # related to transaction manager containers
+  tm:
+    # container images at https://hub.docker.com/u/quorumengineering/
+    # (tessera|constellation)
+    Name: tessera
+    #Tm_Version: 0.9.2
+    Tm_Version: 0.10.0
+    Port: 9001
+    Tessera_Config_Dir: out/config
+  # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+  # test locally and on GCP
+  # The data dir is persisted here
+  storage:
+    # PVC (Persistent_Volume_Claim - tested with GCP).
+    Type: PVC
+    ## when redeploying cannot be less than previous values
+    Capacity: 200Mi
+# generic geth related options
+geth:
+  Node_RPCPort: 8545
+  NodeP2P_ListenAddr: 30303
+  network:
+    # network id (1: mainnet, 3: ropsten, 4: rinkeby ... )
+    id: 1101
+    # public (true|false) is it a public network?
+    public: false
+  # general verbosity of geth [1..5]
+  verbosity: 9
+  # additional startup params to pass into geth/quorum
+  Geth_Startup_Params: --rpccorsdomain=\"*\" --rpcvhosts=\"*\"

@@ -1,20 +1,20 @@
-<%
+<%-
+
 def set_node_template_vars(values)
     @Node_UserIdent = values["Node_UserIdent"]
     return
 end
+
+@Service_Prefix        = (@Node_UserIdent.upcase).gsub("-", "_")
+@TM_Port               = @config["quorum"]["tm"]["Port"]
+@Node_RPCPort          = @config["geth"]["Node_RPCPort"]
+@NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
+# NodePort | ClusterIP | Loadbalancer
+@Service_Type          = @config["service"]["type"]
 -%>
 
 <%- @nodes.each do |node| -%>
-    <%= set_node_template_vars(node.values.first) -%>
-
-<%
-    @Service_Prefix        = (@Node_UserIdent.upcase).gsub("-", "_")
-    @TM_Port               = @config["quorum"]["tm"]["Port"]
-    @Node_RPCPort          = @config["geth"]["Node_RPCPort"]
-    @NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
-%>
-
+<%= set_node_template_vars(node.values.first) -%>
 ---
 apiVersion: v1
 kind: Service
@@ -30,7 +30,7 @@ spec:
     app: qubernetes
     tier: backend
     name: <%= @Node_UserIdent %>-deployment
-  # NodePort | ClusterIP
+  # NodePort | ClusterIP | Loadbalancer
   type: <%= @config["service"]["type"] %>
   ports:
     - name: tm-manager 
@@ -55,4 +55,5 @@ spec:
       protocol: TCP
       targetPort: <%= @Raft_Port %>
       port: <%= @Raft_Port %>
-<% end -%>
+
+<%- end %> <%# end node iteration %>

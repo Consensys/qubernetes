@@ -292,3 +292,7 @@ $> kubectl delete -f out
 ## Thanks! And Additional Resources 
 Thanks to [Maximilian Meister blog and code](https://medium.com/@cryptoctl) which provided an awesome starting point!
 and is a good read to understand the different components.
+
+## Getting Help
+Stuck at some step? Please join our <a href="https://www.goquorum.com/slack-inviter" target="_blank" rel="noopener">slack community</a> for support.
+

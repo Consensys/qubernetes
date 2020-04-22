@@ -14,10 +14,21 @@ end
 
 @Node_DataDir          = @config["quorum"]["Node_DataDir"]
 @Quorum_Version        = @config["quorum"]["quorum"]["Quorum_Version"]
+# default quorumengineering/quorum
+if @config["quorum"]["quorum"]["Docker_Repo"]
+ @Quorum_Docker_Repo = @config["quorum"]["quorum"]["Docker_Repo"]
+else
+ @Quorum_Docker_Repo =  "quorumengineering"
+end
+# default quorumengineering/quorum
+if @config["quorum"]["tm"]["Docker_Repo"]
+ @Tm_Docker_Repo = @config["quorum"]["tm"]["Docker_Repo"]
+else
+ @Tm_Docker_Repo =  "quorumengineering"
+end
 @Tm_Version            = @config["quorum"]["tm"]["Tm_Version"]
 @Tm_Port               = @config["quorum"]["tm"]["Port"]
 @Tm_Name               = @config["quorum"]["tm"]["Name"]
-
 # Storage for data directories, default PVC.
 @Storage_Type          = "PVC"
 # if storage is set set up the appropriate storage variable (host or PVC)
@@ -63,7 +74,7 @@ spec:
     spec:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:<%= @Quorum_Version %>
+        image: <%= @Quorum_Docker_Repo %>/quorum:<%= @Quorum_Version %>
         command: [ "sh" ]
         args:
         - "-cx"
@@ -93,7 +104,7 @@ spec:
       containers:
     <%- if @Tm_Name == "constellation"  -%>
       - name: constellation
-        image: quorumengineering/constellation:<%= @Tm_Version %>
+        image:  <%= @Tm_Docker_Repo %>/constellation:<%= @Tm_Version %>
         command: ["sh"]
         args:
         - "-cx"
@@ -111,7 +122,7 @@ spec:
            /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
      <%- else -%>
       - name: tessera
-        image: quorumengineering/tessera:<%= @Tm_Version %>
+        image: <%= @Tm_Docker_Repo %>/tessera:<%= @Tm_Version %>
         command: ["sh"]
         args:
         - "-cx"
@@ -185,7 +196,7 @@ spec:
           subPath: tessera-config-9.0.json.tmpl
         <%- end -%>
       - name: quorum
-        image: quorumengineering/quorum:<%= @Quorum_Version %>
+        image: <%= @Quorum_Docker_Repo %>/quorum:<%= @Quorum_Version %>
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -218,7 +229,7 @@ spec:
          <%- if @config["quorum"]["consensus"] == "raft" -%>
            args=\" --gcmode archive --raft  --raftport <%= @Raft_Port %> --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
          <%- elsif @config["quorum"]["consensus"] == "istanbul" -%>
-           args=\" --gcmode archive --istanbul.blockperiod 3  --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
+           args=\" --gcmode archive --istanbul.blockperiod 3 --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
          <%- else -%>
            args=\"--rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum \";
          <%- end -%>

@@ -1,0 +1,62 @@
+<%
+  @TM_Port               = @config["quorum"]["tm"]["Port"]
+  @Node_RPCPort          = @config["geth"]["Node_RPCPort"]
+  @NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
+ %>
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  <%= @Namespace %>
+  name: quorum-internal-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: qubernetes
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            app: qubernetes
+      ports:
+        -  port: <%= @TM_Port %>
+        -  port: 9080
+        -  port: <%= @Raft_Port %>
+        -  port: <%= @Node_RPCPort %>
+        -  port: <%= @NodeP2P_ListenAddr %>
+  egress:
+    - to:
+      - podSelector:
+          matchLabels:
+            app: qubernetes
+      ports:
+        - port: <%= @TM_Port %>
+        - port: 9080
+        - port: <%= @Raft_Port %>
+        - port: <%= @Node_RPCPort %>
+        - port: <%= @NodeP2P_ListenAddr %>
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  <%= @Namespace %>
+  name: quorum-external-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: qubernetes
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: qubernetes
+      ports:
+        - port: <%= @TM_Port %>
+        - port: 9080
+        - port:  <%= @Node_RPCPort %>

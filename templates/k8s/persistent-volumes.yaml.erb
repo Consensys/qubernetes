@@ -22,6 +22,9 @@ end
 if @config["quorum"]["storage"]["PVC"] and @config["quorum"]["storage"]["PVC"]["annotations"]
   @Annotations = @config["quorum"]["storage"]["PVC"]["annotations"]
 end
+if @config["quorum"]["storage"]["PVC"] and @config["quorum"]["storage"]["PVC"]["storageClassName"]
+   @Storage_Class_Name = "storageClassName: "+ @config["quorum"]["storage"]["PVC"]["storageClassName"]
+end
 -%>
 
 <%- if @Namespace != "" %>
@@ -48,6 +51,7 @@ metadata:
     <%= annotation[0] %>: <%= annotation[1] %>
 <%- end -%>
 spec:
+  <%= @Storage_Class_Name %>
   accessModes:
     - ReadWriteOnce
   resources:
@@ -65,6 +69,7 @@ metadata:
     <%= annotation[0] %>: <%= annotation[1] %>
 <%- end -%>
 spec:
+  <%= @Storage_Class_Name %>
   accessModes:
     - ReadWriteOnce
   resources:
@@ -82,6 +87,7 @@ metadata:
     <%= annotation[0] %>: <%= annotation[1] %>
 <%- end -%>
 spec:
+  <%= @Storage_Class_Name %>
   accessModes:
     - ReadWriteOnce
   resources:

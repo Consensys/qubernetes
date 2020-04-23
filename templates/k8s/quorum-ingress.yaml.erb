@@ -8,10 +8,8 @@ end
 @TM_Port               = @config["quorum"]["tm"]["Port"]
 @Node_RPCPort          = @config["geth"]["Node_RPCPort"]
 @NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
-# NodePort | ClusterIP | Loadbalancer
-@Service_Type          = @config["service"]["type"]
 
-if @Service_Type == "NodePort" and @config["service"]["Ingress"] then
+if @config["service"]["Ingress"] then
    @Ingress = true
    # OneForAll
    @IngressStrategy = @config["service"]["Ingress"]["Strategy"]
@@ -19,7 +17,6 @@ if @Service_Type == "NodePort" and @config["service"]["Ingress"] then
      @Ingress_Host = @config["service"]["Ingress"]["Host"]
    end
 end
-
 -%>
 
 <%# Strategy OneToOne - this will create one Ingress per node service in the cluster %>
@@ -37,17 +34,20 @@ metadata:
 spec:
   rules:
       <%- if @Ingress_Host -%>
-    - host:  <%= @Node_UserIdent %>.<%= @Ingress_Host %>
+    - host:  "<%= @Node_UserIdent %>.<%= @Ingress_Host %>"
       http:
         paths:
-          - path: /rpc
+          - path: /quorum-rpc
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
+  tls:
+    - hosts:
+        - "<%= @Node_UserIdent %>.<%= @Ingress_Host %>"
       <%- else -%>
     - http:
         paths:
-          - path: /rpc
+          - path: /quorum-rpc
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
@@ -68,7 +68,7 @@ metadata:
 spec:
   rules:
       <%- if @Ingress_Host -%>
-    - host: <%= @Ingress_Host %>
+    - host: "<%= @Ingress_Host %>"
       http:
       <%- else -%>
     - http:
@@ -77,9 +77,14 @@ spec:
             <%- # create paths for each node -%>
             <%- @nodes.each do |node| -%>
             <%- set_node_template_vars(node.values.first) -%>
-          - path: /<%= @Node_UserIdent %>/rpc
+          - path: /<%= @Node_UserIdent %>/quorum-rpc
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
           <%- end -%> <%# end setting path for each node %>
+<%- if @Ingress_Host -%>
+  tls:
+    - hosts:
+        - "<%= @Ingress_Host %>"
+<%- end -%>
     <%- end %> <%# end  Ingress conditional%>

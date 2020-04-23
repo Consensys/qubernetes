@@ -31,20 +31,6 @@ end
 @Tm_Name               = @config["quorum"]["tm"]["Name"]
 # Storage for data directories, default PVC.
 @Storage_Type          = "PVC"
-# if storage is set set up the appropriate storage variable (host or PVC)
-if @config["quorum"]["storage"]
-  if @config["quorum"]["storage"]["Type"].upcase == "HOST"
-    @Storage_Type = "HOST"
-    # default DataDir for (hostPath) if none is set.
-    @DataDir = "/var/lib/docker/geth-storage"
-    if @config["quorum"]["storage"]["Data_Dir"]
-      @DataDir = @config["quorum"]["storage"]["Data_Dir"]
-    end
-  # Persistent_Volume_Claim
-  elsif @config["quorum"]["storage"]["Type"].upcase == "PVC"
-    @Storage_Type = "PVC"
-  end
-end
 %>
 
 # The quorum deployment consists of

@@ -113,6 +113,13 @@ File.open("out/04-quorum-keyconfigs.yaml", "w") do |f|
   f.puts (ERB.new(File.read(@base_template_path + "/quorum-keystore.yaml.erb"), nil, "-").result)
 end
 
+# if a network policy was requested create one for the namespace (NetworkPolicy = true in yaml config)
+if @config["service"]["NetworkPolicy"]
+  File.open("out/05-quorum-network-policy.yaml", "w") do |f|
+    f.puts (ERB.new(File.read(@base_template_path + "/network-policy.yaml.erb"), nil, "-").result)
+  end
+end
+
 @Kubectl_Cmd="  $> kubectl apply -f out"
 if @sep_deployment_files
  `mkdir -p out/deployments`

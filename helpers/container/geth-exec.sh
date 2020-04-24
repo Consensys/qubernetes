@@ -12,4 +12,4 @@ fi
 # https://github.com/ethereum/go-ethereum/issues/16905
 # to avoid warning being returned
 # "WARN [02-20|00:21:04.382] Sanitizing cache to Go's GC limits  provided=1024 updated=663"
-geth --exec $GETH_CMD  --cache=16   attach $QHOME/dd/geth.ipc
+geth --exec $GETH_CMD  --cache=16 attach --datadir $QUORUM_DATA_DIR $QUORUM_DATA_DIR/geth.ipc

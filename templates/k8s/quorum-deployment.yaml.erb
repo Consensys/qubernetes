@@ -33,6 +33,12 @@ end
 @Storage_Type          = "PVC"
 %>
 
+<%
+ @Security_Context = []
+ if @config["k8s"] and @config["k8s"]["securityContext"]
+   @Security_Context = @config["k8s"]["securityContext"]
+ end
+%>
 # The quorum deployment consists of
 # 1. the transaction manager / private tx container (constellation or tessera)
 # 2. the quorum node container
@@ -58,6 +64,10 @@ spec:
         tier: backend
         name: <%= @Node_UserIdent %>-deployment
     spec:
+      securityContext:
+      <%- @Security_Context.each do |entry| -%>
+        <%= entry[0] %>: <%= entry[1] %>
+      <%- end -%>
       initContainers:
       - name: quorum-genesis-init-container
         image: <%= @Quorum_Docker_Repo %>/quorum:<%= @Quorum_Version %>
@@ -202,7 +212,12 @@ spec:
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
  <%- if @Tm_Name == "tessera" -%>
+   <%- if @Security_Context -%> <%# if a security context is set, assume we cannot install packages, e.g. curl, so sleep for 60 to give the TM time to startup. %>
+           echo sleeping for 60 seconds to wait for the transaction manager to startup.
+           sleep 60;
+   <%- else -%>  <%# if a security context not set, assume we can install packages, e.g. curl, we can do a check to see when the TM comes up. %>
            until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:<%= @Tm_Port %>/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
+   <%- end -%>
            echo transaction manager is up;
  <%- else -%>
            sleep 5;

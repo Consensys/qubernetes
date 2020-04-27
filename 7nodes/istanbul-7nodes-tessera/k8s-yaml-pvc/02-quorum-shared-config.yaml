@@ -343,7 +343,7 @@ metadata:
 data:
   runscript.sh: |-
     #!/bin/ash
-    PRIVATE_CONFIG=$TM_HOME/tm.ipc geth --exec "loadScript(\"$1\")" attach ipc:$QUORUM_HOME/dd/geth.ipc
+    PRIVATE_CONFIG=$TM_HOME/tm.ipc geth --exec "loadScript(\"$1\")" attach --datadir $QUORUM_DATA_DIR ipc:$QUORUM_DATA_DIR/geth.ipc
 # set the tm.pub for node2 in the privateFor field.
 # assumes that at least 2 nodes are being deployed.
   private_contract.js: |-
@@ -527,15 +527,15 @@ data:
     
     # helper for connecting to geth from
     # outside the container
-    # kubectl exec -it $POD -c quorum /geth-helpers/geth-attach.sh
+    # kubectl exec -it $POD -c quorum -- /geth-helpers/geth-attach.sh
     echo "connecting to geth $QHOME"
-    geth attach $QHOME/dd/geth.ipc
+    geth attach --datadir $QUORUM_DATA_DIR $QUORUM_DATA_DIR/geth.ipc
   geth-exec.sh: |-
     #!/bin/sh
     
     # helper for connecting to geth from
     # outside the container
-    # kubectl exec -it $POD -c quorum /geth-helpers/geth-exec.sh "admin.peers.length"
+    # kubectl exec -it $POD -c quorum -- /geth-helpers/geth-exec.sh "admin.peers.length"
     
     GETH_CMD="eth.blockNumber"
     if [ "$#" -gt 0 ]; then
@@ -545,4 +545,4 @@ data:
     # https://github.com/ethereum/go-ethereum/issues/16905
     # to avoid warning being returned
     # "WARN [02-20|00:21:04.382] Sanitizing cache to Go's GC limits  provided=1024 updated=663"
-    geth --exec $GETH_CMD  --cache=16   attach $QHOME/dd/geth.ipc
+    geth --exec $GETH_CMD  --cache=16 attach --datadir $QUORUM_DATA_DIR $QUORUM_DATA_DIR/geth.ipc

@@ -9,7 +9,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node1-quorum
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -22,7 +24,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node1-tm-pvc
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -35,7 +39,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node1-log-pvc
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -48,7 +54,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node2-quorum
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -61,7 +69,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node2-tm-pvc
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -74,7 +84,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node2-log-pvc
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -87,7 +99,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node3-quorum
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -100,7 +114,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node3-tm-pvc
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -113,7 +129,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node3-log-pvc
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -126,7 +144,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node4-quorum
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -139,7 +159,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node4-tm-pvc
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -152,7 +174,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node4-log-pvc
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -165,7 +189,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node5-quorum
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -178,7 +204,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node5-tm-pvc
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -191,7 +219,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node5-log-pvc
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -204,7 +234,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node6-quorum
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -217,7 +249,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node6-tm-pvc
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -230,7 +264,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node6-log-pvc
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -243,7 +279,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node7-quorum
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -256,7 +294,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node7-tm-pvc
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:
@@ -269,7 +309,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: quorum-node7-log-pvc
   
+  annotations:
 spec:
+  
   accessModes:
     - ReadWriteOnce
   resources:

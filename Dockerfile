@@ -1,5 +1,16 @@
 FROM ubuntu:16.04
 
+ARG COMMIT=""
+ARG QUBES_VERSION=""
+ARG BUILD_DATE=""
+
+# Label according to  https://github.com/opencontainers/image-spec
+LABEL org.opencontainers.image.created=${BUILD_DATE}
+LABEL org.opencontainers.image.revision=${COMMIT}
+LABEL org.opencontainers.image.source="https://github.com/jpmorganchase/qubernetes.git"
+LABEL org.opencontainers.image.title="qubernetes"
+LABEL org.opencontainers.image.version=${QUBES_VERSION}
+
 RUN apt-get update \
     && apt-get --no-install-recommends install -y apt-utils curl wget git tree ne software-properties-common apt-transport-https ca-certificates build-essential
 
@@ -19,3 +30,7 @@ RUN cd /usr/bin && curl -L https://github.com/jpmorganchase/constellation/releas
 
 WORKDIR /qubernetes
 COPY . .
+
+# set commit SHA and QUBES_VERSION as ENV vars in last layer
+ENV COMMIT_SHA=${COMMIT}
+ENV QUBES_VERSION=${QUBES_VERSION}

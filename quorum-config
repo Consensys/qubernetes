@@ -16,14 +16,53 @@ puts "using config file: " + @CONFIG_FILE
 @config     = YAML.load_file(@CONFIG_FILE)
 @nodes      = YAML.load_file("nodes.yaml")["nodes"]
 
-@Raft_Port                  = @config["quorum"]["quorum"]["Raft_Port"]
-@Permissioned_Nodes_File    = @config["quorum"]["Permissioned_Nodes_File"]
-@Genesis_File               = @config["quorum"]["Genesis_File"]
+## set defaults for config if not set, else use the values from the config.
 
-@Tessera_Config_Dir         = @config["quorum"]["tm"]["Tessera_Config_Dir"]
+# directory where the genesis.json will be stored after it is generated.
+@Genesis_File = "out/config/genesis.json"
+if @config["quorum"]["Genesis_File"]
+  @Genesis_File = @config["quorum"]["Genesis_File"]
+end
 
-@Node_RPCPort               = @config["geth"]["Node_RPCPort"]
-@NodeP2P_ListenAddr         = @config["geth"]["NodeP2P_ListenAddr"]
+# used by genesis.json.erb, gen-keys.sh.erb, and .
+@Key_Dir_Base = "out/config"
+if @config["quorum"]["Key_Dir_Base"]
+  @Key_Dir_Base  = @config["quorum"]["Key_Dir_Base"]
+end
+
+# used in tessera-config-*.json.erb(s)
+@Node_DataDir = "/etc/quorum/qdata"
+if @config["quorum"]["Node_DataDir"]
+  @Node_DataDir = @config["quorum"]["Node_DataDir"]
+end
+
+# directory where the permissioned-node.json will be stored after it is generated.
+@Permissioned_Nodes_File = "out/config/permissioned-nodes.json"
+if @config["quorum"]["Permissioned_Nodes_File"]
+  @Permissioned_Nodes_File = @config["quorum"]["Permissioned_Nodes_File"]
+end
+
+# directory where the tessera-config.json files. will be stored after it is generated.
+@Tessera_Config_Dir = "out/config"
+if @config["quorum"]["tm"]["Tessera_Config_Dir"]
+  @Tessera_Config_Dir = @config["quorum"]["tm"]["Tessera_Config_Dir"]
+end
+
+## set ports needed for the quorum templates
+# Tm_Port used in tessera config templates
+@Tm_Port = 9001
+if @config["quorum"]["tm"]["Port"]
+  @Tm_Port = @config["quorum"]["tm"]["Port"]
+end
+# used by permissioned-nodes.json.erb to set enode URLs
+@Raft_Port = 50401
+if @config["quorum"]["quorum"]["Raft_Port"]
+  @Raft_Port = @config["quorum"]["quorum"]["Raft_Port"]
+end
+@NodeP2P_ListenAddr = 30303
+if @config["geth"] and @config["geth"]["NodeP2P_ListenAddr"]
+  @NodeP2P_ListenAdd = @config["geth"]["NodeP2P_ListenAddr"]
+end
 
 #####################################################
 # Generate genesis.json and permissioned-nodes.json

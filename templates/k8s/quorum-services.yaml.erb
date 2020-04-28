@@ -5,12 +5,12 @@ def set_node_template_vars(values)
     return
 end
 
-@Service_Prefix        = (@Node_UserIdent.upcase).gsub("-", "_")
-@TM_Port               = @config["quorum"]["tm"]["Port"]
-@Node_RPCPort          = @config["geth"]["Node_RPCPort"]
-@NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
 # NodePort | ClusterIP | Loadbalancer
-@Service_Type          = @config["service"]["type"]
+# default to NodePort if not set
+@Service_Type = "NodePort"
+if @config["service"] and  @config["service"]["type"]
+ @Service_Type = @config["service"]["type"]
+end
 -%>
 
 <%- @nodes.each do |node| -%>
@@ -31,12 +31,12 @@ spec:
     tier: backend
     name: <%= @Node_UserIdent %>-deployment
   # NodePort | ClusterIP | Loadbalancer
-  type: <%= @config["service"]["type"] %>
+  type: <%= @Service_Type  %>
   ports:
     - name: tm-manager 
       protocol: TCP
-      port: <%= @TM_Port %>
-      targetPort: <%= @TM_Port %>
+      port: <%= @Tm_Port %>
+      targetPort: <%= @Tm_Port %>
     # default 8545
     - name: tm-tessera-third-part
       protocol: TCP

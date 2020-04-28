@@ -8,13 +8,11 @@ end
 <%- # The configured key directory of each node holds a file with the enode value.
    # The enode value is obtained from that file and set in the permissioned-nodes.json
 -%>
-<%- @Key_Dir_Base = @config["quorum"]["Key_Dir_Base"]
-   @NodeP2P_ListenAddr = @config["geth"]["NodeP2P_ListenAddr"] -%>
 [
 <%- @nodes.each_with_index do |node, indexNode| -%>
     <%- set_node_template_vars(node.values.first) -%>
-    <%- @Enode_File = @config["quorum"]["Key_Dir_Base"] + "/" + @Node_Key_Dir + "/enode" -%>
+    <%- @Enode_File = @Key_Dir_Base + "/" + @Node_Key_Dir + "/enode" -%>
     <%- File.readlines(@Enode_File).each do |line| @Enode = "#{line}".gsub(/\s+/, "") end -%>
-  "enode://<%= @Enode %>@%<%= "#{@Node_UserIdent}".upcase %>_SERVICE_HOST%:<%= @NodeP2P_ListenAddr%>?discport=0&raftport=50401"<%- if (indexNode != @nodes.size - 1) %>,<%- end %>
+  "enode://<%= @Enode %>@%<%= "#{@Node_UserIdent}".upcase %>_SERVICE_HOST%:<%= @NodeP2P_ListenAddr%>?discport=0&raftport=<%= @Raft_Port%>"<%- if (indexNode != @nodes.size - 1) %>,<%- end %>
 <% end -%>
 ]

@@ -5,8 +5,10 @@ def set_node_template_vars(values)
     return
 end
 
-@Key_Dir_Base     = @config["quorum"]["Key_Dir_Base"]
-@Geth_Network_Id  = @config["geth"]["network"]["id"]
+@Geth_Network_Id  = 1101
+if @config["geth"] and @config["geth"]["network"] and @config["geth"]["network"]["id"]
+  @Geth_Network_Id = @config["geth"]["network"]["id"]
+end
 @Accounts = ""
 @Account_Allocs = ""
 @Node_Index = 0

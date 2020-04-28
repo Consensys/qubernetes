@@ -17,9 +17,59 @@ puts "using config file: " + @CONFIG_FILE
 @config                = YAML.load_file(@CONFIG_FILE)
 
 @nodes                 = YAML.load_file("nodes.yaml")["nodes"]
-@Raft_Port             = @config["quorum"]["quorum"]["Raft_Port"]
-@Node_RPCPort          = @config["geth"]["Node_RPCPort"]
-@NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
+
+## set defaults for config if not set, else use the values from the config.
+
+# used in deployment.yaml.erb to set quorum data dir.
+@Node_DataDir = "/etc/quorum/qdata"
+if @config["quorum"]["Node_DataDir"]
+  @Node_DataDir = @config["quorum"]["Node_DataDir"]
+end
+
+# used by quorum-shared-config.yaml.erb and quorum-keystore.yaml.erb to load keys.
+@Key_Dir_Base = "out/config"
+if @config["quorum"]["Key_Dir_Base"]
+  @Key_Dir_Base  = @config["quorum"]["Key_Dir_Base"]
+end
+
+# used by quorum-shared-config.yaml.erb to load the permissioned-nodes.json in configmaps
+@Permissioned_Nodes_File = "out/config/permissioned-nodes.json"
+if @config["quorum"]["Permissioned_Nodes_File"]
+  @Permissioned_Nodes_File = @config["quorum"]["Permissioned_Nodes_File"]
+end
+
+# used by quorum-genesis-config.yaml.erb and quorum-shared-config.yaml.erb
+@Genesis_File = "out/config/genesis.json"
+if @config["quorum"]["Genesis_File"]
+  @Genesis_File = @config["quorum"]["Genesis_File"]
+end
+
+# used in quorum-shared-config.yaml.erb to make tessera config available to deployments.
+@Tessera_Config_Dir = "out/config"
+if @config["quorum"]["tm"]["Tessera_Config_Dir"]
+  @Tessera_Config_Dir = @config["quorum"]["tm"]["Tessera_Config_Dir"]
+end
+
+## default the ports if they aren't set
+@Raft_Port = 50401
+if @config["quorum"]["quorum"]["Raft_Port"]
+  @Raft_Port = @config["quorum"]["quorum"]["Raft_Port"]
+end
+
+@Tm_Port = 9001
+if @config["quorum"]["tm"]["Port"]
+  @Tm_Port = @config["quorum"]["tm"]["Port"]
+end
+
+@Node_RPCPort = 8545
+if @config["geth"] and @config["geth"]["Node_RPCPort"]
+  @Node_RPCPort = @config["geth"]["Node_RPCPort"]
+end
+
+@NodeP2P_ListenAddr = 30303
+if @config["geth"] and @config["geth"]["NodeP2P_ListenAddr"]
+  @NodeP2P_ListenAdd = @config["geth"]["NodeP2P_ListenAddr"]
+end
 
 
 # Generate deployments in a single file, or in separate files.
@@ -81,28 +131,25 @@ end
 
 @base_template_path = "templates/k8s"
 #puts (sed_string)
-puts "PVC start"
+puts "PVC"
 if @Storage_Type == "PVC"
   File.open("out/00-quorum-persistent-volumes.yaml", "w") do |f|
     f.puts (ERB.new(File.read(@base_template_path + "/persistent-volumes.yaml.erb"), nil, "-").result)
   end
 end
-puts "PVC end"
 File.open("out/01-quorum-genesis.yaml", "w") do |f|
   f.puts (ERB.new(File.read(@base_template_path + "/quorum-genesis-config.yaml.erb"), nil, "-").result)
 end
 File.open("out/02-quorum-shared-config.yaml", "w") do |f|
   f.puts (ERB.new(File.read(@base_template_path + "/quorum-shared-config.yaml.erb"), nil, "-").result)
 end
-
 # Create the service resources
 File.open("out/03.0-quorum-services.yaml", "w") do |f|
   f.puts (ERB.new(File.read(@base_template_path + "/quorum-services.yaml.erb"), nil, "-").result)
 end
 
-
 # Create the Ingress resources if they are configured
-if @config["service"]["Ingress"]
+if @config["service"] and @config["service"]["Ingress"]
   File.open("out/03.1-quorum-ingress.yaml", "w") do |f|
     f.puts (ERB.new(File.read(@base_template_path + "/quorum-ingress.yaml.erb"), nil, "-").result)
   end
@@ -114,12 +161,12 @@ File.open("out/04-quorum-keyconfigs.yaml", "w") do |f|
 end
 
 # if a network policy was requested create one for the namespace (NetworkPolicy = true in yaml config)
-if @config["service"]["NetworkPolicy"]
+if  @config["service"] and @config["service"]["NetworkPolicy"]
   File.open("out/05-quorum-network-policy.yaml", "w") do |f|
     f.puts (ERB.new(File.read(@base_template_path + "/network-policy.yaml.erb"), nil, "-").result)
   end
 end
-
+puts "deployments"
 @Kubectl_Cmd="  $> kubectl apply -f out"
 if @sep_deployment_files
  `mkdir -p out/deployments`

@@ -4,11 +4,6 @@ def set_node_template_vars(values)
     return
 end
 
-@Service_Prefix        = (@Node_UserIdent.upcase).gsub("-", "_")
-@TM_Port               = @config["quorum"]["tm"]["Port"]
-@Node_RPCPort          = @config["geth"]["Node_RPCPort"]
-@NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
-
 if @config["service"]["Ingress"] then
    @Ingress = true
    # OneForAll

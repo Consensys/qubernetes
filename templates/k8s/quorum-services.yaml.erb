@@ -6,7 +6,11 @@ def set_node_template_vars(values)
 end
 
 # NodePort | ClusterIP | Loadbalancer
-@Service_Type          = @config["service"]["type"]
+# default to NodePort if not set
+@Service_Type = "NodePort"
+if @config["service"] and  @config["service"]["type"]
+ @Service_Type = @config["service"]["type"]
+end
 -%>
 
 <%- @nodes.each do |node| -%>
@@ -27,7 +31,7 @@ spec:
     tier: backend
     name: <%= @Node_UserIdent %>-deployment
   # NodePort | ClusterIP | Loadbalancer
-  type: <%= @config["service"]["type"] %>
+  type: <%= @Service_Type  %>
   ports:
     - name: tm-manager 
       protocol: TCP

@@ -131,28 +131,24 @@ end
 
 @base_template_path = "templates/k8s"
 #puts (sed_string)
-puts "PVC start"
 if @Storage_Type == "PVC"
   File.open("out/00-quorum-persistent-volumes.yaml", "w") do |f|
     f.puts (ERB.new(File.read(@base_template_path + "/persistent-volumes.yaml.erb"), nil, "-").result)
   end
 end
-puts "PVC end"
 File.open("out/01-quorum-genesis.yaml", "w") do |f|
   f.puts (ERB.new(File.read(@base_template_path + "/quorum-genesis-config.yaml.erb"), nil, "-").result)
 end
 File.open("out/02-quorum-shared-config.yaml", "w") do |f|
   f.puts (ERB.new(File.read(@base_template_path + "/quorum-shared-config.yaml.erb"), nil, "-").result)
 end
-
 # Create the service resources
 File.open("out/03.0-quorum-services.yaml", "w") do |f|
   f.puts (ERB.new(File.read(@base_template_path + "/quorum-services.yaml.erb"), nil, "-").result)
 end
 
-
 # Create the Ingress resources if they are configured
-if @config["service"]["Ingress"]
+if @config["service"] and @config["service"]["Ingress"]
   File.open("out/03.1-quorum-ingress.yaml", "w") do |f|
     f.puts (ERB.new(File.read(@base_template_path + "/quorum-ingress.yaml.erb"), nil, "-").result)
   end
@@ -164,7 +160,7 @@ File.open("out/04-quorum-keyconfigs.yaml", "w") do |f|
 end
 
 # if a network policy was requested create one for the namespace (NetworkPolicy = true in yaml config)
-if @config["service"]["NetworkPolicy"]
+if  @config["service"] and @config["service"]["NetworkPolicy"]
   File.open("out/05-quorum-network-policy.yaml", "w") do |f|
     f.puts (ERB.new(File.read(@base_template_path + "/network-policy.yaml.erb"), nil, "-").result)
   end

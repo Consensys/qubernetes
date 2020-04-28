@@ -21,16 +21,14 @@ if @config["quorum"]["storage"]
   end
 
   puts "got storage config"
-  if @Storage_Config["PVC"]
 
-   if @Storage_Config["PVC"]["annotations"]
-    @Annotations = @Storage_Config["PVC"]["annotations"]
-   end
-   if  @Storage_Config["PVC"]["storageClassName"]
-    @Storage_Class_Name = "storageClassName: "+ @Storage_Config["PVC"]["storageClassName"]
-   end
-
+  if @Storage_Config["annotations"]
+   @Annotations = @Storage_Config["annotations"]
   end
+  if  @Storage_Config["storageClassName"]
+   @Storage_Class_Name = "storageClassName: "+ @Storage_Config["storageClassName"]
+  end
+
 end
 -%>
 

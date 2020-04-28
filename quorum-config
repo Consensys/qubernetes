@@ -22,8 +22,21 @@ puts "using config file: " + @CONFIG_FILE
 
 @Tessera_Config_Dir         = @config["quorum"]["tm"]["Tessera_Config_Dir"]
 
-@Node_RPCPort               = @config["geth"]["Node_RPCPort"]
-@NodeP2P_ListenAddr         = @config["geth"]["NodeP2P_ListenAddr"]
+## set ports needed for the quorum templates
+# Tm_Port used in tessera config templates
+@Tm_Port = 9001
+if @config["quorum"]["tm"]["Port"]
+  @Tm_Port = @config["quorum"]["tm"]["Port"]
+end
+# used by permissioned-nodes.json.erb to set enode URLs
+@Raft_Port = 50401
+if @config["quorum"]["quorum"]["Raft_Port"]
+  @Raft_Port = @config["quorum"]["quorum"]["Raft_Port"]
+end
+@NodeP2P_ListenAddr = 30303
+if @config["geth"]["NodeP2P_ListenAddr"]
+  @NodeP2P_ListenAdd = @config["geth"]["NodeP2P_ListenAddr"]
+end
 
 #####################################################
 # Generate genesis.json and permissioned-nodes.json

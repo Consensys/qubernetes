@@ -17,9 +17,27 @@ puts "using config file: " + @CONFIG_FILE
 @config                = YAML.load_file(@CONFIG_FILE)
 
 @nodes                 = YAML.load_file("nodes.yaml")["nodes"]
-@Raft_Port             = @config["quorum"]["quorum"]["Raft_Port"]
-@Node_RPCPort          = @config["geth"]["Node_RPCPort"]
-@NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
+
+# default the ports if they aren't set
+@Raft_Port = 50401
+if @config["quorum"]["quorum"]["Raft_Port"]
+  @Raft_Port = @config["quorum"]["quorum"]["Raft_Port"]
+end
+
+@Tm_Port = 9001
+if @config["quorum"]["tm"]["Port"]
+  @Tm_Port = @config["quorum"]["tm"]["Port"]
+end
+
+@Node_RPCPort = 8545
+if @config["geth"]["Node_RPCPort"]
+  @Node_RPCPort = @config["geth"]["Node_RPCPort"]
+end
+
+@NodeP2P_ListenAddr = 30303
+if @config["geth"]["NodeP2P_ListenAddr"]
+  @NodeP2P_ListenAdd = @config["geth"]["NodeP2P_ListenAddr"]
+end
 
 
 # Generate deployments in a single file, or in separate files.

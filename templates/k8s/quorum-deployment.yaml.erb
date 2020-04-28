@@ -3,8 +3,6 @@
 @Service_Prefix = (@Node_UserIdent.upcase).gsub("-", "_")
 @Geth_Verbosity        = @config["geth"]["verbosity"]
 @Geth_Network_Id       = @config["geth"]["network"]["id"]
-@Node_RPCPort           = @config["geth"]["Node_RPCPort"]
-@NodeP2P_ListenAddr    = @config["geth"]["NodeP2P_ListenAddr"]
 
 if @config["geth"]["Geth_Startup_Params"]
   @Geth_Startup_Params   = @config["geth"]["Geth_Startup_Params"]
@@ -27,7 +25,6 @@ else
  @Tm_Docker_Repo =  "quorumengineering"
 end
 @Tm_Version            = @config["quorum"]["tm"]["Tm_Version"]
-@Tm_Port               = @config["quorum"]["tm"]["Port"]
 @Tm_Name               = @config["quorum"]["tm"]["Name"]
 # Storage for data directories, default PVC.
 @Storage_Type          = "PVC"

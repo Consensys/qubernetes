@@ -1,4 +1,4 @@
-#<%- File.readlines("#{@Keystore_Dir}/#{@Node_Key_Dir}/enode").each do |line| -%><%= line -%><% end -%>
+#<%- File.readlines("#{@Key_Dir_Base}/#{@Node_Key_Dir}/enode").each do |line| -%><%= line -%><% end -%>
 <%
 @Service_Prefix = (@Node_UserIdent.upcase).gsub("-", "_")
 @Geth_Verbosity        = @config["geth"]["verbosity"]
@@ -10,7 +10,6 @@ else
   @Geth_Startup_Params   = ""
 end
 
-@Node_DataDir          = @config["quorum"]["Node_DataDir"]
 @Quorum_Version        = @config["quorum"]["quorum"]["Quorum_Version"]
 # default quorumengineering/quorum
 if @config["quorum"]["quorum"]["Docker_Repo"]
@@ -209,7 +208,7 @@ spec:
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
  <%- if @Tm_Name == "tessera" -%>
-   <%- if @Security_Context -%> <%# if a security context is set, assume we cannot install packages, e.g. curl, so sleep for 60 to give the TM time to startup. %>
+   <%- if @Security_Context != [] -%> <%# if a security context is set, assume we cannot install packages, e.g. curl, so sleep for 60 to give the TM time to startup. %>
            echo sleeping for 60 seconds to wait for the transaction manager to startup.
            sleep 60;
    <%- else -%>  <%# if a security context not set, assume we can install packages, e.g. curl, we can do a check to see when the TM comes up. %>
@@ -265,7 +264,7 @@ spec:
         - name: THIS_NODE_ID
           value: <%= @Node_UserIdent%>
         - name: THIS_ENODE
-          value: <%- File.readlines("#{@Keystore_Dir}/#{@Node_Key_Dir}/enode").each do |line| -%><%= line -%><% end -%>
+          value: <%- File.readlines("#{@Key_Dir_Base}/#{@Node_Key_Dir}/enode").each do |line| -%><%= line -%><% end -%>
         volumeMounts:
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json

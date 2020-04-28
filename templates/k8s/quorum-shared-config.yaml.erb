@@ -1,12 +1,3 @@
-<%-
- @Permissioned_Nodes_File    = @config["quorum"]["Permissioned_Nodes_File"]
- @Genesis_File               = @config["quorum"]["Genesis_File"]
- @Tessera_Config_Dir         = @config["quorum"]["tm"]["Tessera_Config_Dir"]
-
- # keys are named the same inside their respective directories.
- @Keystore_Dir = @config["quorum"]["Key_Dir_Base"]
-%>
-
 # kubectl create configmap game-config --from-file=configure-pod-container/dd1/key
 apiVersion: v1
 kind: ConfigMap
@@ -72,7 +63,7 @@ data:
 # assumes that at least 2 nodes are being deployed.
   private_contract.js: |-
 <%-  tm_key2 = "NOT_SET" -%>
-<%- File.readlines("#{@Keystore_Dir}/key2/tm.pub").each do |line| -%>
+<%- File.readlines("#{@Key_Dir_Base}/key2/tm.pub").each do |line| -%>
 <% tm_key2 = line %>
 <% end -%>
 <%- File.readlines("contracts/private_contract.js").each do |line| -%>

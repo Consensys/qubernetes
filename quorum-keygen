@@ -17,6 +17,12 @@ puts "using config file: " + @CONFIG_FILE
 
 @base_template_path = "templates/quorum"
 
+# used by gen-keys.sh.erb
+@Key_Dir_Base = "out/config"
+if @config["quorum"]["Key_Dir_Base"]
+  @Key_Dir_Base  = @config["quorum"]["Key_Dir_Base"]
+end
+
 File.open(@base_template_path + "/gen-node-keys.sh", "w") do |f|
   f.puts (ERB.new(File.read(@base_template_path + "/gen-keys.sh.erb"), nil, "-").result)
 end

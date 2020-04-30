@@ -37,17 +37,133 @@ if [[ EXIT_CODE -ne 0 ]];
 then
   printf "${RED}Error: docker is not running, please start docker before running this script.${NC}\n"
   usage
+  exit 1
 fi
 
-## make sure kind is installed
-kind version
-EXIT_CODE=$?
+## make sure kind and kubectl are available.
+function is_kind_installed() {
+  which kind > /dev/null
+}
 
-if [[ EXIT_CODE -ne 0 ]];
-then
-  # try to install kind
-  echo "Kind is not installed, going to install it for MacOS"
-  brew install kind
+function is_kubectl_installed() {
+  which kubectl > /dev/null
+}
+
+function is_snap_installed() {
+  which snap > /dev/null
+}
+
+function echo_only_snap_supported() {
+  echo "the snap package manager was not found."
+  echo "only the snap package manager is supported at this time"
+  echo "If you'd like to add support, a PR would be lovely!"
+
+}
+
+function is_brew_installed() {
+  which brew > /dev/null
+}
+
+function echo_only_brew_supported() {
+  echo "the brew package manager was not found."
+  echo "only the brew package manager is supported for macos at this time"
+  echo "If you'd like to add support, a PR would be lovely!"
+}
+
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+        echo "linux-gnu"
+        INSTALL_DIR=/usr/local/bin
+
+        is_kind_installed
+        if [[ $? -ne 0 ]]; then
+          is_snap_installed
+          if [[ $? -ne 0 ]]; then
+            echo "snap not found could not install kind."
+            echo_only_snap_supported
+            printf "${RED} please install snap or kind manually and try again!${NC}\n"
+            exit 1
+          fi
+          echo
+          echo "kind not found "
+          echo "installing kind to $INSTALL_DIR"
+          echo
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.7.0/kind-$(uname)-amd64
+          chmod +x ./kind
+          mv ./kind $INSTALL_DIR
+          echo
+          echo "kind installed"
+          kind version
+        fi
+
+        is_kubectl_installed
+        if [[ $? -ne 0 ]]; then
+          is_snap_installed
+          if [[ $? -ne 0 ]]; then
+            echo "snap not found could not install kubectl."
+            echo_only_snap_supported
+            printf "${RED} please install snap or kubectl manually and try again!${NC}\n"
+            exit 1
+          fi
+          echo "installing kubectl via snap"
+          snap install kubectl --classic
+          echo "kubectl installed"
+          kubectl version --client
+        fi
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+        # Mac OSX
+        echo "mac"
+        is_kind_installed
+        if [[ $? -ne 0 ]]; then
+          is_brew_installed
+          if [[ $? -ne 0 ]]; then
+            echo "brew not found could not install kind."
+            echo_only_brew_supported
+            printf "${RED} please install brew or kind manually and try again!${NC}\n"
+            exit 1
+          fi
+          echo "installing kind via brew"
+          brew install kind
+          echo "kind installed"
+          kind version
+        fi
+
+        is_kubectl_installed
+        if [[ $? -ne 0 ]]; then
+          is_brew_installed
+          if [[ $? -ne 0 ]]; then
+            echo "brew not found could not install kubectl."
+            echo_only_brew_supported
+            printf "${RED} please install brew or kubectl manually and try again!${NC}\n"
+            exit 1
+          fi
+          echo "installing kubectl via brew"
+          brew install kubectl
+          echo "kubectl installed"
+          kubectl version --client
+        fi
+elif [[ "$OSTYPE" == "cygwin" ]]; then
+        # POSIX compatibility layer and Linux environment emulation for Windows
+        echo "posix comatibility layer / linux env emulation for windows not supported."
+        echo "If you'd like to add support, a PR would be most welcome!"
+        exit 1
+elif [[ "$OSTYPE" == "msys" ]]; then
+        # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
+        echo "lightweight os not supported"
+        exit 1
+elif [[ "$OSTYPE" == "win32" ]]; then
+        # I'm not sure this can happen.
+        echo "win32 isn't supported."
+        echo "If you'd like to add support, a PR would be most welcome!"
+        exit
+elif [[ "$OSTYPE" == "freebsd"* ]]; then
+        # ...
+        echo "freebsd isn't supported."
+        echo "If you'd like to add support, a PR would be most welcome!"
+        exit 1
+else
+        # Unknown.
+        echo "Cannot determine OS"
+        exit 1
 fi
 
 function wait_for_running_pods() {
@@ -126,7 +242,12 @@ then
   cat qubernetes.yaml | sed "s/number:.*/number: $NUM_NODES/g" > quickest-start.yaml
   echo docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./quorum-init quickest-start.yaml
   docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./quorum-init quickest-start.yaml
-  kubectl apply -f out -f out/deployments > /dev/null
+  SEPARATE_DEPLOYMENT_FILES=""
+  if [[ -d out/deployments ]]; then
+    SEPARATE_DEPLOYMENT_FILES="-f out/deployments"
+  fi
+  echo kubectl apply -f out $SEPARATE_DEPLOYMENT_FILES
+  kubectl apply -f out $SEPARATE_DEPLOYMENT_FILES > /dev/null
 else
   echo "Deploying 7nodes with Privacy manager tessera and consensus IBFT"
   kubectl apply -f 7nodes/istanbul-7nodes-tessera/k8s-yaml-pvc/ > /dev/null
@@ -140,15 +261,20 @@ kubectl get pods
 echo
 echo "==============================================================="
 echo
-echo "To connect to a node once the pods have been started, run:"
+echo "To connect to a node container once the pods have been started, run:"
 printf "${GREEN}$> ./connect.sh node1 quorum ${NC} \n"
 echo
-echo "Quorum resources are under \$QHOME on the pod."
+echo "Quorum resources are under \$QHOME on the container."
 printf "${GREEN}$> cd \$QHOME${NC} \n"
 echo
 echo "To run some transcations from inside the quorum container:"
 printf "${GREEN}$> cd \$QHOME/contracts${NC} \n"
 printf "${GREEN}$> ./runscript.sh public_contract.js${NC}\n"
 printf "${GREEN}$> ./runscript.sh private_contract.js${NC}\n"
-
+echo
+echo "To run a public and private transcations from outside the quorum container:"
+printf "${GREEN}$> helpers/run_contracts.sh node1${NC} \n"
+echo
+echo "To run a command in geth from outside the container:"
+printf "${GREEN}$> ./geth-exec node1 \"eth.blockNumber\"${NC} \n"
 echo

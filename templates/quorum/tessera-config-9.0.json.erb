@@ -25,6 +25,15 @@ end
     "app":"ThirdParty",
     "enabled": true,
     "serverAddress": "http://%THIS_SERVICE_HOST%:9080",
+    "cors": {
+        "allowedMethods": [
+            "GET",
+            "OPTIONS"
+        ],
+        "allowedOrigins": [
+            "*"
+        ]
+    },
     "communicationType" : "REST"
   },
   {

@@ -124,8 +124,8 @@ echo "kind cluster created"
 if [[ $NUM_NODES -gt 0 ]];
 then
   cat qubernetes.yaml | sed "s/number:.*/number: $NUM_NODES/g" > quickest-start.yaml
-  echo docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./quorum-init quickest-start.yaml
-  docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./quorum-init quickest-start.yaml
+  echo docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./qube-init quickest-start.yaml
+  docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./qube-init quickest-start.yaml
   kubectl apply -f out -f out/deployments > /dev/null
 else
   echo "Deploying 7nodes with Privacy manager tessera and consensus IBFT"

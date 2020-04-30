@@ -49,12 +49,40 @@ function is_kubectl_installed() {
   which kubectl > /dev/null
 }
 
+function is_snap_installed() {
+  which snap > /dev/null
+}
+
+function echo_only_snap_supported() {
+  echo "the snap package manager was not found."
+  echo "only the snap package manager is supported at this time"
+  echo "If you'd like to add support, a PR would be lovely!"
+
+}
+
+function is_brew_installed() {
+  which brew > /dev/null
+}
+
+function echo_only_brew_supported() {
+  echo "the brew package manager was not found."
+  echo "only the brew package manager is supported for macos at this time"
+  echo "If you'd like to add support, a PR would be lovely!"
+}
+
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
         echo "linux-gnu"
         INSTALL_DIR=/usr/local/bin
 
         is_kind_installed
         if [[ $? -ne 0 ]]; then
+          is_snap_installed
+          if [[ $? -ne 0 ]]; then
+            echo "snap not found could not install kind."
+            echo_only_snap_supported
+            printf "${RED} please install snap or kind manually and try again!${NC}\n"
+            exit 1
+          fi
           echo
           echo "kind not found "
           echo "installing kind to $INSTALL_DIR"
@@ -69,6 +97,13 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
 
         is_kubectl_installed
         if [[ $? -ne 0 ]]; then
+          is_snap_installed
+          if [[ $? -ne 0 ]]; then
+            echo "snap not found could not install kubectl."
+            echo_only_snap_supported
+            printf "${RED} please install snap or kubectl manually and try again!${NC}\n"
+            exit 1
+          fi
           echo "installing kubectl via snap"
           snap install kubectl --classic
           echo "kubectl installed"
@@ -79,6 +114,13 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
         echo "mac"
         is_kind_installed
         if [[ $? -ne 0 ]]; then
+          is_brew_installed
+          if [[ $? -ne 0 ]]; then
+            echo "brew not found could not install kind."
+            echo_only_brew_supported
+            printf "${RED} please install brew or kind manually and try again!${NC}\n"
+            exit 1
+          fi
           echo "installing kind via brew"
           brew install kind
           echo "kind installed"
@@ -87,6 +129,13 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 
         is_kubectl_installed
         if [[ $? -ne 0 ]]; then
+          is_brew_installed
+          if [[ $? -ne 0 ]]; then
+            echo "brew not found could not install kubectl."
+            echo_only_brew_supported
+            printf "${RED} please install brew or kubectl manually and try again!${NC}\n"
+            exit 1
+          fi
           echo "installing kubectl via brew"
           brew install kubectl
           echo "kubectl installed"

@@ -36,6 +36,10 @@ spec:
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
+          - path: /quorum-ws
+            backend:
+              serviceName: <%= @Node_UserIdent %>
+              servicePort: <%= @Node_WSPort %>
   tls:
     - hosts:
         - "<%= @Node_UserIdent %>.<%= @Ingress_Host %>"
@@ -46,6 +50,10 @@ spec:
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
+          - path: /quorum-ws
+            backend:
+              serviceName: <%= @Node_UserIdent %>
+              servicePort: <%= @Node_WSPort %>
           <%- end -%> <%# End Host conditional %>
      <% end -%> <%# end this node iteration %>
 <%- end -%> <%# End Ingress OneForEach (this node's ingress) %>
@@ -76,6 +84,10 @@ spec:
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
+          - path: /<%= @Node_UserIdent %>/quorum-ws
+            backend:
+              serviceName: <%= @Node_UserIdent %>
+              servicePort: <%= @Node_WSPort %>
           <%- end -%> <%# end setting path for each node %>
 <%- if @Ingress_Host -%>
   tls:

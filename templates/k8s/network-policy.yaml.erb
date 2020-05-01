@@ -19,6 +19,7 @@ spec:
         -  port: <%= @TM_Port %>
         -  port: 9080
         -  port: <%= @Raft_Port %>
+        -  port: <%= @Node_WSPort %>
         -  port: <%= @Node_RPCPort %>
         -  port: <%= @NodeP2P_ListenAddr %>
   egress:
@@ -31,6 +32,7 @@ spec:
         - port: 9080
         - port: <%= @Raft_Port %>
         - port: <%= @Node_RPCPort %>
+        - port: <%= @Node_WSPort %>
         - port: <%= @NodeP2P_ListenAddr %>
 
 ---
@@ -55,3 +57,4 @@ spec:
         - port: <%= @TM_Port %>
         - port: 9080
         - port:  <%= @Node_RPCPort %>
+        - port: <%= @Node_WSPort %>

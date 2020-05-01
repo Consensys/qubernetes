@@ -231,12 +231,13 @@ spec:
 
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=<%= @Geth_Network_Id %>
+           RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
          <%- if @config["quorum"]["consensus"] == "raft" -%>
-           args=\" --gcmode archive --raft  --raftport <%= @Raft_Port %> --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
+           args=\" --gcmode archive --raft  --raftport <%= @Raft_Port %> \";
+           RPC_APIS=\"$RPC_APIS,raft\";
          <%- elsif @config["quorum"]["consensus"] == "istanbul" -%>
-           args=\" --gcmode archive --istanbul.blockperiod 3 --syncmode full --mine --minerthreads 1 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul \";
-         <%- else -%>
-           args=\"--rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum \";
+           args=\" --gcmode archive --istanbul.blockperiod 3 --syncmode full --mine --minerthreads 1 \";
+           RPC_APIS=\"$RPC_APIS,istanbul\";
          <%- end -%>
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
@@ -251,12 +252,16 @@ spec:
            --rpc \
            --rpcaddr 0.0.0.0 \
            --rpcport <%= @Node_RPCPort %> \
+           --rpcapi $RPC_APIS \
+           --wsapi $RPC_APIS \
+           --wsport <%= @Node_WSPort %> \
            --port <%= @NodeP2P_ListenAddr %> \
            <%= @Geth_Startup_Params %> \
            --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a <%= @Node_DataDir%>/logs/quorum.log;"
         ports:
           - containerPort: <%= @Raft_Port %>
           - containerPort: <%= @Node_RPCPort %>
+          - containerPort: <%= @Node_WSPort %>
           - containerPort: <%= @NodeP2P_ListenAddr %>
         env:
         - name: PRIVATE_CONFIG

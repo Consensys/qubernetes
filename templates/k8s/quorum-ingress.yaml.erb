@@ -84,7 +84,7 @@ spec:
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
-          - path: /tessera-3Party
+          - path: /<%= @Node_UserIdent %>/tessera-3Party
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Tm_3Party_Port %>

@@ -47,6 +47,10 @@ spec:
       protocol: TCP
       port: <%= @Node_RPCPort %>
       targetPort: <%= @Node_RPCPort %>
+    - name: wsport
+      protocol: TCP
+      port: <%= @Node_WSPort %>
+      targetPort: <%= @Node_WSPort %>
     - name: quorum-listener
       protocol: TCP
       port: <%= @NodeP2P_ListenAddr %>

@@ -36,6 +36,10 @@ spec:
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
+          - path: /quorum-ws
+            backend:
+              serviceName: <%= @Node_UserIdent %>
+              servicePort: <%= @Node_WSPort %>
           - path: /tessera-3Party
             backend:
               serviceName: <%= @Node_UserIdent %>
@@ -50,6 +54,10 @@ spec:
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
+          - path: /quorum-ws
+            backend:
+              serviceName: <%= @Node_UserIdent %>
+              servicePort: <%= @Node_WSPort %>
           - path: /tessera-3Party
             backend:
               serviceName: <%= @Node_UserIdent %>
@@ -84,6 +92,10 @@ spec:
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
+          - path: /<%= @Node_UserIdent %>/quorum-ws
+            backend:
+              serviceName: <%= @Node_UserIdent %>
+              servicePort: <%= @Node_WSPort %>
           - path: /<%= @Node_UserIdent %>/tessera-3Party
             backend:
               serviceName: <%= @Node_UserIdent %>

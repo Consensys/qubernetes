@@ -19,6 +19,7 @@ spec:
         -  port: <%= @Tm_Port %>
         -  port: <%= @Tm_3Party_Port %>
         -  port: <%= @Raft_Port %>
+        -  port: <%= @Node_WSPort %>
         -  port: <%= @Node_RPCPort %>
         -  port: <%= @NodeP2P_ListenAddr %>
   egress:
@@ -31,6 +32,7 @@ spec:
         - port: <%= @Tm_3Party_Port %>
         - port: <%= @Raft_Port %>
         - port: <%= @Node_RPCPort %>
+        - port: <%= @Node_WSPort %>
         - port: <%= @NodeP2P_ListenAddr %>
 
 ---
@@ -52,6 +54,7 @@ spec:
             matchLabels:
               app: qubernetes
       ports:
-        - port: <%= @Tm_Port %>
-        - port: <%= @Tm_3Party_Port %>
+        - port: <%= @TM_Port %>
         - port: <%= @Node_RPCPort %>
+        - port: <%= @Node_RPCPort %>
+        - port: <%= @Node_WSPort %>

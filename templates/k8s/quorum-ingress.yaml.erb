@@ -36,6 +36,10 @@ spec:
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
+          - path: /tessera-3Party
+            backend:
+              serviceName: <%= @Node_UserIdent %>
+              servicePort: <%= @Tm_3Party_Port %>
   tls:
     - hosts:
         - "<%= @Node_UserIdent %>.<%= @Ingress_Host %>"
@@ -46,6 +50,10 @@ spec:
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
+          - path: /tessera-3Party
+            backend:
+              serviceName: <%= @Node_UserIdent %>
+              servicePort: <%= @Tm_3Party_Port %>
           <%- end -%> <%# End Host conditional %>
      <% end -%> <%# end this node iteration %>
 <%- end -%> <%# End Ingress OneForEach (this node's ingress) %>
@@ -76,6 +84,10 @@ spec:
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
+          - path: /tessera-3Party
+            backend:
+              serviceName: <%= @Node_UserIdent %>
+              servicePort: <%= @Tm_3Party_Port %>
           <%- end -%> <%# end setting path for each node %>
 <%- if @Ingress_Host -%>
   tls:

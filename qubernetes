@@ -61,6 +61,11 @@ if @config["quorum"]["tm"]["Port"]
   @Tm_Port = @config["quorum"]["tm"]["Port"]
 end
 
+@Tm_3Party_Port = 9080
+if @config["quorum"]["tm"]["3Party_Port"]
+  @Tm_3Party_Port = @config["quorum"]["tm"]["3Party_Port"]
+end
+
 @Node_RPCPort = 8545
 if @config["geth"] and @config["geth"]["Node_RPCPort"]
   @Node_RPCPort = @config["geth"]["Node_RPCPort"]

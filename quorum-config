@@ -66,7 +66,7 @@ if @config["quorum"]["quorum"]["Raft_Port"]
 end
 @NodeP2P_ListenAddr = 30303
 if @config["geth"] and @config["geth"]["NodeP2P_ListenAddr"]
-  @NodeP2P_ListenAdd = @config["geth"]["NodeP2P_ListenAddr"]
+  @NodeP2P_ListenAddr = @config["geth"]["NodeP2P_ListenAddr"]
 end
 
 #####################################################

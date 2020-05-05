@@ -40,8 +40,8 @@ spec:
     # default 8545
     - name: tm-tessera-third-part
       protocol: TCP
-      port: 9080
-      targetPort: 9080
+      port: <%= @Tm_3Party_Port %>
+      targetPort: <%= @Tm_3Party_Port %>
     # default 8545
     - name: rpc-listener
       protocol: TCP

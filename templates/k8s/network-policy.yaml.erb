@@ -16,8 +16,8 @@ spec:
           matchLabels:
             app: qubernetes
       ports:
-        -  port: <%= @TM_Port %>
-        -  port: 9080
+        -  port: <%= @Tm_Port %>
+        -  port: <%= @Tm_3Party_Port %>
         -  port: <%= @Raft_Port %>
         -  port: <%= @Node_WSPort %>
         -  port: <%= @Node_RPCPort %>
@@ -28,8 +28,8 @@ spec:
           matchLabels:
             app: qubernetes
       ports:
-        - port: <%= @TM_Port %>
-        - port: 9080
+        - port: <%= @Tm_Port %>
+        - port: <%= @Tm_3Party_Port %>
         - port: <%= @Raft_Port %>
         - port: <%= @Node_RPCPort %>
         - port: <%= @Node_WSPort %>
@@ -55,6 +55,6 @@ spec:
               app: qubernetes
       ports:
         - port: <%= @TM_Port %>
-        - port: 9080
-        - port:  <%= @Node_RPCPort %>
+        - port: <%= @Node_RPCPort %>
+        - port: <%= @Node_RPCPort %>
         - port: <%= @Node_WSPort %>

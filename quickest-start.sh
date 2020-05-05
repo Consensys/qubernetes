@@ -240,8 +240,8 @@ echo "kind cluster created"
 if [[ $NUM_NODES -gt 0 ]];
 then
   cat qubernetes.yaml | sed "s/number:.*/number: $NUM_NODES/g" > quickest-start.yaml
-  echo docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./quorum-init quickest-start.yaml
-  docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./quorum-init quickest-start.yaml
+  echo docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./qube-init quickest-start.yaml
+  docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./qube-init quickest-start.yaml
   SEPARATE_DEPLOYMENT_FILES=""
   if [[ -d out/deployments ]]; then
     SEPARATE_DEPLOYMENT_FILES="-f out/deployments"

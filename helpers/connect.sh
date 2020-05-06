@@ -14,4 +14,4 @@ fi
 
 POD=$(kubectl get pods $NAMESPACE | grep Running | grep $1 |  awk '{print $1}')
 echo "connecting to POD [$POD]"
-kubectl $NAMESPACE exec -it $POD -c $2 /bin/ash 
+kubectl $NAMESPACE exec -it $POD -c $2 -- /bin/ash

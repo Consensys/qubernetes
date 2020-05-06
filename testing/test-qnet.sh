@@ -111,7 +111,7 @@ done
 # BLOCK_NUM will only instantly go up if raft
 # If istanbul it may take 5-10 seconds to start minting.
 ISTANBUL=$(echo $NAMESPACE | grep -i istan)
-
+ISTANBUL=$ISTANBUL$(echo $NAMESPACE | grep -i ibft)
 ## TODO: loop here, sometimes it takes a minute!
 # Istanbul has a condition where it may show block 1 for a while, then jump to a higher number, so if the consesus
 # is istanbul loop through until the block starts to increments to 2.
@@ -172,17 +172,13 @@ fi
 # try and wait for the private contract to execute without an error, e.g. in the case where
 # it hasn't started up completely.
 EXIT_CODE=1
-MAX_TRIES=10
+MAX_TRIES=20
 CT=0
 # if tessera may take longer, and will not throw an error exit code
 # err creating contract Error Non-200 status code: &{Status:404 Not Found StatusCode:404 Proto:HTTP/1.1 ProtoMajor:1 ProtoMinor:1
-while [[ $EXIT_CODE -ne 0 ]];
+while [[ "$CT" -lt "$MAX_TRIES" ]];
 do
   ((CT=CT+1))
-  if [[ "$CT" -ge "$MAX_TRIES" ]];
-  then
-    break
-  fi
   printf "${GREEN}Testing private transactions: attempt $CT out of $MAX_TRIES${NC}\n"
   echo helpers/run_contracts.sh $NODE_TO_TEST priv $NAMESPACE_NAME
   helpers/run_contracts.sh $NODE_TO_TEST priv $NAMESPACE_NAME
@@ -192,6 +188,9 @@ do
   get_block_number $NAMESPACE
   BLOCK_NUM=$?
   echo "BLOCK_NUM: [$BLOCK_NUM]"
+  if [[ $EXIT_CODE -eq 0 ]]; then
+    break;
+  fi
 done
 
 if [[ $EXIT_CODE -ne 0 ]];

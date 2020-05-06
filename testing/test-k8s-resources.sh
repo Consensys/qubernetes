@@ -68,6 +68,7 @@ printf "${GREEN} Testing ${TOTAL_TEST_NUM} test networks. ${NC}\n"
 CT=0
 SUCCESS=0
 FAILURES=0
+FAILED_RUNS=""
 for OUT_DIR in $OUT_DIR_BASE/*;
 do
   ((CT=CT+1))
@@ -76,9 +77,13 @@ do
   printf "${RED}Total Failed networks: ${FAILURES}${NC}\n"
   # remove $OUT_DIR_BASE from the string to create the namespace
   echo $OUT_DIR | sed "s|$OUT_DIR_BASE||g" | sed 's|/||g'
-  NAMESPACE=$(echo $OUT_DIR | sed "s|$OUT_DIR_BASE||g" | sed 's|/||g')
-  echo $NAMESPACE
-  CUR_OUT_DIR=${OUT_DIR_BASE}/$NAMESPACE
+
+  CUR_OUT_DIR=$(echo $OUT_DIR | sed "s|$OUT_DIR_BASE||g" | sed 's|/||g')
+  CUR_OUT_DIR=${OUT_DIR_BASE}/$CUR_OUT_DIR
+  NAMESPACE=$(echo $OUT_DIR | sed "s|$OUT_DIR_BASE||g" | sed 's|/||g' | sed "s|\.|-|g")
+
+  echo "NAMESPACE: $NAMESPACE"
+  echo "CUR_OUT_DIR: $CUR_OUT_DIR"
 
   # Create namespace for this run
   kubectl delete namespace $NAMESPACE
@@ -132,6 +137,7 @@ do
  if [[ $EXIT_CODE -ne 0 ]];
  then
    ((FAILURES=FAILURES+1))
+   FAILED_RUNS="FAILED_RUNS, $CUR_OUT_DIR"
  else
    ((SUCCESS=SUCCESS+1))
  fi
@@ -147,7 +153,7 @@ done
 
 printf "${GREEN}Total Successful networks: ${SUCCESS}${NC}\n"
 printf "${RED}Total Failed networks: ${FAILURES}${NC}\n"
-
+printf "${RED}Failed runds: ${FAILED_RUNS}${NC}\n"
 if [[ $FAILURES -ne 0 ]]; then
   exit 1
 fi

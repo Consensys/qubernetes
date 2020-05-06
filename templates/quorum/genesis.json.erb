@@ -54,7 +54,7 @@ end
     "eip155block": 0,
     "eip158block": 0,
     <%-# for 2.6 maxCodeSize config has changed. -%>
-    <%- if @config["quorum"]["quorum"]["Quorum_Version"] == "2.6.0" -%>
+    <%- if @config["quorum"]["quorum"]["Quorum_Version"] >= "2.6.0" -%>
     "maxCodeSizeConfig" : [
       {
         "block" : 0,
@@ -119,7 +119,7 @@ end
       "policy": 0
     },
     <%-# for 2.6 maxCodeSize config has changed. -%>
-    <%- if @config["quorum"]["quorum"]["Quorum_Version"] == "2.6.0" -%>
+    <%- if @config["quorum"]["quorum"]["Quorum_Version"] >= "2.6.0" -%>
     "maxCodeSizeConfig" : [
       {
         "block" : 0,

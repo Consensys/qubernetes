@@ -2,6 +2,30 @@
 
 require "yaml"
 require "erb"
+require 'optparse'
+
+# set up flag options
+options = {command: 'ask'}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: ./quorum-init [options]"
+
+  opts.on("-c", "--command [COMMAND]", String,
+            "create: override out directory and generate new resources,
+                                     update: keep out directory and only add additional resources") do |c|
+    options[:command] = c
+  end
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+
+end.parse!
+
+@COMMAND_FLAG=options[:command]
+
+puts "using command flag : " + @COMMAND_FLAG
 
 # setup the config file to use to generate the quorum resources and kubernetes API resources.
 @CONFIG_FILE = "qubernetes.yaml"
@@ -21,8 +45,10 @@ if @config["sep_deployment_files"] != nil
   @sep_deployment_files = @config["sep_deployment_files"]
 end
 
+
+puts  "  Running ./quorum-init to generate Quorum resources."
 `
-./quorum-init #{@CONFIG_FILE}
+./quorum-init --command=#{@COMMAND_FLAG} #{@CONFIG_FILE}
 `
 
 puts  "  Running ./qubernetes to generate Kubernetes resources."

@@ -36,7 +36,7 @@ for CONFIG_FILE in $CONFIG_DIR*;
 do
  echo "Config file: ${CONFIG_FILE}"
  NAMESPACE=$(echo $CONFIG_FILE | sed 's/.yaml//g' | sed "s|$CONFIG_DIR||g")
- ./qube-init ${CONFIG_FILE} &&
+ ./qube-init --action=create ${CONFIG_FILE} &&
  rm -rf $OUT_DIR/$NAMESPACE
  mv out $OUT_DIR/$NAMESPACE
 done

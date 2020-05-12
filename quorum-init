@@ -5,15 +5,15 @@ require "erb"
 require 'optparse'
 
 # set up flag options
-options = {command: 'ask'}
+options = {action: 'ask'}
 
 OptionParser.new do |opts|
   opts.banner = "Usage: ./quorum-init [options]"
 
-  opts.on("-c", "--command [COMMAND]", String,
+  opts.on("-a", "--action [ACTION]", String,
             "create: override out directory and generate new resources,
-                                     update: keep out directory and only add additional resources") do |c|
-    options[:command] = c
+                                     update: keep out directory and only add additional resources") do |a|
+    options[:action] = a
   end
 
   opts.on("-h", "--help", "Prints this help") do
@@ -36,16 +36,13 @@ puts "using config file: " + @CONFIG_FILE
 @config                = YAML.load_file(@CONFIG_FILE)
 
 # decide to create new resources
-command = options[:command]
+action = options[:action]
 createNew=false
-if (command == 'create')
+if (action == 'create')
     createNew=true
 end
 
-p command
-p createNew
-
-if File.directory?("out") && (command == 'ask')
+if File.directory?("out") && (action == 'ask')
   puts("\n The 'out' directory already exist.")
   puts(" Please select the action you wish to take:")
   puts("")

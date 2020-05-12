@@ -2,6 +2,26 @@
 
 require "yaml"
 require "erb"
+require 'optparse'
+
+# set up flag options
+options = {action: 'ask'}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: ./quorum-init [options]"
+
+  opts.on("-a", "--action [ACTION]", String,
+            "create: override out directory and generate new resources,
+                                     update: keep out directory and only add additional resources") do |a|
+    options[:action] = a
+  end
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+
+end.parse!
 
 # setup the config file to use to generate the quorum resources and kubernetes API resources.
 @CONFIG_FILE = "qubernetes.yaml"
@@ -15,7 +35,14 @@ puts "using config file: " + @CONFIG_FILE
 
 @config                = YAML.load_file(@CONFIG_FILE)
 
-if File.directory?("out") && !@config["skip_out_directory"]
+# decide to create new resources
+action = options[:action]
+createNew=false
+if (action == 'create')
+    createNew=true
+end
+
+if File.directory?("out") && (action == 'ask')
   puts("\n The 'out' directory already exist.")
   puts(" Please select the action you wish to take:")
   puts("")
@@ -27,7 +54,7 @@ if File.directory?("out") && !@config["skip_out_directory"]
   case res
   when "1"
     puts("Creating all new resources.")
-    `rm -r out`
+    createNew=true
   when "2"
     puts("Generating additional resources only.")
   when "3"
@@ -37,6 +64,11 @@ if File.directory?("out") && !@config["skip_out_directory"]
     puts("OK, not doing anything :)")
     exit(0)
   end
+end
+
+# delete out directory if creating new
+if createNew
+    `rm -r out`
 end
 
 `

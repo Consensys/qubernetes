@@ -48,7 +48,7 @@ end
 
 puts  "  Running ./quorum-init to generate Quorum resources."
 
-exec("./quorum-init --action=#{@ACTION_FLAG} #{@CONFIG_FILE}")
+system("./quorum-init --action=#{@ACTION_FLAG} #{@CONFIG_FILE}")
 
 
 puts  "  Running ./qubernetes to generate Kubernetes resources."

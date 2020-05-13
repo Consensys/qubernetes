@@ -11,12 +11,12 @@ OptionParser.new do |opts|
   opts.banner = "Usage: ./quorum-init [options]"
 
   opts.on("-a", "--action [ACTION]", String,
-            "create: override out directory and generate new resources,
-                                     update: keep out directory and only add additional resources") do |a|
+            "create: override out directory and generate new resources.
+                                     update: keep out directory and only add additional resources.") do |a|
     options[:action] = a
   end
 
-  opts.on("-h", "--help", "Prints this help") do
+  opts.on("-h", "--help", "prints this help.") do
     puts opts
     exit
   end

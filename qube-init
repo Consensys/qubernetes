@@ -1,0 +1,64 @@
+#!/usr/bin/env ruby
+
+require "yaml"
+require "erb"
+require 'optparse'
+
+# set up flag options
+options = {action: 'ask'}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: ./qube-init [options]"
+
+  opts.on("-a", "--action [ACTION]", String,
+            "create: override out directory and generate new resources.
+                                     update: keep out directory and only add additional resources.") do |a|
+    options[:action] = a
+  end
+
+  opts.on("-h", "--help", "prints this help.") do
+    puts opts
+    exit
+  end
+
+end.parse!
+
+@ACTION_FLAG=options[:action]
+
+puts "using action flag : " + @ACTION_FLAG
+
+# setup the config file to use to generate the quorum resources and kubernetes API resources.
+@CONFIG_FILE = "qubernetes.yaml"
+@OPTIONAL_CONFIG_FILE=ARGV[0]
+ARGV.clear
+
+if @OPTIONAL_CONFIG_FILE != nil
+  @CONFIG_FILE = @OPTIONAL_CONFIG_FILE
+end
+puts "using config file: " + @CONFIG_FILE
+
+@config                = YAML.load_file(@CONFIG_FILE)
+
+# Generate deployments in a single file, or in separate files.
+@sep_deployment_files=false
+if @config["sep_deployment_files"] != nil
+  @sep_deployment_files = @config["sep_deployment_files"]
+end
+
+
+puts  "  Running ./quorum-init to generate Quorum resources."
+
+system("./quorum-init --action=#{@ACTION_FLAG} #{@CONFIG_FILE}")
+
+
+puts  "  Running ./qubernetes to generate Kubernetes resources."
+puts ""
+`
+./qubernetes #{@CONFIG_FILE}
+`
+@Kubectl_Cmd="  $> kubectl apply -f out"
+if @sep_deployment_files
+  @Kubectl_Cmd="  $> kubectl apply -f out -f out/deployments"
+end
+puts("  To deploy to kubernetes run:")
+puts(@Kubectl_Cmd)

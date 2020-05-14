@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1.0
+      - uses: actions/checkout@v2
         name: Check out code
 
       - uses: mr-smithers-excellent/docker-build-push@v3

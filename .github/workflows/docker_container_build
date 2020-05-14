@@ -1,0 +1,32 @@
+# Workflow to build the docker container and push to dockerhub
+#
+# 1. Builds the docker image with ./docker-build.sh
+# 2. Pushes to dockerhub
+
+name: Docker Container Build
+
+# Controls when the action will run. Triggers the workflow on all push events to the master branch
+# https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
+on:
+  push:
+
+
+jobs:
+  # This workflow contains a single job called "test-7nodes"
+  docker-build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1.0
+        name: Check out code
+
+      - uses: mr-smithers-excellent/docker-build-push@v3
+        name: Build & push Docker image
+        with:
+          image: apratt3377/qubernetes
+          tag: latest
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+

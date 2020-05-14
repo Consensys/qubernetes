@@ -21,11 +21,12 @@ jobs:
       - uses: actions/checkout@v2
         name: Check out code
 
-      - uses: mr-smithers-excellent/docker-build-push@v3
-        name: Build & push Docker image
+      - uses: docker/build-push-action@v1
+        name: Build and Push Docker image
         with:
-          image: apratt3377/qubernetes
-          registry: docker.io
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: apratt3377/qubernetes
+          tags: latest
+          add_git_labels: true
 

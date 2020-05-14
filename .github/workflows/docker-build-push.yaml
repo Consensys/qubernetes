@@ -9,7 +9,8 @@ name: Docker Container Build
 # Controls when the action will run. Triggers the workflow on all push events to the master branch
 # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
 on:
-  push: [ master ]
+  push:
+    branches: [ master ]
 
 
 jobs:

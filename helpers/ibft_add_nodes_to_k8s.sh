@@ -11,11 +11,16 @@ GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 ## apply the new  configs from the out dir
-## make sure the genesis didn't change.
-kubectl apply -f out/00-quorum-persistent-volumes.yaml
-kubectl apply -f out/02-quorum-shared-config.yaml
-kubectl apply -f out/03-quorum-services.yaml
-kubectl apply -f out/04-quorum-keyconfigs.yaml
+## but don't update the genesis file / config.
+for f in out/*
+do
+	if [[ "$f" == *"genesis"* ]]; then
+	   echo "skip reapplying genesis config"
+  else
+	   kubectl apply -f $f
+	fi
+done
+
 echo
 kubectl get pods
 

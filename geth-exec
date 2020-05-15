@@ -20,7 +20,7 @@ if [ "$#" -lt 1 ]; then
   exit 1
 fi
 
-if [ "$#" -eq 2 ]; then
+if [ "$#" -ge 2 ]; then
    GETH_CMD=$2
 fi
 

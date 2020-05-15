@@ -158,7 +158,7 @@ The `qubernetes.yaml` file and the desired `out` directory will need to be mount
 ```bash
 $> git clone https://github.com/jpmorganchase/qubernetes.git
 $> cd qubernetes
-qubernetes $> docker run --rm -it -v $(pwd)/qubernetes.yaml:/qubernetes/qubernetes.yaml -v $(pwd)/out:/qubernetes/out  quorumengineering/qubernetes ./quorum-init qubernetes.yaml
+qubernetes $> docker run --rm -it -v $(pwd)/qubernetes.yaml:/qubernetes/qubernetes.yaml -v $(pwd)/out:/qubernetes/out  quorumengineering/qubernetes ./qube-init qubernetes.yaml
 qubernetes $> ls out 
 ``` 
 [![docker-quberentes-boot-1](docs/resources/docker-quberentes-boot-1-play.png)](https://jpmorganchase.github.io/qubernetes/resources/docker-quberentes-boot-1.webm)
@@ -172,7 +172,7 @@ cool-qubernetes.yaml
 
 # run docker and mount cool-qubernetes.yaml and the out directory
 # a prompt will appear enter 1 to Delete the 'out' directory and generate new resources. 
-myDir$> docker run --rm -it -v $(pwd)/cool-qubernetes.yaml:/qubernetes/cool-qubernetes.yaml -v $(pwd)/out:/qubernetes/out quorumengineering/qubernetes ./quorum-init cool-qubernetes.yaml
+myDir$> docker run --rm -it -v $(pwd)/cool-qubernetes.yaml:/qubernetes/cool-qubernetes.yaml -v $(pwd)/out:/qubernetes/out quorumengineering/qubernetes ./qube-init cool-qubernetes.yaml
 using config file: cool-qubernetes.yaml
 
  The 'out' directory already exist.
@@ -200,7 +200,7 @@ so it is as if we were running on our local host: the files from the host will b
 $> git clone https://github.com/jpmorganchase/qubernetes.git
 $> cd qubernetes 
 qubernetes $> docker run --rm -it -v $(pwd):/qubernetes -ti quorumengineering/qubernetes
-root@4eb772b14086:/qubernetes# ./quorum-init
+root@4eb772b14086:/qubernetes# ./qube-init
 
 root@4eb772b14086:/qubernetes# ls out/
 00-quorum-persistent-volumes.yaml  01-quorum-genesis.yaml  02-quorum-shared-config.yaml  03-quorum-services.yaml  04-quorum-keyconfigs.yaml  config  deployments
@@ -218,7 +218,7 @@ nodes:
   number: 8
 ```
 
-2. Run `./quorum-init` to generate everything needed for the quorum deployment: quorum keys, genesis.json, istanbul-config.json, permissioned-nodes.json, etc. 
+2. Run `./qube-init` to generate everything needed for the quorum deployment: quorum keys, genesis.json, istanbul-config.json, permissioned-nodes.json, etc.
   
  These resources will be written and read from the directories specified in the `qubernetes.yaml` file.
  The default [`qubernetes.yaml`](qubernetes.yaml) is configured to write theses to the `./out/config` directory.
@@ -231,7 +231,7 @@ nodes:
  ```shell
  
  ## in this case, an out directory exists, so select `1`.
- $> ./quorum-init
+ $> ./qube-init
  The 'out' directory already exist.
  Please select the action you wish to take:
 

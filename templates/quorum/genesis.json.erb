@@ -47,11 +47,24 @@ end
     "homesteadBlock": 0,
     "byzantiumBlock": 0,
     "constantinopleBlock": 0,
+    "petersburgBlock": 0,
+    "istanbulBlock": 0,
     "eip150block": 0,
     "eip150hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "eip155block": 0,
     "eip158block": 0,
+    <%-# for 2.6 maxCodeSize config has changed. -%>
+    <%- if @config["quorum"]["quorum"]["Quorum_Version"] >= "2.6.0" -%>
+    "maxCodeSizeConfig" : [
+      {
+        "block" : 0,
+        "size" : 32
+      }
+    ],
+    <%- else -%> <%# for v2.4 and 2.5 support maxCodeSize config has changed. %>
     "maxCodeSize": 35,
+    "maxCodeSizeChangeBlock" : 0,
+    <%- end -%>
     "chainId": <%= @Geth_Network_Id %>,
     "isQuorum":true
   },
@@ -95,6 +108,8 @@ end
     "homesteadBlock": 0,
     "byzantiumBlock": 0,
     "constantinopleBlock": 0,
+    "petersburgBlock": 0,
+    "istanbulBlock": 0,
     "eip150Block": 0,
     "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "eip155Block": 0,
@@ -103,7 +118,18 @@ end
       "epoch": 30000,
       "policy": 0
     },
+    <%-# for 2.6 maxCodeSize config has changed. -%>
+    <%- if @config["quorum"]["quorum"]["Quorum_Version"] >= "2.6.0" -%>
+    "maxCodeSizeConfig" : [
+      {
+        "block" : 0,
+        "size" : 32
+      }
+    ],
+    <%- else -%> <%# for v2.4 and 2.5 support maxCodeSize config has changed. %>
     "maxCodeSize": 35,
+    "maxCodeSizeChangeBlock" : 0,
+    <%- end -%>
     "chainId": <%= @Geth_Network_Id %>,
     "isQuorum": true
   },

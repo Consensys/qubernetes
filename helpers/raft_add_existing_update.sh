@@ -3,7 +3,7 @@
 #echo "enode://c57f7113aa5b05392d1e33c0dee1795f3d5855fb84c442f27488bd64be2b8571ae7b131737ba50b8e6946de2dda0e60c380cdc270c750d7e88e9582e70274be7@10.11.242.133:30303?discport=0&raftport=50401" | awk -F {Print $1}
 POD=$1
 #POD=quorum-node1-deployment-785b45b775-xl9rs
-RAFT_ID_ENODE_URL_CSV=$(kubectl exec -it $POD -c quorum cat /etc/quorum/qdata/contracts/raft_added.csv)
+RAFT_ID_ENODE_URL_CSV=$(kubectl exec -it $POD -c quorum -- cat /etc/quorum/qdata/contracts/raft_added.csv)
 
 mkdir -p out/deployments/updates
 

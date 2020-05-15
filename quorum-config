@@ -54,6 +54,11 @@ end
 if @config["quorum"]["tm"]["Port"]
   @Tm_Port = @config["quorum"]["tm"]["Port"]
 end
+# Tm_3Party_Port used in tessera config templates
+@Tm_3Party_Port = 9080
+if @config["quorum"]["tm"]["3Party_Port"]
+  @Tm_3Party_Port = @config["quorum"]["tm"]["3Party_Port"]
+end
 # used by permissioned-nodes.json.erb to set enode URLs
 @Raft_Port = 50401
 if @config["quorum"]["quorum"]["Raft_Port"]
@@ -61,7 +66,7 @@ if @config["quorum"]["quorum"]["Raft_Port"]
 end
 @NodeP2P_ListenAddr = 30303
 if @config["geth"] and @config["geth"]["NodeP2P_ListenAddr"]
-  @NodeP2P_ListenAdd = @config["geth"]["NodeP2P_ListenAddr"]
+  @NodeP2P_ListenAddr = @config["geth"]["NodeP2P_ListenAddr"]
 end
 
 #####################################################

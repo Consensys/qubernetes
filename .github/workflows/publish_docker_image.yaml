@@ -1,0 +1,71 @@
+name: Publish Docker Image
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - 'v*'
+jobs:
+  push:
+    name: 'Build and Push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v2
+      - name: 'Setup environment'
+        id: setup
+        run: |
+          echo "::set-output name=repo::$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')"
+      - name: 'Build and push to Docker Hub'
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+          repository: quorumengineering/qubernetes
+          tag_with_ref: true
+          add_git_labels: true
+      - name: 'Notify'
+        if: always()
+        run: |
+          status_icon=":question:"
+          status="${{ job.status }}"
+          case "$status" in
+            "Success"|"success") status_icon=":white_check_mark:"
+            ;;
+            "Failure"|"failure") status_icon=":no_entry:"
+            ;;
+            "Cancelled"|"cancelled"|"canceled"|"Canceled") status_icon=":warning:"
+            ;;
+          esac
+          cat <<JSON > slack_message.json
+          {
+          	"blocks": [
+          		{
+          			"type": "section",
+          			"text": {
+          				"type": "mrkdwn",
+          				"text": "${status_icon} ${{ github.workflow }} <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|#${{ github.run_number }}>"
+          			}
+          		},
+          		{
+          			"type": "context",
+          			"elements": [
+                        {
+                            "type": "mrkdwn",
+                            "text": "*Target*: ${{ steps.setup.outputs.target }}"
+                        },
+          				{
+          					"type": "mrkdwn",
+          					"text": "*Repo*: <https://github.com/${{ github.repository }}|${{ github.repository }}>"
+          				},
+          				{
+          					"type": "mrkdwn",
+          					"text": "*Branch*: ${{ github.ref }}"
+          				}
+          			]
+          		}
+          	]
+          }
+          JSON
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} -H "Content-type: application/json" --data "@slack_message.json"
+

@@ -16,9 +16,6 @@ jobs:
         id: setup
         run: |
           target="Docker Hub"
-          if [ "${{ secrets.DOCKER_REPO }}" == "" ]; then
-            target="Github Packages"
-          fi
           echo "::set-output name=target::$target"
           echo "::set-output name=repo::$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')"
       - name: 'Build and push to Docker Hub'

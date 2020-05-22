@@ -10,7 +10,8 @@ service:
   Ingress:
     # OneToMany | OneToOne
     Strategy: OneToMany
-    Host: "quorum.testnet.com"
+    Host: "quorum.ws.testnet.com"
+    ws: true
 quorum:
   # supported: (raft | istanbul)
   consensus: istanbul

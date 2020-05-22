@@ -4,12 +4,17 @@ def set_node_template_vars(values)
     return
 end
 
+
+@Geth_WS = false
 if @config["service"]["Ingress"] then
    @Ingress = true
    # OneForAll
    @IngressStrategy = @config["service"]["Ingress"]["Strategy"]
    if @config["service"]["Ingress"]["Host"]  then
      @Ingress_Host = @config["service"]["Ingress"]["Host"]
+   end
+   if @config["service"]["Ingress"]["ws"]  then
+     @Geth_WS = true
    end
 end
 -%>
@@ -36,10 +41,12 @@ spec:
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
+          <%- if  @Geth_WS -%>
           - path: /quorum-ws
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_WSPort %>
+          <%- end -%>
   tls:
     - hosts:
         - "<%= @Node_UserIdent %>.<%= @Ingress_Host %>"
@@ -50,11 +57,13 @@ spec:
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
+          <%- if  @Geth_WS -%>
           - path: /quorum-ws
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_WSPort %>
-          <%- end -%> <%# End Host conditional %>
+          <%- end -%>
+        <%- end -%> <%# End Host conditional %>
      <% end -%> <%# end this node iteration %>
 <%- end -%> <%# End Ingress OneForEach (this node's ingress) %>
 
@@ -75,23 +84,25 @@ spec:
       http:
       <%- else -%>
     - http:
-          <%- end -%> <%# end  Host conditional%>
+     <%- end -%> <%# end  Host conditional%>
         paths:
-            <%- # create paths for each node -%>
-            <%- @nodes.each do |node| -%>
+         <%- # create paths for each node -%>
+         <%- @nodes.each do |node| -%>
             <%- set_node_template_vars(node.values.first) -%>
           - path: /<%= @Node_UserIdent %>/quorum-rpc
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_RPCPort %>
+          <%- if  @Geth_WS -%>
           - path: /<%= @Node_UserIdent %>/quorum-ws
             backend:
               serviceName: <%= @Node_UserIdent %>
               servicePort: <%= @Node_WSPort %>
-          <%- end -%> <%# end setting path for each node %>
-<%- if @Ingress_Host -%>
+          <%- end -%>
+         <%- end -%> <%# end setting path for each node %>
+ <%- if @Ingress_Host -%>
   tls:
     - hosts:
         - "<%= @Ingress_Host %>"
-<%- end -%>
-    <%- end %> <%# end  Ingress conditional%>
+ <%- end -%>
+<%- end %> <%# end  Ingress conditional%>

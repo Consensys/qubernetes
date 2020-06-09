@@ -24,7 +24,7 @@ BASE_DIR=<%= @Key_Dir_Base %>
 <%- else %>
 BASE_DIR=$(pwd)/<%= @Key_Dir_Base %>
 <%- end %>
-
+TESSERA_KEY_GEN_CMD="java -jar ${TESSERA_JAR} keygen --keyout tm"
 mkdir -p $BASE_DIR
 IFS=', ' read -r -a array <<< "$NODE_DIRS"
 
@@ -32,13 +32,18 @@ for node_key_dir in "${array[@]}"; do
   KEY_DIR=$BASE_DIR/$node_key_dir
   echo "KEY DIR IS $KEY_DIR"
   ## If key dir exists, skip it.
+
   if [ ! -d $KEY_DIR ]; then
     pushd .
+    shopt -s expand_aliases
     mkdir -p $KEY_DIR
     cd $KEY_DIR
-    echo | constellation-node --generatekeys=tm
+    #echo | constellation-node --generatekeys=tm
+    #echo | tessera --keyout tm
+    echo | $TESSERA_KEY_GEN_CMD
     touch password.txt
-    geth --keystore $KEY_DIR  account new --password password.txt
+    #geth account new --keystore $KEY_DIR --password password.txt
+    ethkey generate $KEY_DIR/acctkeyfile.json --passwordfile password.txt
     bootnode -genkey nodekey
     bootnode  -nodekeyhex $(cat nodekey) -writeaddress > enode
     popd

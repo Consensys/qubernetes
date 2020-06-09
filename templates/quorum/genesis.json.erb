@@ -155,8 +155,11 @@ end
    #puts(@Key_Dir_Base + "/" + @Node_Key_Dir + "/nodekey")
    File.open(@Key_Dir_Base + "/" + @Node_Key_Dir + "/nodekey", "r") do |f|
     f.each_line do |nodekey|
-      nodeAcct=`node istanbul-helpers/privateKeyToAccount.js 0x#{nodekey}`
+      nodeAcct=`ethkey generate tmpkey.json --passwordfile #{@Key_Dir_Base}/#{@Node_Key_Dir}/password.txt --privatekey #{@Key_Dir_Base}/#{@Node_Key_Dir}/nodekey | sed 's/Address: //g' | sed 's/}//g'`
+      `rm tmpkey.json`
+
       puts("node account for Istanbul is: " + nodeAcct)
+
       nodeAcct=nodeAcct.strip
       File.open(@IstanbulConfig, "a") do |f|
         f.puts "\"" + nodeAcct + "\","

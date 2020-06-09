@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:20.10
 
 ARG COMMIT=""
 ARG QUBES_VERSION=""
@@ -11,22 +11,30 @@ LABEL org.opencontainers.image.source="https://github.com/jpmorganchase/qubernet
 LABEL org.opencontainers.image.title="qubernetes"
 LABEL org.opencontainers.image.version=${QUBES_VERSION}
 
-RUN apt-get update \
-    && apt-get --no-install-recommends install -y apt-utils curl wget git tree ne software-properties-common apt-transport-https ca-certificates build-essential
+RUN apt-get update
 
-RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
-RUN add-apt-repository ppa:longsleep/golang-backports
-RUN add-apt-repository -y ppa:ethereum/ethereum
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
-
-# RUN apt-get update # done by node script above
-RUN apt-get --no-install-recommends  install -y nodejs ruby haskell-stack golang-go google-cloud-sdk kubectl ethereum libdb-dev libleveldb-dev libsodium-dev zlib1g-dev libtinfo-dev
+# set tzdata non-interactive https://serverfault.com/questions/949991/how-to-install-tzdata-on-a-ubuntu-docker-image
+# for now need musl-dev for geneating account key from the private key
+RUN DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" apt-get install -y ruby-full golang-go git make musl-dev
 RUN gem install colorize
-RUN npm install web3
-ENV PATH=/root/go/bin:$PATH
+
 RUN go get github.com/getamis/istanbul-tools/cmd/istanbul
-RUN cd /usr/bin && curl -L https://github.com/jpmorganchase/constellation/releases/download/v0.3.2/constellation-0.3.2-ubuntu1604.tar.xz | tar -xJ --strip=1
+ENV PATH=/root/go/bin:$PATH
+
+RUN go get github.com/getamis/istanbul-tools/cmd/istanbul && git clone https://github.com/ethereum/go-ethereum.git /root/go/src/github.com/ethereum/go-ethereum && \
+    cd /root/go/src/github.com/ethereum/go-ethereum && git checkout e9ba536d && make all && \
+    cp /root/go/src/github.com/ethereum/go-ethereum/build/bin/ethkey /root/go/bin/ && \
+    cp /root/go/src/github.com/ethereum/go-ethereum/build/bin/bootnode /root/go/bin/ && \
+    cp /root/go/bin/* /usr/local/bin && \
+    rm -r /root/go
+
+RUN apt-get --no-install-recommends install -y default-jre wget
+RUN echo 'alias tessera="java -jar /usr/bin/tessera-app-0.10.5-app.jar"' >> ~/.bashrc
+ENV TESSERA_JAR=/usr/bin/tessera-app-0.10.5-app.jar
+
+# echo | tessera keygen --keyout tm
+RUN cd /usr/bin && wget https://oss.sonatype.org/service/local/repositories/releases/content/com/jpmorgan/quorum/tessera-app/0.10.5/tessera-app-0.10.5-app.jar
+RUN apt-get remove -y git golang-go wget make
 
 WORKDIR /qubernetes
 COPY . .

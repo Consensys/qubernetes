@@ -84,7 +84,7 @@ do
 
   echo "NAMESPACE: $NAMESPACE"
   echo "CUR_OUT_DIR: $CUR_OUT_DIR"
-
+  ls $CUR_OUT_DIR/
   # Create namespace for this run
   kubectl delete namespace $NAMESPACE
   kubectl create namespace $NAMESPACE &&

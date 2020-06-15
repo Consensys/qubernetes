@@ -197,6 +197,13 @@ spec:
         <%- end -%>
       - name: quorum
         image: <%= @Quorum_Docker_Repo %>/quorum:<%= @Quorum_Version %>
+        readinessProbe:
+          exec:
+            command:
+              - ls
+              - $(QHOME)/dd/geth.ipc
+          initialDelaySeconds: 20
+          periodSeconds: 3
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");

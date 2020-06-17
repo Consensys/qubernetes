@@ -4,12 +4,7 @@
 sep_deployment_files: true
 nodes:
   number: 4
-service:
-  # NodePort | ClusterIP
-  type: NodePort
 quorum:
-  # supported: (raft | istanbul)
-  consensus: istanbul
   # base quorum data dir as set inside each container.
   Node_DataDir: /etc/quorum/qdata
   # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
@@ -19,7 +14,8 @@ quorum:
   Genesis_File: out/config/genesis.json
   # related to quorum containers
   quorum:
-    Raft_Port: 50401
+    # supported: (raft | istanbul)
+    consensus: istanbul
     Quorum_Version: 2.4.0
     # the docker repo that hold your quorum container
     Docker_Repo: %%YOUR_CUSTOM_DOCKER_REPO%%
@@ -33,14 +29,6 @@ quorum:
     Port: 9001
     3Party_Port: 9080
     Tessera_Config_Dir: out/config
-  # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
-  # test locally and on GCP
-  # The data dir is persisted here
-  storage:
-    # PVC (Persistent_Volume_Claim - tested with GCP).
-    Type: PVC
-    ## when redeploying cannot be less than previous values
-    Capacity: 5Gi
 # generic geth related options
 geth:
   Node_RPCPort: 8545
@@ -54,3 +42,15 @@ geth:
   verbosity: 9
   # additional startup params to pass into geth/quorum
   Geth_Startup_Params: --rpccorsdomain=\"*\"
+k8s:
+  service:
+    # NodePort | ClusterIP
+    type: NodePort
+  # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+  # test locally and on GCP
+  # The data dir is persisted here
+  storage:
+    # PVC (Persistent_Volume_Claim - tested with GCP).
+    Type: PVC
+    ## when redeploying cannot be less than previous values
+    Capacity: 5Gi

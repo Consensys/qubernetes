@@ -239,10 +239,10 @@ spec:
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=<%= @Geth_Network_Id %>
            RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
-         <%- if @config["quorum"]["consensus"] == "raft" -%>
+         <%- if @config["quorum"]["quorum"]["consensus"] == "raft" -%>
            args=\" --gcmode archive --raft  --raftport <%= @Raft_Port %> \";
            RPC_APIS=\"$RPC_APIS,raft\";
-         <%- elsif @config["quorum"]["consensus"] == "istanbul" -%>
+         <%- elsif @config["quorum"]["quorum"]["consensus"] == "istanbul" -%>
            args=\" --gcmode archive --istanbul.blockperiod 3 --syncmode full --mine --minerthreads 1 \";
            RPC_APIS=\"$RPC_APIS,istanbul\";
          <%- end -%>
@@ -311,7 +311,7 @@ spec:
           mountPath: <%= @Node_DataDir%>/permission-nodes
         - name: geth-helpers
           mountPath: /geth-helpers
-        <%- if @config["quorum"]["consensus"] == "istanbul" -%>
+        <%- if @config["quorum"]["quorum"]["consensus"] == "istanbul" -%>
         - name: istanbul-validator-config
           mountPath: <%= @Node_DataDir%>/istanbul-validator-config.toml
         - name: node-management
@@ -388,7 +388,7 @@ spec:
             - key: geth-exec.sh
               path: geth-exec.sh
           defaultMode: 0777
-      <% if @config["quorum"]["consensus"] == "istanbul" %>
+      <% if @config["quorum"]["quorum"]["consensus"] == "istanbul" %>
       - name: istanbul-validator-config
         configMap:
           name: istanbul-validator-config.toml

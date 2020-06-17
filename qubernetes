@@ -159,7 +159,7 @@ File.open("out/03.0-quorum-services.yaml", "w") do |f|
 end
 
 # Create the Ingress resources if they are configured
-if @config["service"] and @config["service"]["Ingress"]
+if @config["k8s"] and @config["k8s"]["service"] and @config["k8s"]["service"]["Ingress"]
   File.open("out/03.1-quorum-ingress.yaml", "w") do |f|
     f.puts (ERB.new(File.read(@base_template_path + "/quorum-ingress.yaml.erb"), nil, "-").result)
   end

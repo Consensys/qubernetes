@@ -6,14 +6,14 @@ end
 
 
 @Geth_WS = false
-if @config["service"]["Ingress"] then
+if @config["k8s"] and @config["k8s"]["service"]["Ingress"] then
    @Ingress = true
    # OneForAll
-   @IngressStrategy = @config["service"]["Ingress"]["Strategy"]
-   if @config["service"]["Ingress"]["Host"]  then
-     @Ingress_Host = @config["service"]["Ingress"]["Host"]
+   @IngressStrategy = @config["k8s"]["service"]["Ingress"]["Strategy"]
+   if @config["k8s"]["service"]["Ingress"]["Host"]  then
+     @Ingress_Host = @config["k8s"]["service"]["Ingress"]["Host"]
    end
-   if @config["service"]["Ingress"]["ws"]  then
+   if @config["k8s"]["service"]["Ingress"]["ws"]  then
      @Geth_WS = true
    end
 end

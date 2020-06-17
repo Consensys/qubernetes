@@ -3,12 +3,7 @@
 # number of nodes to deploy
 nodes:
   number: 7
-service:
-  # NodePort | ClusterIP
-  type: ClusterIP
 quorum:
-  # supported: raft | istanbul
-  consensus: raft
   # base quorum data dir as set inside each container.
   Node_DataDir: /etc/quorum/qdata
   # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
@@ -18,7 +13,8 @@ quorum:
   Genesis_File: 7nodes/raft-genesis.json
   # related to quorum containers
   quorum:
-    Raft_Port: 50401
+    # supported: raft | istanbul
+    consensus: raft
     # container images at https://hub.docker.com/u/quorumengineering/
     Quorum_Version: 2.5.0
   # related to transaction manager containers
@@ -29,13 +25,6 @@ quorum:
     Tm_Version: 0.3.2
     Port: 9001
     Tessera_Config_Dir: 7nodes
-  # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
-  # test locally and on GCP
-  storage:
-    # PVC (Persistent_Volume_Claim - tested with GCP).
-    Type: PVC
-    ## when redeploying cannot be less than previous values
-    Capacity: 200Mi
 # generic geth related options
 geth:
   Node_RPCPort: 8545
@@ -47,3 +36,14 @@ geth:
     public: false
   # general verbosity of geth [1..5]
   verbosity: 9
+k8s:
+  service:
+    # NodePort | ClusterIP
+    type: ClusterIP
+  # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+  # test locally and on GCP.
+  storage:
+    # PVC (Persistent_Volume_Claim - tested with GCP).
+    Type: PVC
+    ## when redeploying cannot be less than previous values
+    Capacity: 200M

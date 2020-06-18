@@ -1,5 +1,3 @@
-namespace:
-  name: quorum-test
 # number of nodes to deploy, this is relying on already generated files which reside in the 7nodes
 # directory, so teh number will always be 7.
 # see: 7nodes directory for already generated quorum resources and various qubernetes.yaml files.
@@ -37,6 +35,8 @@ geth:
   # general verbosity of geth [1..5]
   verbosity: 9
 k8s:
+  namespace:
+    name: quorum-test
   service:
     # NodePort | ClusterIP
     type: ClusterIP

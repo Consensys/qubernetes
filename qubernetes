@@ -84,16 +84,14 @@ end
 
 # Generate deployments in a single file, or in separate files.
 @sep_deployment_files=false
-if @config["sep_deployment_files"] != nil
-  @sep_deployment_files = @config["sep_deployment_files"]
+if @config["k8s"] and @config["k8s"]["sep_deployment_files"] != nil
+  @sep_deployment_files = @config["k8s"]["sep_deployment_files"]
 end
 
 # If the namespace is set in the config, create it and add it to all the resources.
 @Namespace = ""
-if @config["namespace"] != nil
-  if @config["namespace"]["name"] != ""
-@Namespace = "namespace: " + @config["namespace"]["name"]
-   end
+if @config["k8s"] and @config["k8s"]["namespace"] != nil and @config["k8s"]["namespace"]["name"] != ""
+@Namespace = "namespace: " + @config["k8s"]["namespace"]["name"]
 end
 
 # What kind of persistent storage is desired?
@@ -159,7 +157,7 @@ File.open("out/03.0-quorum-services.yaml", "w") do |f|
 end
 
 # Create the Ingress resources if they are configured
-if @config["service"] and @config["service"]["Ingress"]
+if @config["k8s"] and @config["k8s"]["service"] and @config["k8s"]["service"]["Ingress"]
   File.open("out/03.1-quorum-ingress.yaml", "w") do |f|
     f.puts (ERB.new(File.read(@base_template_path + "/quorum-ingress.yaml.erb"), nil, "-").result)
   end

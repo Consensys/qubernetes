@@ -1,16 +1,6 @@
-#namespace:
-# name: quorum-test
 # number of nodes to deploy
-sep_deployment_files: true
 nodes:
   number: 3
-service:
-  # NodePort | ClusterIP | LoadBalancer
-  type: NodePort
-  Ingress:
-    # OneToMany | OneToOne
-    Strategy: OneToOne
-    Host: "quorum.testnet.com"
 quorum:
   # supported: (raft | istanbul)
   consensus: istanbul
@@ -35,14 +25,6 @@ quorum:
     Port: 9001
     3Party_Port: 9080
     Tessera_Config_Dir: out/config
-  # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
-  # test locally and on GCP
-  # The data dir is persisted here
-  storage:
-    # PVC (Persistent_Volume_Claim - tested with GCP).
-    Type: PVC
-    ## when redeploying cannot be less than previous values
-    Capacity: 200Mi
 # generic geth related options
 geth:
   Node_RPCPort: 8545
@@ -57,8 +39,24 @@ geth:
   # additional startup params to pass into geth/quorum
   Geth_Startup_Params: --rpccorsdomain=\"*\" --rpcvhosts=\"*\"
 k8s:
+  sep_deployment_files: true
   # optionally  allow a security context to be set for the deployment, e.g. can the user have root access?
   securityContext:
     runAsUser: 430
     fsGroup: 430
     supplementalGroups: [666,777]
+  service:
+    # NodePort | ClusterIP | LoadBalancer
+    type: NodePort
+    Ingress:
+      # OneToMany | OneToOne
+      Strategy: OneToOne
+      Host: "quorum.testnet.com"
+    # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+    # test locally and on GCP
+    # The data dir is persisted here
+    storage:
+      # PVC (Persistent_Volume_Claim - tested with GCP).
+      Type: PVC
+      ## when redeploying cannot be less than previous values
+      Capacity: 200Mi

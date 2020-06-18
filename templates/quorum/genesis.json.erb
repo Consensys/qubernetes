@@ -15,7 +15,7 @@ end
 
 -%>
 
-<% if @config["quorum"]["consensus"] == "raft" %>
+<% if @config["quorum"]["quorum"]["consensus"] == "raft" %>
 {
 "alloc": {
 <%- @nodes.each_with_index do |node, indexNode|
@@ -76,7 +76,7 @@ end
   "parenthash": "0x0000000000000000000000000000000000000000000000000000000000000000",
   "timestamp": "0x00"
 }
-<% elsif @config["quorum"]["consensus"] == "istanbul" %>
+<% elsif @config["quorum"]["quorum"]["consensus"] == "istanbul" %>
 {
 "alloc": {
 <%- @nodes.each_with_index do |node, indexNode|

@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: <%= @config["namespace"]["name"] %>
+  name: <%= @config["k8s"]["namespace"]["name"] %>
   labels:
-    name: <%= @config["namespace"]["name"] %>
+    name: <%= @config["k8s"]["namespace"]["name"] %>
     <%- end %>
 ---
 

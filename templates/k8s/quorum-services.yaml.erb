@@ -8,8 +8,8 @@ end
 # NodePort | ClusterIP | Loadbalancer
 # default to NodePort if not set
 @Service_Type = "NodePort"
-if @config["service"] and  @config["service"]["type"]
- @Service_Type = @config["service"]["type"]
+if @config["k8s"] and @config["k8s"]["service"] and  @config["k8s"]["service"]["type"]
+ @Service_Type = @config["k8s"]["service"]["type"]
 end
 -%>
 

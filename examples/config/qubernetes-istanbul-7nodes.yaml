@@ -1,16 +1,9 @@
-namespace:
-  name: quorum-test
 # number of nodes to deploy, this is relying on already generated files which reside in the 7nodes
 # directory, so teh number will always be 7.
 # see: 7nodes directory for already generated quorum resources and various qubernetes.yaml files.
 nodes:
   number: 7 
-service:
-  # NodePort | ClusterIP
-  type: ClusterIP
 quorum:
-  # supported: (raft | istanbul)
-  consensus: istanbul 
   # base quorum data dir as set inside each container.
   Node_DataDir: /etc/quorum/qdata
   # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
@@ -20,13 +13,13 @@ quorum:
   Genesis_File: 7nodes/istanbul-7nodes/istanbul-genesis.json
   # related to quorum containers
   quorum:
-    Raft_Port: 50401
+    # supported: (raft | istanbul)
+    consensus: istanbul
     # container images at https://hub.docker.com/u/quorumengineering/
     Quorum_Version: 2.2.3
   # related to transaction manager containers
   tm:
     # container images at https://hub.docker.com/u/quorumengineering/
-    #       in that case.
     Tm_Version: 0.3.2
     3Party_Port: 9080
     Port: 9001
@@ -41,3 +34,9 @@ geth:
     public: false
   # general verbosity of geth [1..5]
   verbosity: 9
+k8s:
+  namespace:
+    name: quorum-test
+  service:
+    # NodePort | ClusterIP
+    type: ClusterIP

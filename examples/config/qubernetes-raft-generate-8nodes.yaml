@@ -3,12 +3,7 @@ namespace:
 # number of nodes to deploy
 nodes:
   number: 8
-service:
-  # NodePort | ClusterIP
-  type: ClusterIP
 quorum:
-  # supported: (raft | istanbul)
-  consensus: raft 
   # base quorum data dir as set inside each container.
   Node_DataDir: /etc/quorum/qdata
   # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
@@ -18,7 +13,8 @@ quorum:
   Genesis_File: out/config/genesis.json
   # related to quorum containers
   quorum:
-    Raft_Port: 50401
+    # supported: (raft | istanbul)
+    consensus: raft
     # container images at https://hub.docker.com/u/quorumengineering/
     Quorum_Version: 2.2.3
   # related to transaction manager containers
@@ -41,3 +37,7 @@ geth:
     public: false
   # general verbosity of geth [1..5]
   verbosity: 9
+k8s:
+  service:
+    # NodePort | ClusterIP
+    type: ClusterIP

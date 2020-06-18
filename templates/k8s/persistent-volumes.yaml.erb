@@ -11,12 +11,12 @@ end
 ##       be removed in the future and only `storage: PVC: [Annotations: Capacity]` will be supported.
 
 # if the user set storage params, override the defaults, and add their config.
-if @config["quorum"]["storage"]
-  if @config["quorum"]["storage"]["PVC"]
-    @Storage_Config = @config["quorum"]["storage"]["PVC"]
+if @config["k8s"] and @config["k8s"]["storage"]
+  if @config["k8s"]["storage"]["PVC"]
+    @Storage_Config = @config["k8s"]["storage"]["PVC"]
     @Capacity =  @Storage_Config["Capacity"]
   else
-    @Storage_Config = @config["quorum"]["storage"]
+    @Storage_Config = @config["k8s"]["storage"]
     @Capacity =  @Storage_Config["Capacity"]
   end
 
@@ -36,9 +36,9 @@ end
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: <%= @config["namespace"]["name"] %>
+  name: <%= @config["k8s"]["namespace"]["name"] %>
   labels:
-    name: <%= @config["namespace"]["name"] %>
+    name: <%= @config["k8s"]["namespace"]["name"] %>
 <%- end %>
 ---
 

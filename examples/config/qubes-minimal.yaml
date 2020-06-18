@@ -15,4 +15,4 @@ quorum:
   tm:
     # (tessera|constellation)
     Name: tessera
-    Tm_Version: 0.11
+    Tm_Version: 0.10.4

@@ -41,8 +41,8 @@ puts "using config file: " + @CONFIG_FILE
 
 # Generate deployments in a single file, or in separate files.
 @sep_deployment_files=false
-if @config["sep_deployment_files"] != nil
-  @sep_deployment_files = @config["sep_deployment_files"]
+if @config["k8s"] and @config["k8s"]["sep_deployment_files"] != nil
+  @sep_deployment_files = @config["k8s"]["sep_deployment_files"]
 end
 
 

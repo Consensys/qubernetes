@@ -1,7 +1,6 @@
 #namespace:
 # name: quorum-test
 # number of nodes to deploy
-sep_deployment_files: true
 nodes:
   number: 3
 quorum:
@@ -42,6 +41,7 @@ geth:
   # additional startup params to pass into geth/quorum
   Geth_Startup_Params: --rpccorsdomain=\"*\" --rpcvhosts=\"*\"
 k8s:
+  sep_deployment_files: true
   # optionally  allow a security context to be set for the deployment, e.g. can the user have root access?
   securityContext:
     runAsUser: 430

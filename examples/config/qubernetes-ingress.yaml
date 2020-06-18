@@ -1,7 +1,6 @@
 #namespace:
 # name: quorum-test
 # number of nodes to deploy
-sep_deployment_files: true
 nodes:
   number: 3
 quorum:
@@ -41,7 +40,9 @@ geth:
   verbosity: 9
   # additional startup params to pass into geth/quorum
   Geth_Startup_Params: --rpccorsdomain=\"*\" --rpcvhosts=\"*\"
+
 k8s:
+  sep_deployment_files: true
   service:
     # NodePort | ClusterIP | LoadBalancer
     type: NodePort

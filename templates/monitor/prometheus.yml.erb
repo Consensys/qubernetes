@@ -1,0 +1,29 @@
+<%-
+
+def set_node_template_vars(values)
+    @Node_UserIdent = values["Node_UserIdent"]
+    @Service_Prefix = (@Node_UserIdent.upcase).gsub("-", "_")
+    return
+end
+-%>
+
+global:
+  scrape_interval: 5s
+  scrape_timeout: 5s
+  evaluation_interval: 5s
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+      scheme: http
+      timeout: 5s
+scrape_configs:
+  - job_name: geth
+    metrics_path: /debug/metrics/prometheus
+    scheme: http
+    static_configs:
+      - targets:
+  <%- @nodes.each do |node| -%>
+  <%= set_node_template_vars(node.values.first) -%>
+        - <%= @Service_Prefix %>_SERVICE_HOST:6060
+  <%- end -%>

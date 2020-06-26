@@ -1,0 +1,93 @@
+<%-
+def set_node_template_vars(values)
+    @Node_UserIdent = values["Node_UserIdent"]
+    @Service_Prefix = (@Node_UserIdent.upcase).gsub("-", "_")
+    return
+end
+-%>
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  <%= @Namespace %>
+  name: monitor-deployment
+spec:
+  selector:
+    matchLabels:
+      name: quorum-monitor
+  template:
+    metadata:
+      name:  quorum-monitor
+      labels:
+        app: qubernetes
+        tier: backend
+        name: quorum-monitor
+    spec:
+      containers:
+      - name: prometheus
+        image: prom/prometheus:v2.19.1
+        command: [ "sh" ]
+        args:
+          - "-cx"
+          - "
+             mkdir -p /prometheus/myprometheus;
+             cp  /etc/prometheus/prometheus.yml /prometheus/myprometheus/prometheus.yaml;
+            <%- @nodes.each do |node| -%>
+             <%= set_node_template_vars(node.values.first) -%>
+sed -i \"s/<%= @Service_Prefix %>_SERVICE_HOST/$<%= @Service_Prefix %>_SERVICE_HOST/g\" /prometheus/myprometheus/prometheus.yaml;
+            <%- end -%>
+             /bin/prometheus --config.file=/prometheus/myprometheus/prometheus.yaml --storage.tsdb.path=/prometheus/;"
+        ports:
+          - containerPort: 9090
+        volumeMounts:
+          - name: prometheus-config-volume
+            mountPath: /etc/prometheus
+          - name: prometheus-storage-volume
+            mountPath: /prometheus/
+      volumes:
+          - name: prometheus-config-volume
+            configMap:
+              name: prometheus-server-conf
+          - name: prometheus-storage-volume
+            emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  <%= @Namespace %>
+  name: quorum-monitor
+  labels:
+    app: qubernetes
+    tier: backend
+    name: quorum-monitor
+spec:
+  selector:
+    app: qubernetes
+    tier: backend
+    name: quorum-monitor
+  # NodePort | ClusterIP | Loadbalancer
+  type: NodePort
+  ports:
+    - name: prometheus
+      protocol: TCP
+      targetPort: 9090
+      port: 9090
+ <%- if @config["prometheus"] and @config["prometheus"]["nodePort_prom"]  -%>
+      nodePort: <%= @config["prometheus"]["nodePort_prom"] %>
+ <%- end -%>
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-server-conf
+    <%= @Namespace %>
+  labels:
+    app: qubernetes
+    name: prometheus-server-conf
+data:
+  prometheus.yml: |-
+<%- File.readlines("out/config/prometheus.yml").each do |line| -%>
+     <%= line -%>
+<%- end -%>

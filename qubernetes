@@ -202,7 +202,18 @@ else
   end
 end
 
+if @config["prometheus"]
+  `rm -f out/config/prometheus.yml`
+  File.open("out/config/prometheus.yml", "a") do |f|
+    f.puts (ERB.new(File.read("templates/monitor/prometheus.yml.erb"), nil, "-").result)
+  end
 
+  `rm -f out/06-quorum-monitor.yaml`
+  File.open("out/06-quorum-monitor.yaml", "a") do |f|
+    f.puts (ERB.new(File.read(@base_template_path + "/monitor.yaml.erb"), nil, "-").result)
+    f.puts("---")
+  end
+end
 
 puts("\n")
 puts "  Success! ".green

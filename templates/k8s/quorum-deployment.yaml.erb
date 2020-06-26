@@ -43,6 +43,7 @@ end
    @Security_Context = @config["k8s"]["securityContext"]
  end
 %>
+<%- @This_Host = ("#{@Node_UserIdent}".upcase + "_SERVICE_HOST").gsub("-", "_") -%>
 # The quorum deployment consists of
 # 1. the transaction manager / private tx container (constellation or tessera)
 # 2. the quorum node container
@@ -148,7 +149,7 @@ spec:
 
            CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json.tmpl);
 
-           <%- @This_Host = ("#{@Node_UserIdent}".upcase + "_SERVICE_HOST").gsub("-", "_") -%>
+
            echo  \"<%= @Sed_Set_Node_Service_Host %>\";
            CONFIG_WITH_OTHER_HOSTS=$(echo $CONFIG_TMPL | <%= @Sed_Set_Node_Service_Host %>) ;
            CONFIG_WITH_ALL_HOSTS=$(echo $CONFIG_WITH_OTHER_HOSTS | sed \"s/%THIS_SERVICE_HOST%/$<%= @This_Host %>/g\");
@@ -266,6 +267,13 @@ spec:
            --wsapi $RPC_APIS \
            --wsport <%= @Node_WSPort %> \
            --port <%= @NodeP2P_ListenAddr %> \
+      <%- if @config["prometheus"] -%>
+         <%- if @config["prometheus"]["monitor_params_geth"]-%>
+            <%= @config["prometheus"]["monitor_params_geth"]%> \
+         <%- else -%>
+           --metrics --metrics.expensive --pprof --pprofaddr=0.0.0.0 \
+         <%- end -%>
+      <%- end -%>
            <%= @Geth_Startup_Params %> \
            --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a <%= @Node_DataDir%>/logs/quorum.log;"
         ports:
@@ -273,6 +281,9 @@ spec:
           - containerPort: <%= @Node_RPCPort %>
           - containerPort: <%= @Node_WSPort %>
           - containerPort: <%= @NodeP2P_ListenAddr %>
+        <% if @config["prometheus"] %>
+          - containerPort: 6060
+        <% end %>
         env:
         - name: PRIVATE_CONFIG
           value: <%= @Node_DataDir %>/tm/tm.ipc
@@ -321,10 +332,6 @@ spec:
           mountPath: <%= @Node_DataDir%>/node-management/ibft_propose_all.sh
           subPath: ibft_propose_all.sh
         <%- end -%>
-          #subPath: permissioned-nodes.json
-       # - name: quorum-permissioned-config
-       #   mountPath: <%= @Node_DataDir%>/dd/static-nodes.json.tmpl
-       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:

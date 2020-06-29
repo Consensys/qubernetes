@@ -59,5 +59,10 @@ spec:
       protocol: TCP
       targetPort: <%= @Raft_Port %>
       port: <%= @Raft_Port %>
-
+<% if @config["prometheus"]  %>
+    - name: prometheus
+      protocol: TCP
+      targetPort: 6060
+      port: 6060
+<% end %>
 <%- end %> <%# end node iteration %>

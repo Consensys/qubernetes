@@ -140,11 +140,24 @@ end
 @base_template_path = "templates/k8s"
 #puts (sed_string)
 puts "PVC"
+
 if @Storage_Type == "PVC"
-  File.open("out/00-quorum-persistent-volumes.yaml", "w") do |f|
-    f.puts (ERB.new(File.read(@base_template_path + "/persistent-volumes.yaml.erb"), nil, "-").result)
+  # there is a custom storage class set, e.g. for EKS storage class.
+  if  @config.dig("k8s", "storage", "PVC", "storageClass","template")
+    @storage_class_template = @config["k8s"]["storage"]["PVC"]["storageClass"]["template"]
+    File.open("out/00-quorum-persistent-volumes.yaml", "w") do |f|
+      f.puts (ERB.new(File.read(@base_template_path + "/storage-classes/" + @storage_class_template + ".yaml.erb"), nil, "-").result)
+    end
+    File.open("out/00-quorum-persistent-volumes.yaml", "a") do |f|
+      f.puts (ERB.new(File.read(@base_template_path + "/persistent-volumes.yaml.erb"), nil, "-").result)
+    end
+  else
+    File.open("out/00-quorum-persistent-volumes.yaml", "w") do |f|
+      f.puts (ERB.new(File.read(@base_template_path + "/persistent-volumes.yaml.erb"), nil, "-").result)
+    end
   end
 end
+
 File.open("out/01-quorum-genesis.yaml", "w") do |f|
   f.puts (ERB.new(File.read(@base_template_path + "/quorum-genesis-config.yaml.erb"), nil, "-").result)
 end

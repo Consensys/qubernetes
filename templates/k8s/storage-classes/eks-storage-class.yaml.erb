@@ -1,0 +1,26 @@
+<%
+if @config["k8s"]["storage"]["PVC"]["storageClass"]
+  @Name = @config["k8s"]["storage"]["PVC"]["storageClass"]["name"]
+  @KmsKeyId = @config["k8s"]["storage"]["PVC"]["storageClass"]["kmsKeyId"]
+end
+@ReclaimPolicy = "Delete"
+if @config["k8s"]["storage"]["PVC"]["storageClass"]["reclaimPolicy"]
+  @ReclaimPolicy = @config["k8s"]["storage"]["PVC"]["storageClass"]["reclaimPolicy"]
+end
+%>
+
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: <%= @Name %>
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: kubernetes.io/aws-ebs
+reclaimPolicy: <%=  @ReclaimPolicy %>
+parameters:
+  type:  <%= @Name %>
+  iopsPerGB: "10"
+  fsType: ext4
+  encrypted: "true"
+  kmsKeyId: <%= @KmsKeyId %>

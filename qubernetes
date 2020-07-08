@@ -90,8 +90,8 @@ end
 
 # If the namespace is set in the config, create it and add it to all the resources.
 @Namespace = ""
-if @config["k8s"] and @config["k8s"]["namespace"] != nil and @config["k8s"]["namespace"]["name"] != ""
-@Namespace = "namespace: " + @config["k8s"]["namespace"]["name"]
+if @config["k8s"] and @config["k8s"]["namespace"] != nil and @config["k8s"]["namespace"] != ""
+@Namespace = "namespace: " + @config["k8s"]["namespace"]
 end
 
 # What kind of persistent storage is desired?
@@ -139,6 +139,13 @@ end
 
 @base_template_path = "templates/k8s"
 #puts (sed_string)
+
+if @Namespace != ""
+  File.open("out/00-namespace.yaml", "w") do |f|
+    f.puts (ERB.new(File.read(@base_template_path  + "/namespace.yaml.erb"), nil, "-").result)
+  end
+end
+
 puts "PVC"
 
 if @Storage_Type == "PVC"

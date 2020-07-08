@@ -1,12 +1,3 @@
-<%- if @Namespace != "" %>
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: <%= @config["k8s"]["namespace"]["name"] %>
-  labels:
-    name: <%= @config["k8s"]["namespace"]["name"] %>
-    <%- end %>
----
 
 apiVersion: v1
 kind: ConfigMap

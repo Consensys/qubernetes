@@ -1,0 +1,10 @@
+<%- if @Namespace != "" %>
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: <%= @config["k8s"]["namespace"] %>
+  labels:
+    name: <%= @config["k8s"]["namespace"] %>
+
+---
+<%- end %>

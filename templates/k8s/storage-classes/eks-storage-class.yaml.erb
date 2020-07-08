@@ -16,7 +16,7 @@ metadata:
   name: <%= @Name %>
   annotations:
     storageclass.kubernetes.io/is-default-class: "true"
-provisioner: kuberentes.io/aws-ebs
+provisioner: kubernetes.io/aws-ebs
 reclaimPolicy: <%=  @ReclaimPolicy %>
 parameters:
   type:  <%= @Name %>

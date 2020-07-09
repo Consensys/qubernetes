@@ -39,8 +39,8 @@ end
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: <%= @Node_UserIdent %>-quorum
   <%= @Namespace %>
+  name: <%= @Node_UserIdent %>-pvc
   annotations:
 <%- @Annotations.each do |annotation| -%>
     <%= annotation[0] %>: <%= annotation[1] %>
@@ -53,39 +53,4 @@ spec:
     requests:
       storage: <%= @Capacity %>
 
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: <%= @Node_UserIdent %>-tm-pvc
-  <%= @Namespace %>
-  annotations:
-<%- @Annotations.each do |annotation| -%>
-    <%= annotation[0] %>: <%= annotation[1] %>
-<%- end -%>
-spec:
-  <%= @Storage_Class_Name %>
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: <%= @Capacity %>
-
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: <%= @Node_UserIdent %>-log-pvc
-  <%= @Namespace %>
-  annotations:
-<%- @Annotations.each do |annotation| -%>
-    <%= annotation[0] %>: <%= annotation[1] %>
-<%- end -%>
-spec:
-  <%= @Storage_Class_Name %>
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: <%= @Capacity %>
 <% end -%>

@@ -9,7 +9,6 @@ end
 if @config["geth"] and @config["geth"]["network"] and @config["geth"]["network"]["id"]
   @Geth_Network_Id = @config["geth"]["network"]["id"]
 end
-@Accounts = ""
 @Account_Allocs = ""
 @Node_Index = 0
 
@@ -21,17 +20,19 @@ end
 <%- @nodes.each_with_index do |node, indexNode|
 
     set_node_template_vars(node.values.first)
-    @Keystores=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/UTC*"]
-    puts(@Accounts)
+    @Keystores=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/acctkey*"]
+    puts(@Keystores)
     # Need to keep track of when the last account in the last node
     # is being writen, so as not to have a trailing ',' in the
     # genesis alloc json.
     # The keystore is assumed to be the generated keystore and will
     # start with UTC- and end with the account public key.
     @Keystores.each_with_index do |keystore, indexKey|
-        #split on --
-        # expects key file name to be in form: UTC--2019-06-07T20-35-11.255962000Z--b4d28f57063e3876b0a228280ee43fe4cf56a81c
-        acct="0x" + keystore.split("--").last
+        pkCmd = "ethkey inspect --passwordfile #{@Key_Dir_Base}/#{@Node_Key_Dir}/password.txt " + keystore + " | grep Address | awk '{print $2}'"
+        puts(pkCmd)
+        acct=`#{pkCmd}`
+        acct=acct.strip
+        puts(acct)
     -%>    "<%= acct%>": {
        "balance": "1000000000000000000000000000"
     }<%- if (indexNode == @nodes.size - 1) and (indexKey == @Keystores.size - 1)
@@ -81,17 +82,19 @@ end
 "alloc": {
 <%- @nodes.each_with_index do |node, indexNode|
     set_node_template_vars(node.values.first)
-    @Keystores=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/UTC*"]
-    puts(@Accounts)
+    @Keystores=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/acctkey*"]
+    puts(@Keystores)
     # Need to keep track of when the last account in the last node
     # is being writen, so as not to have a trailing ',' in the
     # genesis alloc json.
     # The keystore is assumed to be the generated keystore and will
     # start with UTC- and end with the account public key.
     @Keystores.each_with_index do |keystore, indexKey|
-        #split on --
-        # expects key file name to be in form: UTC--2019-06-07T20-35-11.255962000Z--b4d28f57063e3876b0a228280ee43fe4cf56a81c
-        acct="0x" + keystore.split("--").last
+        pkCmd = "ethkey inspect --passwordfile #{@Key_Dir_Base}/#{@Node_Key_Dir}/password.txt " + keystore + " | grep Address | awk '{print $2}'"
+        puts(pkCmd)
+        acct=`#{pkCmd}`
+        acct=acct.strip
+        puts(acct)
     -%>    "<%= acct%>": {
        "balance": "1000000000000000000000000000"
     }<%- if (indexNode == @nodes.size - 1) and (indexKey == @Keystores.size - 1)

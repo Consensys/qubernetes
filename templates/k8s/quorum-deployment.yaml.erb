@@ -96,6 +96,7 @@ spec:
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  <%= @Node_DataDir %>
+          subPath: <%= @Node_UserIdent %>
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
@@ -173,12 +174,15 @@ spec:
           - name: DDIR
             value: <%= @Node_DataDir %>/tm
         volumeMounts:
-        - name: quorum-logs-persistent-storage
-          mountPath: <%= @Node_DataDir %>/logs
-        - name: tm-persistent-storage
-          mountPath: <%= @Node_DataDir %>/tm
         - name: quorum-persistent-storage
           mountPath: <%= @Node_DataDir %>
+          subPath: <%= @Node_UserIdent %>
+        - name: quorum-persistent-storage
+          mountPath: <%= @Node_DataDir %>/tm
+          subPath: <%= @Node_UserIdent %>-tm
+        - name: quorum-persistent-storage
+          mountPath: <%= @Node_DataDir %>/logs
+          subPath: <%= @Node_UserIdent %>-logs
         - name: keystore-tm
           mountPath: <%= @Node_DataDir %>/tm/tm.pub
           subPath: tm.pub
@@ -300,18 +304,21 @@ spec:
         - name: THIS_ENODE
           value: <%- File.readlines("#{@Key_Dir_Base}/#{@Node_Key_Dir}/enode").each do |line| -%><%= line -%><% end -%>
         volumeMounts:
+        - name: quorum-persistent-storage
+          mountPath: <%= @Node_DataDir%>
+          subPath: <%= @Node_UserIdent %>
+        - name: quorum-persistent-storage
+          mountPath: <%= @Node_DataDir%>/tm
+          subPath: <%= @Node_UserIdent %>-tm
+        - name: quorum-persistent-storage
+          mountPath: <%= @Node_DataDir %>/logs
+          subPath: <%= @Node_UserIdent %>-logs
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
-        - name: quorum-persistent-storage
-          mountPath: <%= @Node_DataDir%>
-        - name: tm-persistent-storage
-          mountPath: <%= @Node_DataDir%>/tm
         - name: quorum-key-config-persistent-storage
           mountPath: <%= @Node_DataDir%>/dd/keystore/key
           subPath: key
-        - name: quorum-logs-persistent-storage
-          mountPath: <%= @Node_DataDir %>/logs
         - name: quorum-nodekey
           mountPath: <%= @Node_DataDir%>/dd/geth/nodekey
           subPath: nodekey
@@ -412,10 +419,4 @@ spec:
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
       - name: quorum-persistent-storage
         persistentVolumeClaim:
-          claimName: <%= @Node_UserIdent %>-quorum
-      - name: tm-persistent-storage
-        persistentVolumeClaim:
-          claimName: <%= @Node_UserIdent %>-tm-pvc
-      - name: quorum-logs-persistent-storage
-        persistentVolumeClaim:
-          claimName: <%= @Node_UserIdent %>-log-pvc
+          claimName: <%= @Node_UserIdent %>-pvc

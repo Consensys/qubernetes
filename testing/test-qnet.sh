@@ -52,7 +52,7 @@ do
   # PODS is POD_NAME and POD_STATUS (Running | Pending, etc) NAME%%STATUS
   # get all pods NAME%%STATUS in order to test if all pods are running yet.
   # Set up the returned pods so we can loop through them [NAME%%STATUS].
-  PODS_NAME_STATUS=$(kubectl get pods $NAMESPACE | grep quorum | awk '{print $1"%%"$3}')
+  PODS_NAME_STATUS=$(kubectl get pods $NAMESPACE | grep quorum | awk '{print $1"%%"$3"%%"$2}')
   # echo "PODS_NAME_STATUS: [$PODS_NAME_STATUS]"
 
   # if there are no pods returned, this may be because the kuberentes backend is taking a bit
@@ -69,9 +69,15 @@ do
   do
     POD_NAME=$(echo "$P" |  awk -F '%%' '{print $1}')
     STATUS=$(echo "$P" |  awk -F '%%' '{print $2}')
+    READY=$(echo "$P" |  awk -F '%%' '{print $3}')
     # echo "name [$POD_NAME] : status [$STATUS]"
     if [[ ${STATUS} != "Running" ]]; then
       echo "pod $POD_NAME is ${STATUS} != RUNNING"
+      RUNNING="false"
+      break
+    fi
+    if [[ ${READY} != "2/2" ]]; then
+      echo "pod $POD_NAME is ${READY} != 2/2"
       RUNNING="false"
       break
     fi
@@ -81,7 +87,7 @@ do
      ALL_RUNNING="true"
      break
   fi
-  echo "Waiting for all PODs to start up."
+  echo "Waiting for all PODs to start up and to be in ready state."
   echo "ALL_RUNNING == ${ALL_RUNNING}"
   sleep 5
 done

@@ -45,4 +45,4 @@ k8s:
     # PVC (Persistent_Volume_Claim - tested with GCP).
     Type: PVC
     ## when redeploying cannot be less than previous values
-    Capacity: 200M
+    Capacity: 200Mi

@@ -13,7 +13,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 200M
+      storage: 200Mi
 
     
 ---
@@ -29,7 +29,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 200M
+      storage: 200Mi
 
     
 ---
@@ -45,7 +45,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 200M
+      storage: 200Mi
 
     
 ---
@@ -61,7 +61,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 200M
+      storage: 200Mi
 
     
 ---
@@ -77,7 +77,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 200M
+      storage: 200Mi
 
     
 ---
@@ -93,7 +93,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 200M
+      storage: 200Mi
 
     
 ---
@@ -109,5 +109,5 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 200M
+      storage: 200Mi
 

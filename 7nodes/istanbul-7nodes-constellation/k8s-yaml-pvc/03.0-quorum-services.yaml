@@ -29,6 +29,10 @@ spec:
     # default 8545
     - name: rpc-listener
       protocol: TCP
+      port: 8545
+      targetPort: 8545
+    - name: wsport
+      protocol: TCP
       port: 8546
       targetPort: 8546
     - name: quorum-listener
@@ -69,6 +73,10 @@ spec:
       targetPort: 9080
     # default 8545
     - name: rpc-listener
+      protocol: TCP
+      port: 8545
+      targetPort: 8545
+    - name: wsport
       protocol: TCP
       port: 8546
       targetPort: 8546
@@ -111,6 +119,10 @@ spec:
     # default 8545
     - name: rpc-listener
       protocol: TCP
+      port: 8545
+      targetPort: 8545
+    - name: wsport
+      protocol: TCP
       port: 8546
       targetPort: 8546
     - name: quorum-listener
@@ -151,6 +163,10 @@ spec:
       targetPort: 9080
     # default 8545
     - name: rpc-listener
+      protocol: TCP
+      port: 8545
+      targetPort: 8545
+    - name: wsport
       protocol: TCP
       port: 8546
       targetPort: 8546
@@ -193,6 +209,10 @@ spec:
     # default 8545
     - name: rpc-listener
       protocol: TCP
+      port: 8545
+      targetPort: 8545
+    - name: wsport
+      protocol: TCP
       port: 8546
       targetPort: 8546
     - name: quorum-listener
@@ -234,6 +254,10 @@ spec:
     # default 8545
     - name: rpc-listener
       protocol: TCP
+      port: 8545
+      targetPort: 8545
+    - name: wsport
+      protocol: TCP
       port: 8546
       targetPort: 8546
     - name: quorum-listener
@@ -274,6 +298,10 @@ spec:
       targetPort: 9080
     # default 8545
     - name: rpc-listener
+      protocol: TCP
+      port: 8545
+      targetPort: 8545
+    - name: wsport
       protocol: TCP
       port: 8546
       targetPort: 8546

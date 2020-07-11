@@ -52,6 +52,7 @@ spec:
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
+          subPath: quorum-node1
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
@@ -86,12 +87,15 @@ spec:
           - name: DDIR
             value: /etc/quorum/qdata/tm
         volumeMounts:
-        - name: quorum-logs-persistent-storage
-          mountPath: /etc/quorum/qdata/logs
-        - name: tm-persistent-storage
-          mountPath: /etc/quorum/qdata/tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
+          subPath: quorum-node1
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/tm
+          subPath: quorum-node1-tm
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/logs
+          subPath: quorum-node1-logs
         - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
@@ -100,6 +104,13 @@ spec:
           subPath: tm.key
       - name: quorum
         image: quorumengineering/quorum:2.5.0
+        readinessProbe:
+          exec:
+            command:
+              - ls
+              - $(QHOME)/dd/geth.ipc
+          initialDelaySeconds: 20
+          periodSeconds: 3
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -124,7 +135,9 @@ spec:
 
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=10
-           args=\" --gcmode archive --raft  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
+           RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
+           args=\" --gcmode archive --raft  --raftport 50401 \";
+           RPC_APIS=\"$RPC_APIS,raft\";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -137,14 +150,19 @@ spec:
            --emitcheckpoints \
            --rpc \
            --rpcaddr 0.0.0.0 \
-           --rpcport 8546 \
+           --rpcport 8545 \
+           --rpcapi $RPC_APIS \
+           --wsapi $RPC_APIS \
+           --wsport 8546 \
            --port 21000 \
             \
            --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
+          - containerPort: 8545
           - containerPort: 8546
           - containerPort: 21000
+        
         env:
         - name: PRIVATE_CONFIG
           value: /etc/quorum/qdata/tm/tm.ipc
@@ -161,18 +179,21 @@ spec:
         - name: THIS_ENODE
           value: ac6b1096ca56b9f6d004b779ae3728bf83f8e22453404cc3cef16a3d9b96608bc67c4b30db88e0a5a6c6390213f7acbe1153ff6d23ce57380104288ae19373ef
         volumeMounts:
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata
+          subPath: quorum-node1
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/tm
+          subPath: quorum-node1-tm
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/logs
+          subPath: quorum-node1-logs
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
-        - name: quorum-persistent-storage
-          mountPath: /etc/quorum/qdata
-        - name: tm-persistent-storage
-          mountPath: /etc/quorum/qdata/tm
         - name: quorum-key-config-persistent-storage
           mountPath: /etc/quorum/qdata/dd/keystore/key
           subPath: key
-        - name: quorum-logs-persistent-storage
-          mountPath: /etc/quorum/qdata/logs
         - name: quorum-nodekey
           mountPath: /etc/quorum/qdata/dd/geth/nodekey
           subPath: nodekey
@@ -183,10 +204,6 @@ spec:
           mountPath: /etc/quorum/qdata/permission-nodes
         - name: geth-helpers
           mountPath: /geth-helpers
-          #subPath: permissioned-nodes.json
-       # - name: quorum-permissioned-config
-       #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
-       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:
@@ -254,13 +271,7 @@ spec:
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
       - name: quorum-persistent-storage
         persistentVolumeClaim:
-          claimName: quorum-node1-quorum
-      - name: tm-persistent-storage
-        persistentVolumeClaim:
-          claimName: quorum-node1-tm-pvc
-      - name: quorum-logs-persistent-storage
-        persistentVolumeClaim:
-          claimName: quorum-node1-log-pvc
+          claimName: quorum-node1-pvc
 ---
 #0ba6b9f606a43a95edc6247cdb1c1e105145817be7bcafd6b2c0ba15d58145f0dc1a194f70ba73cd6f4cdd6864edc7687f311254c7555cc32e4d45aeb1b80416
 
@@ -315,6 +326,7 @@ spec:
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
+          subPath: quorum-node2
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
@@ -349,12 +361,15 @@ spec:
           - name: DDIR
             value: /etc/quorum/qdata/tm
         volumeMounts:
-        - name: quorum-logs-persistent-storage
-          mountPath: /etc/quorum/qdata/logs
-        - name: tm-persistent-storage
-          mountPath: /etc/quorum/qdata/tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
+          subPath: quorum-node2
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/tm
+          subPath: quorum-node2-tm
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/logs
+          subPath: quorum-node2-logs
         - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
@@ -363,6 +378,13 @@ spec:
           subPath: tm.key
       - name: quorum
         image: quorumengineering/quorum:2.5.0
+        readinessProbe:
+          exec:
+            command:
+              - ls
+              - $(QHOME)/dd/geth.ipc
+          initialDelaySeconds: 20
+          periodSeconds: 3
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -387,7 +409,9 @@ spec:
 
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=10
-           args=\" --gcmode archive --raft  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
+           RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
+           args=\" --gcmode archive --raft  --raftport 50401 \";
+           RPC_APIS=\"$RPC_APIS,raft\";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -400,14 +424,19 @@ spec:
            --emitcheckpoints \
            --rpc \
            --rpcaddr 0.0.0.0 \
-           --rpcport 8546 \
+           --rpcport 8545 \
+           --rpcapi $RPC_APIS \
+           --wsapi $RPC_APIS \
+           --wsport 8546 \
            --port 21000 \
             \
            --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
+          - containerPort: 8545
           - containerPort: 8546
           - containerPort: 21000
+        
         env:
         - name: PRIVATE_CONFIG
           value: /etc/quorum/qdata/tm/tm.ipc
@@ -424,18 +453,21 @@ spec:
         - name: THIS_ENODE
           value: 0ba6b9f606a43a95edc6247cdb1c1e105145817be7bcafd6b2c0ba15d58145f0dc1a194f70ba73cd6f4cdd6864edc7687f311254c7555cc32e4d45aeb1b80416
         volumeMounts:
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata
+          subPath: quorum-node2
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/tm
+          subPath: quorum-node2-tm
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/logs
+          subPath: quorum-node2-logs
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
-        - name: quorum-persistent-storage
-          mountPath: /etc/quorum/qdata
-        - name: tm-persistent-storage
-          mountPath: /etc/quorum/qdata/tm
         - name: quorum-key-config-persistent-storage
           mountPath: /etc/quorum/qdata/dd/keystore/key
           subPath: key
-        - name: quorum-logs-persistent-storage
-          mountPath: /etc/quorum/qdata/logs
         - name: quorum-nodekey
           mountPath: /etc/quorum/qdata/dd/geth/nodekey
           subPath: nodekey
@@ -446,10 +478,6 @@ spec:
           mountPath: /etc/quorum/qdata/permission-nodes
         - name: geth-helpers
           mountPath: /geth-helpers
-          #subPath: permissioned-nodes.json
-       # - name: quorum-permissioned-config
-       #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
-       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:
@@ -517,13 +545,7 @@ spec:
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
       - name: quorum-persistent-storage
         persistentVolumeClaim:
-          claimName: quorum-node2-quorum
-      - name: tm-persistent-storage
-        persistentVolumeClaim:
-          claimName: quorum-node2-tm-pvc
-      - name: quorum-logs-persistent-storage
-        persistentVolumeClaim:
-          claimName: quorum-node2-log-pvc
+          claimName: quorum-node2-pvc
 ---
 #579f786d4e2830bbcc02815a27e8a9bacccc9605df4dc6f20bcc1a6eb391e7225fff7cb83e5b4ecd1f3a94d8b733803f2f66b7e871961e7b029e22c155c3a778
 
@@ -578,6 +600,7 @@ spec:
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
+          subPath: quorum-node3
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
@@ -612,12 +635,15 @@ spec:
           - name: DDIR
             value: /etc/quorum/qdata/tm
         volumeMounts:
-        - name: quorum-logs-persistent-storage
-          mountPath: /etc/quorum/qdata/logs
-        - name: tm-persistent-storage
-          mountPath: /etc/quorum/qdata/tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
+          subPath: quorum-node3
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/tm
+          subPath: quorum-node3-tm
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/logs
+          subPath: quorum-node3-logs
         - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
@@ -626,6 +652,13 @@ spec:
           subPath: tm.key
       - name: quorum
         image: quorumengineering/quorum:2.5.0
+        readinessProbe:
+          exec:
+            command:
+              - ls
+              - $(QHOME)/dd/geth.ipc
+          initialDelaySeconds: 20
+          periodSeconds: 3
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -650,7 +683,9 @@ spec:
 
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=10
-           args=\" --gcmode archive --raft  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
+           RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
+           args=\" --gcmode archive --raft  --raftport 50401 \";
+           RPC_APIS=\"$RPC_APIS,raft\";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -663,14 +698,19 @@ spec:
            --emitcheckpoints \
            --rpc \
            --rpcaddr 0.0.0.0 \
-           --rpcport 8546 \
+           --rpcport 8545 \
+           --rpcapi $RPC_APIS \
+           --wsapi $RPC_APIS \
+           --wsport 8546 \
            --port 21000 \
             \
            --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
+          - containerPort: 8545
           - containerPort: 8546
           - containerPort: 21000
+        
         env:
         - name: PRIVATE_CONFIG
           value: /etc/quorum/qdata/tm/tm.ipc
@@ -687,18 +727,21 @@ spec:
         - name: THIS_ENODE
           value: 579f786d4e2830bbcc02815a27e8a9bacccc9605df4dc6f20bcc1a6eb391e7225fff7cb83e5b4ecd1f3a94d8b733803f2f66b7e871961e7b029e22c155c3a778
         volumeMounts:
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata
+          subPath: quorum-node3
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/tm
+          subPath: quorum-node3-tm
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/logs
+          subPath: quorum-node3-logs
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
-        - name: quorum-persistent-storage
-          mountPath: /etc/quorum/qdata
-        - name: tm-persistent-storage
-          mountPath: /etc/quorum/qdata/tm
         - name: quorum-key-config-persistent-storage
           mountPath: /etc/quorum/qdata/dd/keystore/key
           subPath: key
-        - name: quorum-logs-persistent-storage
-          mountPath: /etc/quorum/qdata/logs
         - name: quorum-nodekey
           mountPath: /etc/quorum/qdata/dd/geth/nodekey
           subPath: nodekey
@@ -709,10 +752,6 @@ spec:
           mountPath: /etc/quorum/qdata/permission-nodes
         - name: geth-helpers
           mountPath: /geth-helpers
-          #subPath: permissioned-nodes.json
-       # - name: quorum-permissioned-config
-       #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
-       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:
@@ -780,13 +819,7 @@ spec:
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
       - name: quorum-persistent-storage
         persistentVolumeClaim:
-          claimName: quorum-node3-quorum
-      - name: tm-persistent-storage
-        persistentVolumeClaim:
-          claimName: quorum-node3-tm-pvc
-      - name: quorum-logs-persistent-storage
-        persistentVolumeClaim:
-          claimName: quorum-node3-log-pvc
+          claimName: quorum-node3-pvc
 ---
 #3d9ca5956b38557aba991e31cf510d4df641dce9cc26bfeb7de082f0c07abb6ede3a58410c8f249dabeecee4ad3979929ac4c7c496ad20b8cfdd061b7401b4f5
 
@@ -841,6 +874,7 @@ spec:
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
+          subPath: quorum-node4
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
@@ -875,12 +909,15 @@ spec:
           - name: DDIR
             value: /etc/quorum/qdata/tm
         volumeMounts:
-        - name: quorum-logs-persistent-storage
-          mountPath: /etc/quorum/qdata/logs
-        - name: tm-persistent-storage
-          mountPath: /etc/quorum/qdata/tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
+          subPath: quorum-node4
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/tm
+          subPath: quorum-node4-tm
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/logs
+          subPath: quorum-node4-logs
         - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
@@ -889,6 +926,13 @@ spec:
           subPath: tm.key
       - name: quorum
         image: quorumengineering/quorum:2.5.0
+        readinessProbe:
+          exec:
+            command:
+              - ls
+              - $(QHOME)/dd/geth.ipc
+          initialDelaySeconds: 20
+          periodSeconds: 3
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -913,7 +957,9 @@ spec:
 
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=10
-           args=\" --gcmode archive --raft  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
+           RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
+           args=\" --gcmode archive --raft  --raftport 50401 \";
+           RPC_APIS=\"$RPC_APIS,raft\";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -926,14 +972,19 @@ spec:
            --emitcheckpoints \
            --rpc \
            --rpcaddr 0.0.0.0 \
-           --rpcport 8546 \
+           --rpcport 8545 \
+           --rpcapi $RPC_APIS \
+           --wsapi $RPC_APIS \
+           --wsport 8546 \
            --port 21000 \
             \
            --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
+          - containerPort: 8545
           - containerPort: 8546
           - containerPort: 21000
+        
         env:
         - name: PRIVATE_CONFIG
           value: /etc/quorum/qdata/tm/tm.ipc
@@ -950,18 +1001,21 @@ spec:
         - name: THIS_ENODE
           value: 3d9ca5956b38557aba991e31cf510d4df641dce9cc26bfeb7de082f0c07abb6ede3a58410c8f249dabeecee4ad3979929ac4c7c496ad20b8cfdd061b7401b4f5
         volumeMounts:
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata
+          subPath: quorum-node4
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/tm
+          subPath: quorum-node4-tm
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/logs
+          subPath: quorum-node4-logs
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
-        - name: quorum-persistent-storage
-          mountPath: /etc/quorum/qdata
-        - name: tm-persistent-storage
-          mountPath: /etc/quorum/qdata/tm
         - name: quorum-key-config-persistent-storage
           mountPath: /etc/quorum/qdata/dd/keystore/key
           subPath: key
-        - name: quorum-logs-persistent-storage
-          mountPath: /etc/quorum/qdata/logs
         - name: quorum-nodekey
           mountPath: /etc/quorum/qdata/dd/geth/nodekey
           subPath: nodekey
@@ -972,10 +1026,6 @@ spec:
           mountPath: /etc/quorum/qdata/permission-nodes
         - name: geth-helpers
           mountPath: /geth-helpers
-          #subPath: permissioned-nodes.json
-       # - name: quorum-permissioned-config
-       #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
-       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:
@@ -1043,13 +1093,7 @@ spec:
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
       - name: quorum-persistent-storage
         persistentVolumeClaim:
-          claimName: quorum-node4-quorum
-      - name: tm-persistent-storage
-        persistentVolumeClaim:
-          claimName: quorum-node4-tm-pvc
-      - name: quorum-logs-persistent-storage
-        persistentVolumeClaim:
-          claimName: quorum-node4-log-pvc
+          claimName: quorum-node4-pvc
 ---
 #3701f007bfa4cb26512d7df18e6bbd202e8484a6e11d387af6e482b525fa25542d46ff9c99db87bd419b980c24a086117a397f6d8f88e74351b41693880ea0cb
 
@@ -1104,6 +1148,7 @@ spec:
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
+          subPath: quorum-node5
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
@@ -1138,12 +1183,15 @@ spec:
           - name: DDIR
             value: /etc/quorum/qdata/tm
         volumeMounts:
-        - name: quorum-logs-persistent-storage
-          mountPath: /etc/quorum/qdata/logs
-        - name: tm-persistent-storage
-          mountPath: /etc/quorum/qdata/tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
+          subPath: quorum-node5
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/tm
+          subPath: quorum-node5-tm
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/logs
+          subPath: quorum-node5-logs
         - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
@@ -1152,6 +1200,13 @@ spec:
           subPath: tm.key
       - name: quorum
         image: quorumengineering/quorum:2.5.0
+        readinessProbe:
+          exec:
+            command:
+              - ls
+              - $(QHOME)/dd/geth.ipc
+          initialDelaySeconds: 20
+          periodSeconds: 3
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -1176,7 +1231,9 @@ spec:
 
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=10
-           args=\" --gcmode archive --raft  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
+           RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
+           args=\" --gcmode archive --raft  --raftport 50401 \";
+           RPC_APIS=\"$RPC_APIS,raft\";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -1189,14 +1246,19 @@ spec:
            --emitcheckpoints \
            --rpc \
            --rpcaddr 0.0.0.0 \
-           --rpcport 8546 \
+           --rpcport 8545 \
+           --rpcapi $RPC_APIS \
+           --wsapi $RPC_APIS \
+           --wsport 8546 \
            --port 21000 \
             \
            --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
+          - containerPort: 8545
           - containerPort: 8546
           - containerPort: 21000
+        
         env:
         - name: PRIVATE_CONFIG
           value: /etc/quorum/qdata/tm/tm.ipc
@@ -1213,18 +1275,21 @@ spec:
         - name: THIS_ENODE
           value: 3701f007bfa4cb26512d7df18e6bbd202e8484a6e11d387af6e482b525fa25542d46ff9c99db87bd419b980c24a086117a397f6d8f88e74351b41693880ea0cb
         volumeMounts:
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata
+          subPath: quorum-node5
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/tm
+          subPath: quorum-node5-tm
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/logs
+          subPath: quorum-node5-logs
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
-        - name: quorum-persistent-storage
-          mountPath: /etc/quorum/qdata
-        - name: tm-persistent-storage
-          mountPath: /etc/quorum/qdata/tm
         - name: quorum-key-config-persistent-storage
           mountPath: /etc/quorum/qdata/dd/keystore/key
           subPath: key
-        - name: quorum-logs-persistent-storage
-          mountPath: /etc/quorum/qdata/logs
         - name: quorum-nodekey
           mountPath: /etc/quorum/qdata/dd/geth/nodekey
           subPath: nodekey
@@ -1235,10 +1300,6 @@ spec:
           mountPath: /etc/quorum/qdata/permission-nodes
         - name: geth-helpers
           mountPath: /geth-helpers
-          #subPath: permissioned-nodes.json
-       # - name: quorum-permissioned-config
-       #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
-       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:
@@ -1306,13 +1367,7 @@ spec:
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
       - name: quorum-persistent-storage
         persistentVolumeClaim:
-          claimName: quorum-node5-quorum
-      - name: tm-persistent-storage
-        persistentVolumeClaim:
-          claimName: quorum-node5-tm-pvc
-      - name: quorum-logs-persistent-storage
-        persistentVolumeClaim:
-          claimName: quorum-node5-log-pvc
+          claimName: quorum-node5-pvc
 ---
 #eacaa74c4b0e7a9e12d2fe5fee6595eda841d6d992c35dbbcc50fcee4aa86dfbbdeff7dc7e72c2305d5a62257f82737a8cffc80474c15c611c037f52db1a3a7b
 
@@ -1367,6 +1422,7 @@ spec:
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
+          subPath: quorum-node6
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
@@ -1401,12 +1457,15 @@ spec:
           - name: DDIR
             value: /etc/quorum/qdata/tm
         volumeMounts:
-        - name: quorum-logs-persistent-storage
-          mountPath: /etc/quorum/qdata/logs
-        - name: tm-persistent-storage
-          mountPath: /etc/quorum/qdata/tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
+          subPath: quorum-node6
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/tm
+          subPath: quorum-node6-tm
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/logs
+          subPath: quorum-node6-logs
         - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
@@ -1415,6 +1474,13 @@ spec:
           subPath: tm.key
       - name: quorum
         image: quorumengineering/quorum:2.5.0
+        readinessProbe:
+          exec:
+            command:
+              - ls
+              - $(QHOME)/dd/geth.ipc
+          initialDelaySeconds: 20
+          periodSeconds: 3
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -1439,7 +1505,9 @@ spec:
 
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=10
-           args=\" --gcmode archive --raft  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
+           RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
+           args=\" --gcmode archive --raft  --raftport 50401 \";
+           RPC_APIS=\"$RPC_APIS,raft\";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -1452,14 +1520,19 @@ spec:
            --emitcheckpoints \
            --rpc \
            --rpcaddr 0.0.0.0 \
-           --rpcport 8546 \
+           --rpcport 8545 \
+           --rpcapi $RPC_APIS \
+           --wsapi $RPC_APIS \
+           --wsport 8546 \
            --port 21000 \
             \
            --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
+          - containerPort: 8545
           - containerPort: 8546
           - containerPort: 21000
+        
         env:
         - name: PRIVATE_CONFIG
           value: /etc/quorum/qdata/tm/tm.ipc
@@ -1476,18 +1549,21 @@ spec:
         - name: THIS_ENODE
           value: eacaa74c4b0e7a9e12d2fe5fee6595eda841d6d992c35dbbcc50fcee4aa86dfbbdeff7dc7e72c2305d5a62257f82737a8cffc80474c15c611c037f52db1a3a7b
         volumeMounts:
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata
+          subPath: quorum-node6
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/tm
+          subPath: quorum-node6-tm
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/logs
+          subPath: quorum-node6-logs
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
-        - name: quorum-persistent-storage
-          mountPath: /etc/quorum/qdata
-        - name: tm-persistent-storage
-          mountPath: /etc/quorum/qdata/tm
         - name: quorum-key-config-persistent-storage
           mountPath: /etc/quorum/qdata/dd/keystore/key
           subPath: key
-        - name: quorum-logs-persistent-storage
-          mountPath: /etc/quorum/qdata/logs
         - name: quorum-nodekey
           mountPath: /etc/quorum/qdata/dd/geth/nodekey
           subPath: nodekey
@@ -1498,10 +1574,6 @@ spec:
           mountPath: /etc/quorum/qdata/permission-nodes
         - name: geth-helpers
           mountPath: /geth-helpers
-          #subPath: permissioned-nodes.json
-       # - name: quorum-permissioned-config
-       #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
-       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:
@@ -1569,13 +1641,7 @@ spec:
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
       - name: quorum-persistent-storage
         persistentVolumeClaim:
-          claimName: quorum-node6-quorum
-      - name: tm-persistent-storage
-        persistentVolumeClaim:
-          claimName: quorum-node6-tm-pvc
-      - name: quorum-logs-persistent-storage
-        persistentVolumeClaim:
-          claimName: quorum-node6-log-pvc
+          claimName: quorum-node6-pvc
 ---
 #239c1f044a2b03b6c4713109af036b775c5418fe4ca63b04b1ce00124af00ddab7cc088fc46020cdc783b6207efe624551be4c06a994993d8d70f684688fb7cf
 
@@ -1630,6 +1696,7 @@ spec:
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
+          subPath: quorum-node7
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
@@ -1664,12 +1731,15 @@ spec:
           - name: DDIR
             value: /etc/quorum/qdata/tm
         volumeMounts:
-        - name: quorum-logs-persistent-storage
-          mountPath: /etc/quorum/qdata/logs
-        - name: tm-persistent-storage
-          mountPath: /etc/quorum/qdata/tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
+          subPath: quorum-node7
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/tm
+          subPath: quorum-node7-tm
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/logs
+          subPath: quorum-node7-logs
         - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
@@ -1678,6 +1748,13 @@ spec:
           subPath: tm.key
       - name: quorum
         image: quorumengineering/quorum:2.5.0
+        readinessProbe:
+          exec:
+            command:
+              - ls
+              - $(QHOME)/dd/geth.ipc
+          initialDelaySeconds: 20
+          periodSeconds: 3
         command: [ "sh" ]
         # TODO: have to generate sed files
         #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
@@ -1702,7 +1779,9 @@ spec:
 
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=10
-           args=\" --gcmode archive --raft  --raftport 50401 --rpcapi admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,raft \";
+           RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
+           args=\" --gcmode archive --raft  --raftport 50401 \";
+           RPC_APIS=\"$RPC_APIS,raft\";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -1715,14 +1794,19 @@ spec:
            --emitcheckpoints \
            --rpc \
            --rpcaddr 0.0.0.0 \
-           --rpcport 8546 \
+           --rpcport 8545 \
+           --rpcapi $RPC_APIS \
+           --wsapi $RPC_APIS \
+           --wsport 8546 \
            --port 21000 \
             \
            --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
+          - containerPort: 8545
           - containerPort: 8546
           - containerPort: 21000
+        
         env:
         - name: PRIVATE_CONFIG
           value: /etc/quorum/qdata/tm/tm.ipc
@@ -1739,18 +1823,21 @@ spec:
         - name: THIS_ENODE
           value: 239c1f044a2b03b6c4713109af036b775c5418fe4ca63b04b1ce00124af00ddab7cc088fc46020cdc783b6207efe624551be4c06a994993d8d70f684688fb7cf
         volumeMounts:
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata
+          subPath: quorum-node7
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/tm
+          subPath: quorum-node7-tm
+        - name: quorum-persistent-storage
+          mountPath: /etc/quorum/qdata/logs
+          subPath: quorum-node7-logs
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
-        - name: quorum-persistent-storage
-          mountPath: /etc/quorum/qdata
-        - name: tm-persistent-storage
-          mountPath: /etc/quorum/qdata/tm
         - name: quorum-key-config-persistent-storage
           mountPath: /etc/quorum/qdata/dd/keystore/key
           subPath: key
-        - name: quorum-logs-persistent-storage
-          mountPath: /etc/quorum/qdata/logs
         - name: quorum-nodekey
           mountPath: /etc/quorum/qdata/dd/geth/nodekey
           subPath: nodekey
@@ -1761,10 +1848,6 @@ spec:
           mountPath: /etc/quorum/qdata/permission-nodes
         - name: geth-helpers
           mountPath: /geth-helpers
-          #subPath: permissioned-nodes.json
-       # - name: quorum-permissioned-config
-       #   mountPath: /etc/quorum/qdata/dd/static-nodes.json.tmpl
-       #   subPath: permissioned-nodes.json
       volumes:
       - name: quorum-permissioned-config
         configMap:
@@ -1832,11 +1915,5 @@ spec:
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
       - name: quorum-persistent-storage
         persistentVolumeClaim:
-          claimName: quorum-node7-quorum
-      - name: tm-persistent-storage
-        persistentVolumeClaim:
-          claimName: quorum-node7-tm-pvc
-      - name: quorum-logs-persistent-storage
-        persistentVolumeClaim:
-          claimName: quorum-node7-log-pvc
+          claimName: quorum-node7-pvc
 ---

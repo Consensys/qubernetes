@@ -1,7 +1,11 @@
 <%
+@KmsKeyId = ""
 if @config["k8s"]["storage"]["PVC"]["storageClass"]
   @Name = @config["k8s"]["storage"]["PVC"]["storageClass"]["name"]
-  @KmsKeyId = @config["k8s"]["storage"]["PVC"]["storageClass"]["kmsKeyId"]
+  if @config["k8s"]["storage"]["PVC"]["storageClass"]["kmsKeyId"]
+    @KmsKeyId = @config["k8s"]["storage"]["PVC"]["storageClass"]["kmsKeyId"]
+    @KmsKeyIdField = "kmsKeyId: " + @KmsKeyId
+  end
 end
 @ReclaimPolicy = "Delete"
 if @config["k8s"]["storage"]["PVC"]["storageClass"]["reclaimPolicy"]
@@ -23,4 +27,6 @@ parameters:
   iopsPerGB: "10"
   fsType: ext4
   encrypted: "true"
+<%- if @KmsKeyId != ""  -%>
   kmsKeyId: <%= @KmsKeyId %>
+<%- end -%>

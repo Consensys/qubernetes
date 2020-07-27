@@ -15,13 +15,13 @@ quorum:
     # supported: (raft | istanbul)
     consensus: istanbul
     # container images at https://hub.docker.com/u/quorumengineering/
-    Quorum_Version: 2.2.5
+    Quorum_Version: 2.6.0
   # related to transaction manager containers
   tm:
     # container images at https://hub.docker.com/u/quorumengineering/
     # (tessera|constellation)
     Name: tessera
-    Tm_Version: 0.11
+    Tm_Version: 0.10.4
     Port: 9001
     3Party_Port: 9080
     Tessera_Config_Dir: out/config

@@ -1,6 +1,3 @@
-#namespace:
-# name: quorum-test
-# number of nodes to deploy
 nodes:
   number: 4
 quorum:
@@ -9,13 +6,13 @@ quorum:
     # supported: (raft | istanbul)
     consensus: istanbul
     # container images at https://hub.docker.com/u/quorumengineering/
-    Quorum_Version: 2.2.5
+    Quorum_Version: 2.6.0
   # related to transaction manager containers
   tm:
     # container images at https://hub.docker.com/u/quorumengineering/
     # (tessera|constellation)
     Name: tessera
-    Tm_Version: 0.11
+    Tm_Version: 0.10.4
 # generic geth related options
 geth:
   Node_WSPort: 8546

@@ -55,10 +55,12 @@ spec:
       protocol: TCP
       port: <%= @NodeP2P_ListenAddr %>
       targetPort: <%= @NodeP2P_ListenAddr %>
+<%- if @config["quorum"]["quorum"]["consensus"] == "raft" -%>
     - name: raft
       protocol: TCP
       targetPort: <%= @Raft_Port %>
       port: <%= @Raft_Port %>
+<%- end -%>
 <% if @config["prometheus"]  %>
     - name: prometheus
       protocol: TCP

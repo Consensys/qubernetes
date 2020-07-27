@@ -260,10 +260,16 @@ key1                           key4                           key7              
 # list the Kubernetes yaml files
 $> ls out
 00-quorum-persistent-volumes.yaml 02-quorum-shared-config.yaml      04-quorum-keyconfigs.yaml         config
-01-quorum-genesis.yaml            03-quorum-services.yaml           05-quorum-deployments.yaml
+01-quorum-genesis.yaml            03-quorum-services.yaml           deployments
+
+# list the k8s deployment files
+$> ls out/deployments
 
 # deploy the resources
-$> kubectl apply -f out
+$> kubectl apply -f out -f out/deployments
+01-quorum-single-deployment.yaml 03-quorum-single-deployment.yaml 05-quorum-single-deployment.yaml 07-quorum-single-deployment.yaml
+02-quorum-single-deployment.yaml 04-quorum-single-deployment.yaml 06-quorum-single-deployment.yaml
+
 ```
 
 3. Once the Quorum resources have been generated, the `./qubernetes` command can be run to generate variations of the Kubernetes
@@ -279,14 +285,14 @@ $> ./qubernetes
 4. Deploy to your kubernetes cluster
 
 ```shell
-# apply all the generated .yaml files that are in the ./out directory.
-$> kubectl apply -f out
+# apply all the generated .yaml files that are in the ./out and ./out/deployments directory.
+$> kubectl apply -f out -f out/deployments
 ```
 
 5. Deleting the deployment 
 
 ```shell
-$> kubectl delete -f out
+$> kubectl delete -f out -f out/deployments
 ```
 
 ## Thanks! And Additional Resources 

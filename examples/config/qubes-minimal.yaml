@@ -8,9 +8,9 @@
 nodes:
   number: 4
 quorum:
-  # supported: (raft | istanbul)
-  consensus: istanbul
   quorum:
+    # supported: (raft | istanbul)
+    consensus: istanbul
     Quorum_Version: 2.2.5
   tm:
     # (tessera|constellation)

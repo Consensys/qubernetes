@@ -2,38 +2,23 @@
 nodes:
   number: 3
 quorum:
-  # base quorum data dir as set inside each container.
-  Node_DataDir: /etc/quorum/qdata
-  # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
-  # Either full or relative paths on the machine generating the config
-  Key_Dir_Base: out/config
-  Permissioned_Nodes_File: out/config/permissioned-nodes.json
-  Genesis_File: out/config/genesis.json
   # related to quorum containers
   quorum:
     # supported: (raft | istanbul)
     consensus: istanbul
     # container images at https://hub.docker.com/u/quorumengineering/
-    Quorum_Version: 2.2.5
+    Quorum_Version: 2.6.0
   # related to transaction manager containers
   tm:
     # container images at https://hub.docker.com/u/quorumengineering/
     # (tessera|constellation)
     Name: tessera
-    #Tm_Version: 0.9.2
-    Tm_Version: 0.10.2
-    Port: 9001
-    3Party_Port: 9080
-    Tessera_Config_Dir: out/config
+    Tm_Version: 0.10.4
 # generic geth related options
 geth:
-  Node_RPCPort: 8545
-  NodeP2P_ListenAddr: 30303
   network:
     # network id (1: mainnet, 3: ropsten, 4: rinkeby ... )
     id: 1101
-    # public (true|false) is it a public network?
-    public: false
   # general verbosity of geth [1..5]
   verbosity: 9
   # additional startup params to pass into geth/quorum

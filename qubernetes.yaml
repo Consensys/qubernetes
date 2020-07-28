@@ -11,7 +11,7 @@ quorum:
   quorum:
     # supported: (raft | istanbul)
     consensus: istanbul
-    Quorum_Version: 2.2.5
+    Quorum_Version: 2.6.0
   tm:
     # (tessera|constellation)
     Name: tessera

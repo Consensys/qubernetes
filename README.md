@@ -208,15 +208,17 @@ root@4eb772b14086:/qubernetes# ls out/
 [![docker-quberentes-boot-3](docs/resources/docker-quberentes-boot-3-play.png)](https://jpmorganchase.github.io/qubernetes/resources/docker-quberentes-boot-3.webm)
 
 ### Modifying The Qubernetes Config File
-example [qubernetes.yaml](qubernetes.yaml)
+
+example [qubernetes.yaml](qubernetes.yaml) is the simpliest config, and has many defaults set for you, which can be overridden see [More Qubernetes Config Options](#more-qubernetes-config-options) 
 ![qubernetes-yaml-marked](docs/resources/qubernetes-yaml-marked.png)
 
 The most natural thing to modify in your [`qubernetes.yaml`](qubernetes.yaml) is the number of nodes you wish to deploy: 
 ```yaml
 # number of nodes to deploy
 nodes:
-  number: 8
+  number: 5
 ```
+
 
 2. Run `./qube-init` to generate everything needed for the quorum deployment: quorum keys, genesis.json, istanbul-config.json, permissioned-nodes.json, etc.
   
@@ -294,6 +296,13 @@ $> kubectl apply -f out -f out/deployments
 ```shell
 $> kubectl delete -f out -f out/deployments
 ```
+
+## More Qubernetes Config Options
+
+The directory [examples/config](examples/config) contains various qubernetes config examples, such as adding K8s Ingress, K8s security context, etc.
+
+example [qubes-full.yaml](examples/config/qubes-full.yaml)
+![qubes-full-yaml-marked](docs/resources/qubes-full-yaml-marked.png)
 
 ## Thanks! And Additional Resources 
 Thanks to [Maximilian Meister blog and code](https://medium.com/@cryptoctl) which provided an awesome starting point!

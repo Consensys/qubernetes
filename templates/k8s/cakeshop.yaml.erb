@@ -1,0 +1,116 @@
+<%-
+  @Cakeshop_Version  = @config["cakeshop"]["version"]
+
+  # default quorumengineering/quorum
+  if @config["cakeshop"]["Docker_Repo"]
+   @Cakeshop_Docker_Repo = @config["cakeshop"]["Docker_Repo"]
+  else
+   @Cakeshop_Docker_Repo =  "quorumengineering"
+  end
+  # NodePort | ClusterIP | Loadbalancer
+  # default to NodePort if not set
+  @Service_Type = "LoadBalancer"
+  if @config["cakeshop"] and @config["cakeshop"]["service"] and  @config["cakeshop"]["service"]["type"]
+   @Service_Type = @config["cakeshop"]["service"]["type"]
+  end
+-%>
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: cakeshop-service
+  labels:
+    app: cakeshop
+spec:
+  # LoadBalancer is the default: Create an HA proxy in the cloud provider
+  # with an External IP address - *Only supported by some cloud providers*
+  # loadbalancer access via externalIp:port (8999)
+  # NodePort | ClusterIP | Loadbalancer
+  type: <%= @Service_Type  %>
+  ports:
+    # Accept traffic sent to port 8080
+    - name: http
+      protocol: TCP
+      port: 8999
+      targetPort: 8080
+<%- if @config["cakeshop"] and @config["cakeshop"] and @config["cakeshop"]["service"]["nodePort"]  -%>
+      nodePort: <%= @config["cakeshop"]["service"]["nodePort"] %>
+<%- end -%>
+  selector:
+    # Loadbalance traffic across Pods matching
+    # this label selector
+    app: cakeshop
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # Unique key of the Deployment instance
+  name: cakeshop-deployment
+spec:
+  selector:
+    matchLabels:
+      app: cakeshop
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        # Apply this label to pods and default
+        # the Deployment label selector to this value
+        app: cakeshop
+    spec:
+      containers:
+        - name: cakeshop
+          image: <%= @Cakeshop_Docker_Repo %>/cakeshop:<%= @Cakeshop_Version %>
+          imagePullPolicy: Always
+          env:
+            - name: JAVA_OPTS
+              value: "-Dgeth.auto.start=false -Dgeth.auto.stop=false"
+          ports:
+            - containerPort: 8999
+
+<%-
+
+if @config["cakeshop"] and @config["cakeshop"]["service"] and @config["cakeshop"]["service"]["Ingress"] then
+   @Ingress = true
+
+   if @config["cakeshop"]["service"]["Ingress"]["Host"]  then
+     @Ingress_Host = @config["cakeshop"]["service"]["Ingress"]["Host"]
+   end
+
+end
+
+-%>
+
+<%- if @Ingress -%>
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+    <%= @Namespace %>
+  name: cakeshop-ingress
+spec:
+  rules:
+      <%- if @Ingress_Host -%>
+    - host:  "<%= @Ingress_Host %>"
+      http:
+        paths:
+          - path: /cakeshop
+            backend:
+              serviceName: cakeshop-service
+              servicePort: 8080
+      <%- else -%>
+    - http:
+        paths:
+          - path: /cakeshop
+            backend:
+              serviceName: cakeshop-service
+              servicePort: 8080
+    <%- end -%>
+<%- if @Ingress_Host -%>
+  tls:
+    - hosts:
+        - "<%= @Ingress_Host %>"
+<%- end -%>
+<%- end -%>

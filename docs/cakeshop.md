@@ -47,6 +47,9 @@ $> echo $(minikube ip):30108
 192.168.64.25:30108
 ```
 
+## If Running Docker Desktop K8s
+* Your URL will be `localhost:NodePort`, e.g. `localhost:30108`
+
 ## Open In Browser And Select "Manage Nodes" (upper right corner)
 ![cakeshop-manage-nodes](resources/cakeshop-managed-node-ui.png)
 
@@ -64,5 +67,5 @@ $> kubectl get service
 ![cakeshop-get-node-urls](resources/cake-k8s-get-node-urls.png)
 
 ## Add Nodes To Cakeshop
-* Use the `CLUSTER-IP` and the `NodePorts` for geth and tessera
+* Use the `CLUSTER-IP` and the cluster ports for geth (default `8545`) and tessera (default `9080`)
 ![cakeshop-add-node1](resources/cakeshop-add-node1.png)

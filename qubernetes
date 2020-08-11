@@ -236,8 +236,6 @@ if @config["prometheus"]
 end
 
 ## deploy cakeshop as a deployment if enabled
-puts "cakeshop"
-puts ( @config["cakeshop"]["version"])
 if @config["cakeshop"] and @config["cakeshop"]["version"]
   File.open("out/07-cakeshop.yaml", "w") do |f|
     f.puts (ERB.new(File.read(@base_template_path + "/cakeshop.yaml.erb"), nil, "-").result)

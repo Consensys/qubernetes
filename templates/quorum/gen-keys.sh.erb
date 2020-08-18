@@ -11,7 +11,7 @@ end
 <% @Node_Dirs = "" %>
 
 <%- @nodes.each do |node|
-      set_node_template_vars(node.values.first)
+      set_node_template_vars(node)
       @Node_Dirs=@Node_Dirs + "," + @Node_Key_Dir
     end
     @Node_Dirs[0]=''

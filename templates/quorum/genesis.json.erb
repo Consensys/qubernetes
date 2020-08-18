@@ -19,7 +19,8 @@ end
 "alloc": {
 <%- @nodes.each_with_index do |node, indexNode|
 
-    set_node_template_vars(node.values.first)
+    set_node_template_vars(node)
+    puts(@Node_Key_Dir)
     @Keystores=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/acctkey*"]
     puts(@Keystores)
     # Need to keep track of when the last account in the last node
@@ -81,7 +82,7 @@ end
 {
 "alloc": {
 <%- @nodes.each_with_index do |node, indexNode|
-    set_node_template_vars(node.values.first)
+    set_node_template_vars(node)
     @Keystores=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/acctkey*"]
     puts(@Keystores)
     # Need to keep track of when the last account in the last node
@@ -153,7 +154,7 @@ end
   end
 
  @nodes.each_with_index do |node, indexNode|
-   set_node_template_vars(node.values.first)
+   set_node_template_vars(node)
 
    #puts(@Key_Dir_Base + "/" + @Node_Key_Dir + "/nodekey")
    File.open(@Key_Dir_Base + "/" + @Node_Key_Dir + "/nodekey", "r") do |f|

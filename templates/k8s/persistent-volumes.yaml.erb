@@ -1,8 +1,5 @@
 <%
-def set_node_template_vars(values)
-    @Node_UserIdent = values["Node_UserIdent"]
-    return
-end
+
 # default the capacity to 200Mi if not set in qubernetes.yaml file.
 @Capacity = "200Mi"
 @Annotations = []

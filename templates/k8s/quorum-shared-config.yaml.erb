@@ -14,11 +14,6 @@ data:
     <%= line -%>
 <% end -%>
 
-  permissioned-update.sh: |
-    #!/bin/bash
-    cp $QUORUM_HOME/permission-nodes/permissioned-nodes.json $QUORUM_DATA_DIR/permissioned-nodes.json;
-    cp $QUORUM_DATA_DIR/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
-
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -83,7 +78,8 @@ data:
 <% end -%>
 
 
-<% if @config["quorum"]["quorum"]["consensus"] == "istanbul" %>
+
+## include ibft helpers as we don't know which nodes will be running which consensus.
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -117,8 +113,6 @@ data:
   istanbul-validator-config.toml: |-
 <%- File.readlines(@Tessera_Config_Dir + "/istanbul-validator-config.toml").each do |line| -%>
     <%= line -%>
-<% end -%>
-
 <% end -%>
 
 ---

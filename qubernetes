@@ -5,81 +5,106 @@ require "erb"
 require 'colorize'
 
 # setup the config file to use to generate the kubernetes API resources.
-@CONFIG_FILE = "qubernetes.yaml"
-@OPTIONAL_CONFIG_FILE=ARGV[0]
+@base_template_path = "templates/k8s"
+@config_file = "qubernetes.yaml"
+@optional_config_file=ARGV[0]
 ARGV.clear
 
 
-if @OPTIONAL_CONFIG_FILE != nil
-  @CONFIG_FILE = @OPTIONAL_CONFIG_FILE
+if @optional_config_file != nil
+  @config_file = @optional_config_file
 end
-puts "using config file: " + @CONFIG_FILE
-@config                = YAML.load_file(@CONFIG_FILE)
+puts "using config file: " + @config_file
+@config                = YAML.load_file(@config_file)
 
-@nodes                 = YAML.load_file("nodes.yaml")["nodes"]
-
+@nodes                 = @config["nodes"] #YAML.load_file("nodes.yaml")["nodes"]
 ## set defaults for config if not set, else use the values from the config.
+def set_node_template_vars(values)
+  @Node_UserIdent        = values["Node_UserIdent"]
+  @Node_Key_Dir          = values["Key_Dir"]
+  @Consensus             = values["quorum"]["quorum"]["consensus"]
+  @Tm_Version            = values["quorum"]["tm"]["Tm_Version"]
+  @Tm_Name               = values["quorum"]["tm"]["Name"]
+  @Quorum_Version        = values["quorum"]["quorum"]["Quorum_Version"]
+
+  @Geth_Verbosity = 9
+  if values["geth"] and values["geth"]["verbosity"]
+    @Geth_Verbosity = values["geth"]["verbosity"]
+  end
+
+  @Geth_Network_Id = 1101
+  if values["geth"] and values["geth"]["network"] and values["geth"]["network"]["id"]
+    @Geth_Network_Id = values["geth"]["network"]["id"]
+  end
+
+  @Geth_Startup_Params = ""
+  if values["geth"] and values["geth"]["Geth_Startup_Params"]
+    @Geth_Startup_Params = values["geth"]["Geth_Startup_Params"]
+  end
+
+  return
+end
 
 # used in deployment.yaml.erb to set quorum data dir.
 @Node_DataDir = "/etc/quorum/qdata"
-if @config["quorum"]["Node_DataDir"]
-  @Node_DataDir = @config["quorum"]["Node_DataDir"]
-end
+# if @config["quorum"]["Node_DataDir"]
+#   @Node_DataDir = @config["quorum"]["Node_DataDir"]
+# end
 
 # used by quorum-shared-config.yaml.erb and quorum-keystore.yaml.erb to load keys.
 @Key_Dir_Base = "out/config"
-if @config["quorum"]["Key_Dir_Base"]
-  @Key_Dir_Base  = @config["quorum"]["Key_Dir_Base"]
-end
+# if @config["quorum"]["Key_Dir_Base"]
+#   @Key_Dir_Base  = @config["quorum"]["Key_Dir_Base"]
+# end
 
 # used by quorum-shared-config.yaml.erb to load the permissioned-nodes.json in configmaps
 @Permissioned_Nodes_File = "out/config/permissioned-nodes.json"
-if @config["quorum"]["Permissioned_Nodes_File"]
-  @Permissioned_Nodes_File = @config["quorum"]["Permissioned_Nodes_File"]
-end
+# if @config["quorum"]["Permissioned_Nodes_File"]
+#   @Permissioned_Nodes_File = @config["quorum"]["Permissioned_Nodes_File"]
+# end
 
 # used by quorum-genesis-config.yaml.erb and quorum-shared-config.yaml.erb
 @Genesis_File = "out/config/genesis.json"
-if @config["quorum"]["Genesis_File"]
-  @Genesis_File = @config["quorum"]["Genesis_File"]
-end
+# if @config["quorum"]["Genesis_File"]
+#   @Genesis_File = @config["quorum"]["Genesis_File"]
+# end
 
 # used in quorum-shared-config.yaml.erb to make tessera config available to deployments.
 @Tessera_Config_Dir = "out/config"
-if @config["quorum"]["tm"]["Tessera_Config_Dir"]
-  @Tessera_Config_Dir = @config["quorum"]["tm"]["Tessera_Config_Dir"]
-end
+# if @config["quorum"]["tm"]["Tessera_Config_Dir"]
+#   @Tessera_Config_Dir = @config["quorum"]["tm"]["Tessera_Config_Dir"]
+# end
 
 ## default the ports if they aren't set
 @Raft_Port = 50401
-if @config["quorum"]["quorum"]["Raft_Port"]
-  @Raft_Port = @config["quorum"]["quorum"]["Raft_Port"]
-end
+# if @config["quorum"]["quorum"]["Raft_Port"]
+#   @Raft_Port = @config["quorum"]["quorum"]["Raft_Port"]
+# end
 
 @Tm_Port = 9001
-if @config["quorum"]["tm"]["Port"]
-  @Tm_Port = @config["quorum"]["tm"]["Port"]
-end
+# if @config["quorum"]["tm"]["Port"]
+#   @Tm_Port = @config["quorum"]["tm"]["Port"]
+# end
 
 @Tm_3Party_Port = 9080
-if @config["quorum"]["tm"]["3Party_Port"]
-  @Tm_3Party_Port = @config["quorum"]["tm"]["3Party_Port"]
-end
+# if @config["quorum"]["tm"]["3Party_Port"]
+#   @Tm_3Party_Port = @config["quorum"]["tm"]["3Party_Port"]
+# end
 
 @Node_RPCPort = 8545
-if @config["geth"] and @config["geth"]["Node_RPCPort"]
-  @Node_RPCPort = @config["geth"]["Node_RPCPort"]
-end
+# if @config["geth"] and @config["geth"]["Node_RPCPort"]
+#   @Node_RPCPort = @config["geth"]["Node_RPCPort"]
+# end
 
 @Node_WSPort = 8546
-if @config["geth"] and @config["geth"]["Node_WSPort"]
-  @Node_WSPort = @config["geth"]["Node_WSPort"]
-end
+# if @config["geth"] and @config["geth"]["Node_WSPort"]
+#   @Node_WSPort = @config["geth"]["Node_WSPort"]
+# end
 
 @NodeP2P_ListenAddr = 30303
-if @config["geth"] and @config["geth"]["NodeP2P_ListenAddr"]
-  @NodeP2P_ListenAddr = @config["geth"]["NodeP2P_ListenAddr"]
-end
+# if @config["geth"] and @config["geth"]["NodeP2P_ListenAddr"]
+#   @NodeP2P_ListenAddr = @config["geth"]["NodeP2P_ListenAddr"]
+# end
 
 
 # Generate deployments in a single file, or in separate files.
@@ -102,18 +127,13 @@ end
 # Create config files for each node
 #####################
 
-def set_node_template_vars(values)
-  @Node_UserIdent        = values["Node_UserIdent"]
-  @Node_Key_Dir          = values["Key_Dir"]
-  return
-end
+
 
 
 # create the output directory if it doesn't exist
 `mkdir -p out`
 
 @base_template_path = "templates/k8s"
-#puts (sed_string)
 
 if @Namespace != ""
   File.open("out/00-namespace.yaml", "w") do |f|
@@ -127,13 +147,16 @@ if @Storage_Type == "PVC"
   # there is a custom storage class set, e.g. for EKS storage class.
   if  @config.dig("k8s", "storage", "PVC", "storageClass","template")
     @storage_class_template = @config["k8s"]["storage"]["PVC"]["storageClass"]["template"]
+    # add the storage to the persistent-volumes.yamll
     File.open("out/00-quorum-persistent-volumes.yaml", "w") do |f|
       f.puts (ERB.new(File.read(@base_template_path + "/storage-classes/" + @storage_class_template + ".yaml.erb"), nil, "-").result)
     end
+    # append the pvc to the persistent-volumes.yaml
     File.open("out/00-quorum-persistent-volumes.yaml", "a") do |f|
       f.puts (ERB.new(File.read(@base_template_path + "/persistent-volumes.yaml.erb"), nil, "-").result)
     end
   else
+    # only write the PVC to the persistent-volumes.yaml
     File.open("out/00-quorum-persistent-volumes.yaml", "w") do |f|
       f.puts (ERB.new(File.read(@base_template_path + "/persistent-volumes.yaml.erb"), nil, "-").result)
     end
@@ -146,7 +169,9 @@ end
 File.open("out/02-quorum-shared-config.yaml", "w") do |f|
   f.puts (ERB.new(File.read(@base_template_path + "/quorum-shared-config.yaml.erb"), nil, "-").result)
 end
-# Create the service resources
+
+# Create the service resources, this are the URLs, ports, etc. by which the network communicates internally, and which 
+# describe how to connect to the network externally.
 File.open("out/03.0-quorum-services.yaml", "w") do |f|
   f.puts (ERB.new(File.read(@base_template_path + "/quorum-services.yaml.erb"), nil, "-").result)
 end

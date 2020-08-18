@@ -3,15 +3,15 @@
 #   2. quorum's consensus (istanbul IBFT, or Raft)
 #   3. the version of the quorum container and the transaction manger container.
 # Reasonable defaults will be chosen for the rest of the values, ports, associated K8s resources, etc.
-sep_deployment_files: true
+
 # number of nodes to deploy
 nodes:
   number: 3
 quorum:
-  # supported: (raft | istanbul)
-  consensus: raft
   quorum:
     Quorum_Version: 2.5.0
+    # supported: (raft | istanbul)
+    consensus: raft
   tm:
     # (tessera|constellation)
     Name: tessera

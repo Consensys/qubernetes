@@ -121,7 +121,7 @@ sed_string_no_escape = ""
 # to be properly set in the permissioned-nodes.json.
 #PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM_DEPLOYMENT_01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/\\$QUORUM_DEPLOYMENT_02_SERVICE_HOST/$QUORUM_NODE02_SERVICE_HOST/g\");
 @nodes.each do |node|
-  set_node_template_vars(node.values.first)
+  set_node_template_vars(node)
 #  puts ("#{@Node_UserIdent}")
   k8_service_host_var = ("#{@Node_UserIdent}".upcase + "_SERVICE_HOST").gsub("-", "_")
   permission_node_host="#{@Node_UserIdent}".upcase + "_SERVICE_HOST"
@@ -183,7 +183,7 @@ if @config["k8s"] and @config["k8s"]["service"] and @config["k8s"]["service"]["I
   end
 end
 
-# make all keystore resrouce (configMap)
+# make all keystore resources (configMap)
 File.open("out/04-quorum-keyconfigs.yaml", "w") do |f|
   f.puts (ERB.new(File.read(@base_template_path + "/quorum-keystore.yaml.erb"), nil, "-").result)
 end
@@ -200,7 +200,7 @@ if @sep_deployment_files
  `mkdir -p out/deployments`
  ct=1
  @nodes.each do |node|
-   set_node_template_vars(node.values.first)
+   set_node_template_vars(node)
    # create each deployment in a separate file.
    File.open("out/deployments/0" + ct.to_s + "-quorum-single-deployment.yaml", "w") do |f|
      f.puts (ERB.new(File.read(@base_template_path + "/quorum-deployment.yaml.erb"), nil, "-").result)
@@ -213,7 +213,7 @@ else
     f.puts("---")
   end
   @nodes.each do |node|
-    set_node_template_vars(node.values.first)
+    set_node_template_vars(node)
     # create each deployment in a separate file.
     File.open("out/05-quorum-deployments.yaml", "a") do |f|
       f.puts (ERB.new(File.read(@base_template_path + "/quorum-deployment.yaml.erb"), nil, "-").result)
@@ -221,6 +221,9 @@ else
     end
   end
 end
+
+# End of core quorum network resources.
+# The following are ancillary quorum deployments for monitoring, metrics, etc.
 
 if @config["prometheus"]
   `rm -f out/config/prometheus.yml`

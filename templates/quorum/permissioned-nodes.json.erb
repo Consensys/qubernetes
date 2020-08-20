@@ -9,10 +9,11 @@ end
    # The enode value is obtained from that file and set in the permissioned-nodes.json
 -%>
 [
-<%- @nodes.each_with_index do |node, indexNode| -%>
-    <%- set_node_template_vars(node) -%>
-    <%- @Enode_File = @Key_Dir_Base + "/" + @Node_Key_Dir + "/enode" -%>
-    <%- File.readlines(@Enode_File).each do |line| @Enode = "#{line}".gsub(/\s+/, "") end -%>
-  "enode://<%= @Enode %>@%<%= "#{@Node_UserIdent}".upcase %>_SERVICE_HOST%:<%= @NodeP2P_ListenAddr%>?discport=0&raftport=<%= @Raft_Port%>"<%- if (indexNode != @nodes.size - 1) %>,<%- end %>
-<% end -%>
+  <%- @nodes.each_with_index do |node, indexNode| -%>
+  <%- set_node_template_vars(node) -%>
+  <%- @Enode_File = @Key_Dir_Base + "/" + @Node_Key_Dir + "/enode" -%>
+  <%- File.readlines(@Enode_File).each do |line| @Enode = "#{line}".gsub(/\s+/, "") end -%>
+  <%- # use the service name / kube-dns to look up the nodes -%>
+  "enode://<%= @Enode %>@<%= "#{@Node_UserIdent}"%>:<%= @NodeP2P_ListenAddr%>?discport=0&raftport=<%= @Raft_Port%>"<%- if (indexNode != @nodes.size - 1) %>,<%- end %>
+  <% end -%>
 ]

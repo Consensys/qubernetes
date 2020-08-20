@@ -151,13 +151,10 @@ spec:
            CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json.tmpl);
 
 
-           echo  \"<%= @Sed_Set_Node_Service_Host %>\";
-           CONFIG_WITH_OTHER_HOSTS=$(echo $CONFIG_TMPL | <%= @Sed_Set_Node_Service_Host %>) ;
-           CONFIG_WITH_ALL_HOSTS=$(echo $CONFIG_WITH_OTHER_HOSTS | sed \"s/%THIS_SERVICE_HOST%/$<%= @This_Host %>/g\");
            PRIV_KEY=$(cat $DDIR/tm.key)
            PUB_KEY=$(cat $DDIR/tm.pub)
-           CONFIG_FINAL=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
-           CONFIG_FINAL_9_0=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
+           CONFIG_FINAL=$(echo $CONFIG_TMPL | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
+           CONFIG_FINAL_9_0=$(echo $CONFIG_TMPL | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
            if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
            echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
            cat  ${DDIR}/tessera-config-with-hosts.json;
@@ -345,7 +342,7 @@ spec:
           name: quorum-permissioned-config
           items:
           - key: permissioned-nodes.json
-            path: permissioned-nodes.json.tmpl
+            path: permissioned-nodes.json
           - key: permissioned-update.sh
             path: permissioned-update.sh
       - name: genesis-config-persistent-storage

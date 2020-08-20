@@ -27,7 +27,7 @@ end
     "serverSocket":{
       "type":"INET",
       "port": <%= @Tm_3Party_Port %>,
-      "hostName": "http://%THIS_SERVICE_HOST%"
+      "hostName": "http://<%= @Node_UserIdent %>"
     },
     "communicationType" : "REST"
   },
@@ -46,7 +46,7 @@ end
     "serverSocket":{
       "type":"INET",
       "port": <%= @Tm_Port %>,
-      "hostName": "http://%THIS_SERVICE_HOST%",
+      "hostName": "http://<%= @Node_UserIdent %>",
       "bindingAddress": "http://0.0.0.0:<%= @Tm_Port %>"
     },
     "sslConfig": {
@@ -73,7 +73,7 @@ end
 <%- @nodes.each_with_index do |node, indexNode| %>
 <%= set_node_template_vars(node) -%>
      {
-           "url": "http://%<%= "#{@Node_UserIdent}".upcase %>_SERVICE_HOST%:<%= @Tm_Port %>"
+           "url": "http://<%= @Node_UserIdent %>:<%= @Tm_Port %>"
          }<%- if (indexNode != @nodes.size - 1) %>,<%- end %>
 
 <% end -%>

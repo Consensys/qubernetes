@@ -7,8 +7,9 @@ require 'optparse'
 @base_template_path = "templates/config"
 @quick_start_out_yaml = "quick-start.yaml"
 
-# set up flag options
-options = {consensus: 'istanbul', quorum_version: '2.6.0', tm_version: '0.10.4', tm_name: 'tessera', chain_id: '1000', num_nodes: 4}
+# set up flag options :docker_repo :geth_verbosity :geth_startup_params
+options = {consensus: 'istanbul', quorum_version: '2.6.0', tm_version: '0.10.4', tm_name: 'tessera',
+           chain_id: '1000', num_nodes: 4, docker_repo: '', geth_verbosity: 9, geth_startup_params: '' }
 
 OptionParser.new do |opts|
   opts.banner = "Usage: ./quick-start [options]"
@@ -43,7 +44,24 @@ OptionParser.new do |opts|
     options[:num_nodes] = num
   end
 
+  opts.on("--geth-verobsity[ACTION]", Numeric,
+          "verbosity logging level for geth [1-9], default 9") do |num|
+    options[:geth_verbosity] = num
+  end
+
+  opts.on("-n", "--geth-statrup-params[ACTION]", String,
+          "The number of nodes to deploy, default no additional params") do |params|
+    options[:geth_startup_params] = params
+  end
+
+  opts.on("-d", "--docker-repo[ACTION]", String,
+          "optional docker repo to get containers from, defaults to quorumengineering") do |num|
+    options[:docker_repo] = num
+  end
   opts.on("-h", "--help", "prints this help.") do
+    puts
+    puts "example: ./quick-start-gen --chain-id=1000 --consensus=istanbul --quorum-version=2.6.0 --tm-version=0.10.4 --tm-name=tessera --num-nodes=4 --geth-statrup-params=--rpccorsdomain=\"*\" --docker-repo=MY-REPO --geth-verobsity=3"
+    puts
     puts opts
     exit
   end
@@ -56,6 +74,10 @@ end.parse!
 @Tm_Name=options[:tm_name]
 @Chain_Id=options[:chain_id]
 @Num_Nodes=options[:num_nodes]
+@Geth_Verbosity=options[:geth_verbosity]
+@Geth_Startup_Params=options[:geth_startup_params]
+@Docker_Repo=options[:docker_repo]
+
 puts "consensus : " + @consensus
 puts "quorum version : " + @Quorum_Version
 puts "tm version : " + @Tm_Version
@@ -63,6 +85,9 @@ puts "tm name : " + @Tm_Name
 puts "using chain id : " + @Chain_Id
 puts "num nodes: " + @Num_Nodes.to_s
 
+puts "geth verbosity: " + @Geth_Verbosity.to_s
+puts "geth startup params: " + @Geth_Startup_Params
+puts "docker repo: " + @Docker_Repo
 
 puts("generating " + @quick_start_out_yaml)
 File.open(@quick_start_out_yaml , "w") do |f|

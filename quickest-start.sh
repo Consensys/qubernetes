@@ -7,7 +7,7 @@ NC='\033[0m' # No Color
 usage() {
   echo "  ./quickest-start.sh "
   echo "  ./quickest-start.sh NUM"
-  echo "   If no number is passed in, deploys the 7node tessera IBFT network"
+  echo "   If no number is passed in, deploys a 4 node tessera IBFT network"
   echo "   If a number is passed in then a network with that number of nodes will be created."
   echo "   Requires Docker to be installed and running"
 }
@@ -19,15 +19,14 @@ then
     usage
   else
     NUM_NODES=$1
-    echo "Creating a $NUM_NODES network."
-    echo
   fi
 else
-  echo
-  echo "Deploying 7nodes 7nodes/istanbul-7nodes-tessera/k8s-yaml-pvc/ "
-  echo
+  NUM_NODES=4
 fi
 
+echo
+echo "Deploying a $NUM_NODES node tessera IBFT network."
+echo
 
 ## make sure docker is installed
 docker ps > /dev/null
@@ -239,9 +238,11 @@ echo "kind cluster created"
 
 if [[ $NUM_NODES -gt 0 ]];
 then
-  cat qubernetes.yaml | sed "s/number:.*/number: $NUM_NODES/g" > quickest-start.yaml
-  echo docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./qube-init --action=create quickest-start.yaml
-  docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./qube-init --action=create quickest-start.yaml
+  echo docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./quick-start-gen --num-nodes=$NUM_NODES
+  docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./quick-start-gen --num-nodes=$NUM_NODES
+  #cat qubernetes.yaml | sed "s/number:.*/number: $NUM_NODES/g" > quickest-start.yaml
+  echo docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./qube-init --action=create quick-start.yaml
+  docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes ./qube-init --action=create quick-start.yaml
   SEPARATE_DEPLOYMENT_FILES=""
   if [[ -d out/deployments ]]; then
     SEPARATE_DEPLOYMENT_FILES="-f out/deployments"

@@ -4,16 +4,16 @@ require "yaml"
 require "erb"
 
 # setup up default config, or get passed in config to use.
-@CONFIG_FILE = "qubernetes.yaml"
-@OPTIONAL_CONFIG_FILE=ARGV[0]
+@config_file = "qubernetes.yaml"
+@optional_config_fileE=ARGV[0]
 ARGV.clear
 
-if @OPTIONAL_CONFIG_FILE != nil
-  @CONFIG_FILE = @OPTIONAL_CONFIG_FILE
+if @optional_config_file!= nil
+  @config_file = @optional_config_file
 end
-puts "using config file: " + @CONFIG_FILE
+puts "using config file: " + @config_file
 
-@config     = YAML.load_file(@CONFIG_FILE)
+@config     = YAML.load_file(@config_file)
 
 # if nodes.yaml exists already, only append from last number, nodes will monotonically increase in number.
 # Read in nodes.yaml if it exists.

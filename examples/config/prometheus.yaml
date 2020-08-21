@@ -1,8 +1,9 @@
-# This is the simplest configuration file, only specifying:
-#   1. the number of nodes
-#   2. quorum's consensus (istanbul IBFT, or Raft)
-#   3. the version of the quorum container and the transaction manger container.
-# Reasonable defaults will be chosen for the rest of the values, ports, associated K8s resources, etc.
+# monitor will enable prometheus geth monitoring, grafana is kept external for now.
+prometheus:
+  # override the default monitor startup params --metrics --metrics.expensive --pprof --pprofaddr=0.0.0.0.
+  #monitor_params_geth: --metrics --metrics.expensive --pprof --pprofaddr=0.0.0.0
+  nodePort_prom: 31323
+
 # quorum and node specific config
 genesis:
   # supported: (raft | istanbul)
@@ -25,6 +26,9 @@ nodes:
          # (tessera|constellation)
          Name: tessera
          Tm_Version: 0.10.4
+     geth:
+       #Geth_Startup_Params: --rpccorsdomain=\"*\" --metrics --metrics.expensive --pprof --pprofaddr=0.0.0.0
+       Geth_Startup_Params: --rpccorsdomain=\"*\"
 
   -  Node_UserIdent: quorum-node2
      Key_Dir: key2
@@ -37,6 +41,9 @@ nodes:
          # (tessera|constellation)
          Name: tessera
          Tm_Version: 0.10.4
+     geth:
+       #Geth_Startup_Params: --rpccorsdomain=\"*\" --metrics --metrics.expensive --pprof --pprofaddr=0.0.0.0
+       Geth_Startup_Params: --rpccorsdomain=\"*\"
 
   -  Node_UserIdent: quorum-node3
      Key_Dir: key3
@@ -49,6 +56,9 @@ nodes:
          # (tessera|constellation)
          Name: tessera
          Tm_Version: 0.10.4
+     geth:
+       #Geth_Startup_Params: --rpccorsdomain=\"*\" --metrics --metrics.expensive --pprof --pprofaddr=0.0.0.0
+       Geth_Startup_Params: --rpccorsdomain=\"*\"
 
   -  Node_UserIdent: quorum-node4
      Key_Dir: key4

@@ -1,17 +1,16 @@
-# This is the simplest configuration file, only specifying:
-#   1. the number of nodes
-#   2. quorum's consensus (istanbul IBFT, or Raft)
-#   3. the version of the quorum container and the transaction manger container.
-# Reasonable defaults will be chosen for the rest of the values, ports, associated K8s resources, etc.
-# quorum and node specific config
+k8s:
+  service:
+    # NodePort | ClusterIP
+    type: ClusterIP
+
 genesis:
   # supported: (raft | istanbul)
-  consensus: istanbul
+  consensus: raft
   Quorum_Version: 2.6.0
-  Chain_Id: 10
+  Chain_Id: 1000
 
 # Add as many nodes as you wish below
-# keys and config will be generated locally
+# Note:  keys should be set locally.
 nodes:
 
   -  Node_UserIdent: quorum-node1
@@ -19,7 +18,7 @@ nodes:
      quorum:
        quorum:
          # supported: (raft | istanbul)
-         consensus: istanbul
+         consensus: raft
          Quorum_Version: 2.6.0
        tm:
          # (tessera|constellation)
@@ -31,7 +30,7 @@ nodes:
      quorum:
        quorum:
          # supported: (raft | istanbul)
-         consensus: istanbul
+         consensus: raft
          Quorum_Version: 2.6.0
        tm:
          # (tessera|constellation)
@@ -43,19 +42,7 @@ nodes:
      quorum:
        quorum:
          # supported: (raft | istanbul)
-         consensus: istanbul
-         Quorum_Version: 2.6.0
-       tm:
-         # (tessera|constellation)
-         Name: tessera
-         Tm_Version: 0.10.4
-
-  -  Node_UserIdent: quorum-node4
-     Key_Dir: key4
-     quorum:
-       quorum:
-         # supported: (raft | istanbul)
-         consensus: istanbul
+         consensus: raft
          Quorum_Version: 2.6.0
        tm:
          # (tessera|constellation)

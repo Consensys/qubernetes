@@ -1,8 +1,9 @@
-# This is the simplest configuration file, only specifying:
-#   1. the number of nodes
-#   2. quorum's consensus (istanbul IBFT, or Raft)
-#   3. the version of the quorum container and the transaction manger container.
-# Reasonable defaults will be chosen for the rest of the values, ports, associated K8s resources, etc.
+cakeshop:
+  version: latest
+  service:
+    type: NodePort
+    nodePort: 30108
+
 # quorum and node specific config
 genesis:
   # supported: (raft | istanbul)

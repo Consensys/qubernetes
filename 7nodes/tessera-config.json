@@ -12,7 +12,7 @@
     },
     "server": {
         "port": 9001,
-        "hostName": "http://%THIS_SERVICE_HOST%",
+        "hostName": "http://quorum-node7",
         "bindingAddress": "http://0.0.0.0:9001",
         "sslConfig": {
             "tls": "OFF",
@@ -34,37 +34,37 @@
     "peer": [
 
          {
-           "url": "http://%QUORUM-NODE1_SERVICE_HOST%:9001"
+           "url": "http://quorum-node1:9001"
          },
 
 
          {
-           "url": "http://%QUORUM-NODE2_SERVICE_HOST%:9001"
+           "url": "http://quorum-node2:9001"
          },
 
 
          {
-           "url": "http://%QUORUM-NODE3_SERVICE_HOST%:9001"
+           "url": "http://quorum-node3:9001"
          },
 
 
          {
-           "url": "http://%QUORUM-NODE4_SERVICE_HOST%:9001"
+           "url": "http://quorum-node4:9001"
          },
 
 
          {
-           "url": "http://%QUORUM-NODE5_SERVICE_HOST%:9001"
+           "url": "http://quorum-node5:9001"
          },
 
 
          {
-           "url": "http://%QUORUM-NODE6_SERVICE_HOST%:9001"
+           "url": "http://quorum-node6:9001"
          },
 
 
          {
-           "url": "http://%QUORUM-NODE7_SERVICE_HOST%:9001"
+           "url": "http://quorum-node7:9001"
          }
 
     ],

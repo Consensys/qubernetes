@@ -2,14 +2,10 @@
 
 require "yaml"
 require "erb"
+
 def set_node_template_vars(values)
   @Node_UserIdent        = values["Node_UserIdent"]
   @Node_Key_Dir          = values["Key_Dir"]
-#  @Consensus             = values["quorum"]["quorum"]["consensus"]
-#  @Tm_Version            = values["quorum"]["tm"]["Tm_Version"]
-#  @Tm_Name               = values["quorum"]["tm"]["Name"]
-#  @Quorum_Version        = values["quorum"]["quorum"]["Quorum_Version"]
-
   return
 end
 
@@ -23,18 +19,16 @@ end
 puts "using config file: " + @config_file
 
 @config     = YAML.load_file(@config_file)
-@nodes      = @config["nodes"] #YAML.load_file("nodes.yaml")["nodes"]
+@nodes      = @config["nodes"]
 
 @base_template_path = "templates/quorum"
 
-
-
-
 # used by gen-keys.sh.erb
 @Key_Dir_Base = "out/config"
-# if @config["quorum"]["Key_Dir_Base"]
-#   @Key_Dir_Base  = @config["quorum"]["Key_Dir_Base"]
-# end
+if @config.dig("config","Key_Dir_Base")
+  @Key_Dir_Base  = @config["config"]["Key_Dir_Base"]
+end
+puts "key dir is " + @Key_Dir_Base
 File.open(@base_template_path + "/gen-node-keys.sh", "w") do |f|
   f.puts (ERB.new(File.read(@base_template_path + "/gen-keys.sh.erb"), nil, "-").result)
 end

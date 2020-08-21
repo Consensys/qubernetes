@@ -1,9 +1,4 @@
 <%-
-def set_node_template_vars(values)
-    @Node_UserIdent = values["Node_UserIdent"]
-    return
-end
-
 
 @Geth_WS = false
 if @config["k8s"] and @config["k8s"]["service"]["Ingress"] then

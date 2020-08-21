@@ -1,40 +1,12 @@
 #<%- File.readlines("#{@Key_Dir_Base}/#{@Node_Key_Dir}/enode").each do |line| -%><%= line -%><% end -%>
 <%
-@Service_Prefix = (@Node_UserIdent.upcase).gsub("-", "_")
+  # We need to obtain the IPs for constellation only, which we can obtain from the env variable
+  # ${Service_Prefix}_SERVICE_HOST which holds the IP of the quorum service.
+  # note: this is only needed for constellation, as constellation does not support hostnames. support for constellation may go away in the future.
+  @Service_Prefix = (@Node_UserIdent.upcase).gsub("-", "_")
 
-# @Geth_Verbosity = 9
-# if @config["geth"] and @config["geth"]["verbosity"]
-#   @Geth_Verbosity = @config["geth"]["verbosity"]
-# end
-
-# @Geth_Network_Id  = 1101
-# if @config["geth"] and @config["geth"]["network"] and @config["geth"]["network"]["id"]
-#   @Geth_Network_Id = @config["geth"]["network"]["id"]
-# end
-
-# if @config["geth"] and @config["geth"]["Geth_Startup_Params"]
-#   @Geth_Startup_Params   = @config["geth"]["Geth_Startup_Params"]
-# else
-#   @Geth_Startup_Params   = ""
-# end
-
-# @Quorum_Version        = @config["quorum"]["quorum"]["Quorum_Version"]
-# default quorumengineering/quorum
-@Quorum_Docker_Repo =  "quorumengineering"
-if @config.dig("quorum","quorum","Docker_Repo")
- @Quorum_Docker_Repo = @config["quorum"]["quorum"]["Docker_Repo"]
-end
-
-# default quorumengineering/quorum
- @Tm_Docker_Repo =  "quorumengineering"
-if @config.dig("quorum","tm","Docker_Repo")
- @Tm_Docker_Repo = @config["quorum"]["tm"]["Docker_Repo"]
-end
-
-# @Tm_Version            = @config["quorum"]["tm"]["Tm_Version"]
-# @Tm_Name               = @config["quorum"]["tm"]["Name"]
-# Storage for data directories, default PVC.
-@Storage_Type          = "PVC"
+  # the rest of the node variable are set in qubernetes files that uses this file.
+  # see: set_node_template_vars(node) in qubernetes file.
 %>
 
 <%
@@ -43,7 +15,6 @@ end
    @Security_Context = @config["k8s"]["securityContext"]
  end
 %>
-<%- @This_Host = ("#{@Node_UserIdent}".upcase + "_SERVICE_HOST").gsub("-", "_") -%>
 # The quorum deployment consists of
 # 1. the transaction manager / private tx container (constellation or tessera)
 # 2. the quorum node container
@@ -149,12 +120,13 @@ spec:
            echo Config type [${TESSERA_CONFIG_TYPE}];
 
            CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json.tmpl);
-
+           CONFIG_WITH_THIS_HOST=$(echo $CONFIG_TMPL | sed \"s/%THIS_SERVICE_HOST%/<%= @Node_UserIdent %>/g\");
 
            PRIV_KEY=$(cat $DDIR/tm.key)
            PUB_KEY=$(cat $DDIR/tm.pub)
-           CONFIG_FINAL=$(echo $CONFIG_TMPL | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
-           CONFIG_FINAL_9_0=$(echo $CONFIG_TMPL | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
+           CONFIG_FINAL=$(echo $CONFIG_WITH_THIS_HOST | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
+           CONFIG_FINAL_9_0=$(echo $CONFIG_WITH_THIS_HOST | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
+
            if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
            echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
            cat  ${DDIR}/tessera-config-with-hosts.json;
@@ -217,8 +189,6 @@ spec:
            ln -s $QUORUM_HOME/permission-nodes/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
 
            rm -r <%= @Node_DataDir %>/contracts-tmp;
-           echo what in this dir;
-           ls  $QUORUM_DATA_DIR;
            cat /etc/quorum/genesis/genesis-geth.json;
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;

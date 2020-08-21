@@ -23,7 +23,7 @@ end
     },
     "server": {
         "port": <%= @Tm_Port %>,
-        "hostName": "http://<%= @Node_UserIdent %>",
+        "hostName": "http://%THIS_SERVICE_HOST%",
         "bindingAddress": "http://0.0.0.0:<%= @Tm_Port %>",
         "sslConfig": {
             "tls": "OFF",

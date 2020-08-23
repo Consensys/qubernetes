@@ -1,40 +1,12 @@
 #<%- File.readlines("#{@Key_Dir_Base}/#{@Node_Key_Dir}/enode").each do |line| -%><%= line -%><% end -%>
 <%
-@Service_Prefix = (@Node_UserIdent.upcase).gsub("-", "_")
+  # We need to obtain the IPs for constellation only, which we can obtain from the env variable
+  # ${Service_Prefix}_SERVICE_HOST which holds the IP of the quorum service.
+  # note: this is only needed for constellation, as constellation does not support hostnames. support for constellation may go away in the future.
+  @Service_Prefix = (@Node_UserIdent.upcase).gsub("-", "_")
 
-@Geth_Verbosity = 9
-if @config["geth"] and @config["geth"]["verbosity"]
-  @Geth_Verbosity = @config["geth"]["verbosity"]
-end
-
-@Geth_Network_Id  = 1101
-if @config["geth"] and @config["geth"]["network"] and @config["geth"]["network"]["id"]
-  @Geth_Network_Id = @config["geth"]["network"]["id"]
-end
-
-if @config["geth"] and @config["geth"]["Geth_Startup_Params"]
-  @Geth_Startup_Params   = @config["geth"]["Geth_Startup_Params"]
-else
-  @Geth_Startup_Params   = ""
-end
-
-@Quorum_Version        = @config["quorum"]["quorum"]["Quorum_Version"]
-# default quorumengineering/quorum
-if @config["quorum"]["quorum"]["Docker_Repo"]
- @Quorum_Docker_Repo = @config["quorum"]["quorum"]["Docker_Repo"]
-else
- @Quorum_Docker_Repo =  "quorumengineering"
-end
-# default quorumengineering/quorum
-if @config["quorum"]["tm"]["Docker_Repo"]
- @Tm_Docker_Repo = @config["quorum"]["tm"]["Docker_Repo"]
-else
- @Tm_Docker_Repo =  "quorumengineering"
-end
-@Tm_Version            = @config["quorum"]["tm"]["Tm_Version"]
-@Tm_Name               = @config["quorum"]["tm"]["Name"]
-# Storage for data directories, default PVC.
-@Storage_Type          = "PVC"
+  # the rest of the node variable are set in qubernetes files that uses this file.
+  # see: set_node_template_vars(node) in qubernetes file.
 %>
 
 <%
@@ -43,7 +15,6 @@ end
    @Security_Context = @config["k8s"]["securityContext"]
  end
 %>
-<%- @This_Host = ("#{@Node_UserIdent}".upcase + "_SERVICE_HOST").gsub("-", "_") -%>
 # The quorum deployment consists of
 # 1. the transaction manager / private tx container (constellation or tessera)
 # 2. the quorum node container
@@ -149,12 +120,13 @@ spec:
            echo Config type [${TESSERA_CONFIG_TYPE}];
 
            CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json.tmpl);
-
+           CONFIG_WITH_THIS_HOST=$(echo $CONFIG_TMPL | sed \"s/%THIS_SERVICE_HOST%/<%= @Node_UserIdent %>/g\");
 
            PRIV_KEY=$(cat $DDIR/tm.key)
            PUB_KEY=$(cat $DDIR/tm.pub)
-           CONFIG_FINAL=$(echo $CONFIG_TMPL | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
-           CONFIG_FINAL_9_0=$(echo $CONFIG_TMPL | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
+           CONFIG_FINAL=$(echo $CONFIG_WITH_THIS_HOST | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
+           CONFIG_FINAL_9_0=$(echo $CONFIG_WITH_THIS_HOST | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
+
            if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
            echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
            cat  ${DDIR}/tessera-config-with-hosts.json;
@@ -207,20 +179,16 @@ spec:
           initialDelaySeconds: 20
           periodSeconds: 3
         command: [ "sh" ]
-        # TODO: have to generate sed files
-        #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
-        # sleep to give constellation some time to start up and discover the other nodes.
-        #  --maxpeers <%= @nodes.size %>
         args:
         - "-cx"
         - "
            apk add curl;
            apk add jq;
 
-           sh $QHOME/permission-nodes/permissioned-update.sh;
+           ln -s $QUORUM_HOME/permission-nodes/permissioned-nodes.json $QUORUM_DATA_DIR/permissioned-nodes.json;
+           ln -s $QUORUM_HOME/permission-nodes/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
+
            rm -r <%= @Node_DataDir %>/contracts-tmp;
-           echo what in this dir;
-           ls  $QUORUM_DATA_DIR;
            cat /etc/quorum/genesis/genesis-geth.json;
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
@@ -241,14 +209,14 @@ spec:
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=<%= @Geth_Network_Id %>
            RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
-         <%- if @config["quorum"]["quorum"]["consensus"] == "raft" -%>
+         <%- if @Consensus == "raft" -%>
            args=\" --gcmode archive --raft  --raftport <%= @Raft_Port %> \";
            RPC_APIS=\"$RPC_APIS,raft\";
-         <%- elsif @config["quorum"]["quorum"]["consensus"] == "istanbul" -%>
+         <%- elsif @Consensus == "istanbul" -%>
            args=\" --gcmode archive --istanbul.blockperiod 3 --syncmode full --mine --minerthreads 1 \";
            RPC_APIS=\"$RPC_APIS,istanbul\";
          <%- end -%>
-         <%- if @config["quorum"]["quorum"]["Quorum_Version"] >= "2.6.0" -%>
+         <%- if @Quorum_Version >= "2.6.0" -%>
            args=\"$args --allow-insecure-unlock \";
          <%- end -%>
            /usr/local/bin/geth \
@@ -326,7 +294,7 @@ spec:
           mountPath: <%= @Node_DataDir%>/permission-nodes
         - name: geth-helpers
           mountPath: /geth-helpers
-        <%- if @config["quorum"]["quorum"]["consensus"] == "istanbul" -%>
+        <%- if @Consensus == "istanbul" -%>
         - name: istanbul-validator-config
           mountPath: <%= @Node_DataDir%>/istanbul-validator-config.toml
         - name: node-management
@@ -343,8 +311,6 @@ spec:
           items:
           - key: permissioned-nodes.json
             path: permissioned-nodes.json
-          - key: permissioned-update.sh
-            path: permissioned-update.sh
       - name: genesis-config-persistent-storage
         configMap:
           name: genesis-config
@@ -399,7 +365,7 @@ spec:
             - key: geth-exec.sh
               path: geth-exec.sh
           defaultMode: 0777
-      <% if @config["quorum"]["quorum"]["consensus"] == "istanbul" %>
+      <% if @Consensus == "istanbul" %>
       - name: istanbul-validator-config
         configMap:
           name: istanbul-validator-config.toml

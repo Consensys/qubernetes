@@ -3,71 +3,92 @@
 require "yaml"
 require "erb"
 
+def set_node_template_vars(values)
+  @Node_UserIdent        = values["Node_UserIdent"]
+  @Node_Key_Dir          = values["Key_Dir"]
+  @Consensus             = values["quorum"]["quorum"]["consensus"]
+  @Tm_Version            = values["quorum"]["tm"]["Tm_Version"]
+  @Tm_Name               = values["quorum"]["tm"]["Name"]
+  @Quorum_Version        = values["quorum"]["quorum"]["Quorum_Version"]
+
+  @Geth_Network_Id = @Chain_Id
+  if values["geth"] and values["geth"]["network"] and values["geth"]["network"]["id"]
+    @Geth_Network_Id = values["geth"]["network"]["id"]
+  end
+
+  return
+end
+
 # generic variables
-@CONFIG_FILE = "qubernetes.yaml"
-@OPTIONAL_CONFIG_FILE=ARGV[0]
+@config_file = "qubernetes.yaml"
+@optional_config_file=ARGV[0]
 ARGV.clear
 
-if @OPTIONAL_CONFIG_FILE != nil
-  @CONFIG_FILE = @OPTIONAL_CONFIG_FILE
+if @optional_config_file != nil
+  @config_file = @optional_config_file
 end
-puts "using config file: " + @CONFIG_FILE
+puts "using config file: " + @config_file
 
-@config     = YAML.load_file(@CONFIG_FILE)
-@nodes      = YAML.load_file("nodes.yaml")["nodes"]
+@config     = YAML.load_file(@config_file)
+@nodes      = @config["nodes"] #YAML.load_file("nodes.yaml")["nodes"]
 
 ## set defaults for config if not set, else use the values from the config.
 
-# directory where the genesis.json will be stored after it is generated.
-@Genesis_File = "out/config/genesis.json"
-if @config["quorum"]["Genesis_File"]
-  @Genesis_File = @config["quorum"]["Genesis_File"]
+# used by quorum-shared-config.yaml.erb and quorum-keystore.yaml.erb to load keys.
+@Key_Dir_Base = "out/config"
+if @config.dig("config","Key_Dir_Base")
+  @Key_Dir_Base  = @config["config"]["Key_Dir_Base"]
 end
 
-# used by genesis.json.erb, gen-keys.sh.erb, and .
-@Key_Dir_Base = "out/config"
-if @config["quorum"]["Key_Dir_Base"]
-  @Key_Dir_Base  = @config["quorum"]["Key_Dir_Base"]
+# used by quorum-shared-config.yaml.erb to load the permissioned-nodes.json in configmaps
+@Permissioned_Nodes_File = "out/config/permissioned-nodes.json"
+if @config.dig("config","Permissioned_Nodes_File")
+  @Permissioned_Nodes_File = @config["config"]["Permissioned_Nodes_File"]
+end
+
+# used by quorum-genesis-config.yaml.erb and quorum-shared-config.yaml.erb
+@Genesis_File = "out/config/genesis.json"
+if @config.dig("config","Genesis_File")
+  @Genesis_File = @config["config"]["Genesis_File"]
+end
+
+@Chain_Id=1101
+if @config.dig("config","Chain_Id")
+  @Chain_Id = @config["config"]["Chain_Id"]
+end
+
+# used in quorum-shared-config.yaml.erb to make tessera config available to deployments.
+@Tessera_Config_Dir = "out/config"
+if @config.dig("config","Tessera_Config_Dir")
+  @Tessera_Config_Dir = @config["config"]["Tessera_Config_Dir"]
 end
 
 # used in tessera-config-*.json.erb(s)
 @Node_DataDir = "/etc/quorum/qdata"
-if @config["quorum"]["Node_DataDir"]
-  @Node_DataDir = @config["quorum"]["Node_DataDir"]
-end
-
-# directory where the permissioned-node.json will be stored after it is generated.
-@Permissioned_Nodes_File = "out/config/permissioned-nodes.json"
-if @config["quorum"]["Permissioned_Nodes_File"]
-  @Permissioned_Nodes_File = @config["quorum"]["Permissioned_Nodes_File"]
-end
-
-# directory where the tessera-config.json files. will be stored after it is generated.
-@Tessera_Config_Dir = "out/config"
-if @config["quorum"]["tm"]["Tessera_Config_Dir"]
-  @Tessera_Config_Dir = @config["quorum"]["tm"]["Tessera_Config_Dir"]
-end
+# if @config["quorum"]["Node_DataDir"]
+#   @Node_DataDir = @config["quorum"]["Node_DataDir"]
+# end
 
 ## set ports needed for the quorum templates
 # Tm_Port used in tessera config templates
 @Tm_Port = 9001
-if @config["quorum"]["tm"]["Port"]
-  @Tm_Port = @config["quorum"]["tm"]["Port"]
-end
+# if @config["quorum"]["tm"]["Port"]
+#   @Tm_Port = @config["quorum"]["tm"]["Port"]
+# end
 # Tm_3Party_Port used in tessera config templates
 @Tm_3Party_Port = 9080
-if @config["quorum"]["tm"]["3Party_Port"]
-  @Tm_3Party_Port = @config["quorum"]["tm"]["3Party_Port"]
-end
+# if @config["quorum"]["tm"]["3Party_Port"]
+#   @Tm_3Party_Port = @config["quorum"]["tm"]["3Party_Port"]
+# end
 # used by permissioned-nodes.json.erb to set enode URLs
 @Raft_Port = 50401
-if @config["quorum"]["quorum"]["Raft_Port"]
-  @Raft_Port = @config["quorum"]["quorum"]["Raft_Port"]
-end
+# if @config["quorum"]["quorum"]["Raft_Port"]
+#   @Raft_Port = @config["quorum"]["quorum"]["Raft_Port"]
+# end
 @NodeP2P_ListenAddr = 30303
-if @config["geth"] and @config["geth"]["NodeP2P_ListenAddr"]
-  @NodeP2P_ListenAddr = @config["geth"]["NodeP2P_ListenAddr"]
-end
+# if @config["geth"] and @config["geth"]["NodeP2P_ListenAddr"]
+#   @NodeP2P_ListenAddr = @config["geth"]["NodeP2P_ListenAddr"]
+# end
 
 #####################################################
 # Generate genesis.json and permissioned-nodes.json
@@ -78,7 +99,8 @@ end
 # create genesis files with all discovered keystore accounts pre alloc with funds.
 puts(@Genesis_File)
 File.open(@Genesis_File, "w") do |f|
-  f.puts (ERB.new(File.read(@base_template_path + "/genesis.json.erb"), nil, "-").result(binding))
+  #f.puts (ERB.new(File.read(@base_template_path + "/genesis.json.erb"), nil, "-").result(binding))
+  f.puts (ERB.new(File.read(@base_template_path + "/genesis.json.erb"), nil, "-").result)
 end
 
 # create permission nodes file containing all the nodes.

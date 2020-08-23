@@ -1,0 +1,50 @@
+k8s:
+  service:
+    # NodePort | ClusterIP
+    type: ClusterIP
+
+genesis:
+  # supported: (raft | istanbul)
+  consensus: raft
+  Quorum_Version: 2.6.0
+  Chain_Id: 1000
+
+# Add as many nodes as you wish below
+# Note:  keys should be set locally.
+nodes:
+
+  -  Node_UserIdent: quorum-node1
+     Key_Dir: key1
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: raft
+         Quorum_Version: 2.6.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+
+  -  Node_UserIdent: quorum-node2
+     Key_Dir: key2
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: raft
+         Quorum_Version: 2.6.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+
+  -  Node_UserIdent: quorum-node3
+     Key_Dir: key3
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: raft
+         Quorum_Version: 2.6.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4

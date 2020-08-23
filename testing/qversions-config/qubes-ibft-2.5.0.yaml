@@ -1,25 +1,67 @@
-# This is the simplest configuration file, only specifying:
-#   1. the number of nodes
-#   2. quorum's consensus (istanbul IBFT, or Raft)
-#   3. the version of the quorum container and the transaction manger container.
-# Reasonable defaults will be chosen for the rest of the values, ports, associated K8s resources, etc.
+# ./quick-start-gen --chain-id=1000   --tm-name=tessera --num-nodes=3 --geth-statrup-params=--rpccorsdomain="*" --consensus=istanbul --quorum-version=2.5.0  --tm-version=0.10.2
+genesis:
+  # supported: (raft | istanbul)
+  consensus: istanbul
+  Quorum_Version: 2.5.0
+  Chain_Id: 1000
 
-# number of nodes to deploy
+# Add as many nodes as you wish below
+# Note:  keys should be set locally.
 nodes:
-  number: 3
-quorum:
 
-  quorum:
-    Quorum_Version: 2.5.0
-    # supported: (raft | istanbul)
-    consensus: istanbul
-  tm:
-    # (tessera|constellation)
-    Name: tessera
-    Tm_Version: 0.10.2
-geth:
-  # general verbosity of geth [1..5]
-  verbosity: 9
-  # additional startup params to pass into geth/quorum
-  Geth_Startup_Params: --rpccorsdomain=\"*\" --rpcvhosts=\"*\" --ws --wsorigins=\"*\"
+  -  Node_UserIdent: quorum-node1
+     Key_Dir: key1
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: istanbul
+         Quorum_Version: 2.5.0
+         Docker_Repo:
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.2
+         Docker_Repo:
+       geth:
+         network:
+           id: 1000
+         verbosity: 9
+         Geth_Startup_Params: --rpccorsdomain=*
 
+  -  Node_UserIdent: quorum-node2
+     Key_Dir: key2
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: istanbul
+         Quorum_Version: 2.5.0
+         Docker_Repo:
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.2
+         Docker_Repo:
+       geth:
+         network:
+           id: 1000
+         verbosity: 9
+         Geth_Startup_Params: --rpccorsdomain=*
+
+  -  Node_UserIdent: quorum-node3
+     Key_Dir: key3
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: istanbul
+         Quorum_Version: 2.5.0
+         Docker_Repo:
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.2
+         Docker_Repo:
+       geth:
+         network:
+           id: 1000
+         verbosity: 9
+         Geth_Startup_Params: --rpccorsdomain=*

@@ -87,13 +87,10 @@ spec:
            CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json.tmpl);
 
 
-           echo  \" sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" \";
-           CONFIG_WITH_OTHER_HOSTS=$(echo $CONFIG_TMPL |  sed \"s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g\" |  sed \"s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g\" ) ;
-           CONFIG_WITH_ALL_HOSTS=$(echo $CONFIG_WITH_OTHER_HOSTS | sed \"s/%THIS_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g\");
            PRIV_KEY=$(cat $DDIR/tm.key)
            PUB_KEY=$(cat $DDIR/tm.pub)
-           CONFIG_FINAL=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
-           CONFIG_FINAL_9_0=$(echo $CONFIG_WITH_ALL_HOSTS | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
+           CONFIG_FINAL=$(echo $CONFIG_TMPL | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
+           CONFIG_FINAL_9_0=$(echo $CONFIG_TMPL | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
            if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
            echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
            cat  ${DDIR}/tessera-config-with-hosts.json;
@@ -143,17 +140,15 @@ spec:
           initialDelaySeconds: 20
           periodSeconds: 3
         command: [ "sh" ]
-        # TODO: have to generate sed files
-        #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
-        # sleep to give constellation some time to start up and discover the other nodes.
-        #  --maxpeers 7
         args:
         - "-cx"
         - "
            apk add curl;
            apk add jq;
 
-           sh $QHOME/permission-nodes/permissioned-update.sh;
+           ln -s $QUORUM_HOME/permission-nodes/permissioned-nodes.json $QUORUM_DATA_DIR/permissioned-nodes.json;
+           ln -s $QUORUM_HOME/permission-nodes/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
+
            rm -r /etc/quorum/qdata/contracts-tmp;
            echo what in this dir;
            ls  $QUORUM_DATA_DIR;
@@ -186,14 +181,14 @@ spec:
            --rpcapi $RPC_APIS \
            --wsapi $RPC_APIS \
            --wsport 8546 \
-           --port 21000 \
+           --port 30303 \
             \
            --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
           - containerPort: 8545
           - containerPort: 8546
-          - containerPort: 21000
+          - containerPort: 30303
         
         env:
         - name: PRIVATE_CONFIG
@@ -242,9 +237,7 @@ spec:
           name: quorum-permissioned-config
           items:
           - key: permissioned-nodes.json
-            path: permissioned-nodes.json.tmpl
-          - key: permissioned-update.sh
-            path: permissioned-update.sh
+            path: permissioned-nodes.json
       - name: genesis-config-persistent-storage
         configMap:
           name: genesis-config

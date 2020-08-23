@@ -23,21 +23,21 @@ OptionParser.new do |opts|
 
 end.parse!
 
-@ACTION_FLAG=options[:action]
+@action_flag=options[:action]
 
-puts "using action flag : " + @ACTION_FLAG
+puts "using action flag : " + @action_flag
 
 # setup the config file to use to generate the quorum resources and kubernetes API resources.
-@CONFIG_FILE = "qubernetes.yaml"
-@OPTIONAL_CONFIG_FILE=ARGV[0]
+@config_file = "qubernetes.yaml"
+@optional_config_file=ARGV[0]
 ARGV.clear
 
-if @OPTIONAL_CONFIG_FILE != nil
-  @CONFIG_FILE = @OPTIONAL_CONFIG_FILE
+if @optional_config_file != nil
+  @config_file = @optional_config_file
 end
-puts "using config file: " + @CONFIG_FILE
+puts "using config file: " + @config_file
 
-@config                = YAML.load_file(@CONFIG_FILE)
+@config                = YAML.load_file(@config_file)
 
 # Generate deployments in a single file, or in separate files.
 @sep_deployment_files=true
@@ -48,13 +48,13 @@ end
 
 puts  "  Running ./quorum-init to generate Quorum resources."
 
-system("./quorum-init --action=#{@ACTION_FLAG} #{@CONFIG_FILE}")
+system("./quorum-init --action=#{@action_flag} #{@config_file}")
 
 
 puts  "  Running ./qubernetes to generate Kubernetes resources."
 puts ""
 `
-./qubernetes #{@CONFIG_FILE}
+./qubernetes #{@config_file}
 `
 @Kubectl_Cmd="  $> kubectl apply -f out"
 if @sep_deployment_files

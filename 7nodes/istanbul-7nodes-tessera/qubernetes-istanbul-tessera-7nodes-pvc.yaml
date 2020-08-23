@@ -1,39 +1,17 @@
-# number of nodes to deploy
-nodes:
-  number: 7
-quorum:
-  # base quorum data dir as set inside each container.
-  Node_DataDir: /etc/quorum/qdata
+genesis:
+  # supported: (raft | istanbul)
+  consensus: istanbul
+  Quorum_Version: 2.5.0
+  Chain_Id: 10
+
+config:
+  Tessera_Config_Dir: 7nodes
+  Genesis_File: 7nodes/istanbul-genesis.json
+  Permissioned_Nodes_File: 7nodes/permissioned-nodes.json
   # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
   # Either full or relative paths on the machine generating the config
   Key_Dir_Base: 7nodes
-  Permissioned_Nodes_File: 7nodes/permissioned-nodes.json
-  Genesis_File: 7nodes/istanbul-genesis.json
-  # related to quorum containers
-  quorum:
-    # supported: raft | istanbul
-    consensus: istanbul
-    # container images at https://hub.docker.com/u/quorumengineering/
-    Quorum_Version: 2.5.0
-  # related to transaction manager containers
-  tm:
-    # (tessera|constellation)
-    # container images at https://hub.docker.com/u/quorumengineering/
-    Name: tessera
-    Tm_Version: 0.10.4
-    Port: 9001
-    Tessera_Config_Dir: 7nodes
-# generic geth related options
-geth:
-  Node_RPCPort: 8545
-  NodeP2P_ListenAddr: 21000
-  network:
-    # network id (1: mainnet, 3: ropsten, 4: rinkeby ... )
-    id: 10
-    # public (true|false) is it a public network?
-    public: false
-  # general verbosity of geth [1..5]
-  verbosity: 9
+
 k8s:
   service:
     # NodePort | ClusterIP
@@ -45,3 +23,90 @@ k8s:
     Type: PVC
     ## when redeploying cannot be less than previous values
     Capacity: 200Mi
+
+nodes:
+
+  -  Node_UserIdent: quorum-node1
+     Key_Dir: key1
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: istanbul
+         Quorum_Version: 2.5.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+
+  -  Node_UserIdent: quorum-node2
+     Key_Dir: key2
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: istanbul
+         Quorum_Version: 2.5.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+
+  -  Node_UserIdent: quorum-node3
+     Key_Dir: key3
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: istanbul
+         Quorum_Version: 2.5.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+
+  -  Node_UserIdent: quorum-node4
+     Key_Dir: key4
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: istanbul
+         Quorum_Version: 2.5.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+
+  -  Node_UserIdent: quorum-node5
+     Key_Dir: key5
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: istanbul
+         Quorum_Version: 2.5.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+
+  -  Node_UserIdent: quorum-node6
+     Key_Dir: key6
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: istanbul
+         Quorum_Version: 2.5.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+
+  -  Node_UserIdent: quorum-node7
+     Key_Dir: key7
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: istanbul
+         Quorum_Version: 2.5.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+

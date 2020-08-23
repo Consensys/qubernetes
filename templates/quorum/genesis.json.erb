@@ -5,16 +5,20 @@ def set_node_template_vars(values)
     return
 end
 
-@Geth_Network_Id  = 1101
-if @config["geth"] and @config["geth"]["network"] and @config["geth"]["network"]["id"]
-  @Geth_Network_Id = @config["geth"]["network"]["id"]
+@Chain_Id  = 1101
+if @config["genesis"] and @config["genesis"]["Chain_Id"]
+  @Chain_Id = @config["genesis"]["Chain_Id"]
 end
+## The genesis consensus and the quorum version must be set in the config file.
+@Genesis_Consensus = @config["genesis"]["consensus"]
+@Genesis_Quorum_Version = @config["genesis"]["Quorum_Version"]
+
 @Account_Allocs = ""
 @Node_Index = 0
 
 -%>
 
-<% if @config["quorum"]["quorum"]["consensus"] == "raft" %>
+<% if @Genesis_Consensus == "raft" %>
 {
 "alloc": {
 <%- @nodes.each_with_index do |node, indexNode|
@@ -56,7 +60,7 @@ end
     "eip155block": 0,
     "eip158block": 0,
     <%-# for 2.6 maxCodeSize config has changed. -%>
-    <%- if @config["quorum"]["quorum"]["Quorum_Version"] >= "2.6.0" -%>
+    <%- if @Genesis_Quorum_Version >= "2.6.0" -%>
     "maxCodeSizeConfig" : [
       {
         "block" : 0,
@@ -67,7 +71,7 @@ end
     "maxCodeSize": 35,
     "maxCodeSizeChangeBlock" : 0,
     <%- end -%>
-    "chainId": <%= @Geth_Network_Id %>,
+    "chainId": <%= @Chain_Id %>,
     "isQuorum":true
   },
   "difficulty": "0x0",
@@ -78,7 +82,7 @@ end
   "parenthash": "0x0000000000000000000000000000000000000000000000000000000000000000",
   "timestamp": "0x00"
 }
-<% elsif @config["quorum"]["quorum"]["consensus"] == "istanbul" %>
+<% elsif @Genesis_Consensus == "istanbul" %>
 {
 "alloc": {
 <%- @nodes.each_with_index do |node, indexNode|
@@ -123,7 +127,7 @@ end
       "policy": 0
     },
     <%-# for 2.6 maxCodeSize config has changed. -%>
-    <%- if @config["quorum"]["quorum"]["Quorum_Version"] >= "2.6.0" -%>
+    <%- if @Genesis_Quorum_Version >= "2.6.0" -%>
     "maxCodeSizeConfig" : [
       {
         "block" : 0,
@@ -134,7 +138,7 @@ end
     "maxCodeSize": 35,
     "maxCodeSizeChangeBlock" : 0,
     <%- end -%>
-    "chainId": <%= @Geth_Network_Id %>,
+    "chainId": <%= @Chain_Id %>,
     "isQuorum": true
   },
 
@@ -146,6 +150,11 @@ end
    # $> istanbul extra encode --config ./cmd/istanbul/example/config.toml
    #
    # Note: this requires istanbul-tools and nodejs to be installed on the host.
+   #
+   # for each node we need to generate their istanbul account which will be placed inside the
+   # extradata field and used to verify the validators.
+   # To do this, we need to create the istanbul-validator-config.toml from the ethereum nodekey. The istanbul-validator-config.toml
+   # is then given as input to the istanbul tool, which will calculate the necessary extradata field.
   %>
   <%-
   @IstanbulConfig = @Key_Dir_Base + "/istanbul-validator-config.toml"
@@ -153,9 +162,8 @@ end
     f.puts ("vanity = \"0x00\" \nvalidators = [")
   end
 
- @nodes.each_with_index do |node, indexNode|
+ @nodes.each do |node|
    set_node_template_vars(node)
-
    #puts(@Key_Dir_Base + "/" + @Node_Key_Dir + "/nodekey")
    File.open(@Key_Dir_Base + "/" + @Node_Key_Dir + "/nodekey", "r") do |f|
     f.each_line do |nodekey|

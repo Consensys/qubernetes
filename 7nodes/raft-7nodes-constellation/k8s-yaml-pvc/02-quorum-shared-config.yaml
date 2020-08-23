@@ -11,21 +11,14 @@ data:
   permissioned-nodes.json: |
 
     [
-      "enode://ac6b1096ca56b9f6d004b779ae3728bf83f8e22453404cc3cef16a3d9b96608bc67c4b30db88e0a5a6c6390213f7acbe1153ff6d23ce57380104288ae19373ef@%QUORUM-NODE1_SERVICE_HOST%:21000?discport=0&raftport=50401",
-      "enode://0ba6b9f606a43a95edc6247cdb1c1e105145817be7bcafd6b2c0ba15d58145f0dc1a194f70ba73cd6f4cdd6864edc7687f311254c7555cc32e4d45aeb1b80416@%QUORUM-NODE2_SERVICE_HOST%:21000?discport=0&raftport=50401",
-      "enode://579f786d4e2830bbcc02815a27e8a9bacccc9605df4dc6f20bcc1a6eb391e7225fff7cb83e5b4ecd1f3a94d8b733803f2f66b7e871961e7b029e22c155c3a778@%QUORUM-NODE3_SERVICE_HOST%:21000?discport=0&raftport=50401",
-      "enode://3d9ca5956b38557aba991e31cf510d4df641dce9cc26bfeb7de082f0c07abb6ede3a58410c8f249dabeecee4ad3979929ac4c7c496ad20b8cfdd061b7401b4f5@%QUORUM-NODE4_SERVICE_HOST%:21000?discport=0&raftport=50401",
-      "enode://3701f007bfa4cb26512d7df18e6bbd202e8484a6e11d387af6e482b525fa25542d46ff9c99db87bd419b980c24a086117a397f6d8f88e74351b41693880ea0cb@%QUORUM-NODE5_SERVICE_HOST%:21000?discport=0&raftport=50401",
-      "enode://eacaa74c4b0e7a9e12d2fe5fee6595eda841d6d992c35dbbcc50fcee4aa86dfbbdeff7dc7e72c2305d5a62257f82737a8cffc80474c15c611c037f52db1a3a7b@%QUORUM-NODE6_SERVICE_HOST%:21000?discport=0&raftport=50401",
-      "enode://239c1f044a2b03b6c4713109af036b775c5418fe4ca63b04b1ce00124af00ddab7cc088fc46020cdc783b6207efe624551be4c06a994993d8d70f684688fb7cf@%QUORUM-NODE7_SERVICE_HOST%:21000?discport=0&raftport=50401"
-    ]
-
-  permissioned-update.sh: |
-    #!/bin/bash
-    PERM_NODE_TMPL=$(cat $QHOME/permission-nodes/permissioned-nodes.json.tmpl);
-    PERM_NODE_JSON=$(echo $PERM_NODE_TMPL |  sed "s/%QUORUM-NODE1_SERVICE_HOST%/$QUORUM_NODE1_SERVICE_HOST/g" |  sed "s/%QUORUM-NODE2_SERVICE_HOST%/$QUORUM_NODE2_SERVICE_HOST/g" |  sed "s/%QUORUM-NODE3_SERVICE_HOST%/$QUORUM_NODE3_SERVICE_HOST/g" |  sed "s/%QUORUM-NODE4_SERVICE_HOST%/$QUORUM_NODE4_SERVICE_HOST/g" |  sed "s/%QUORUM-NODE5_SERVICE_HOST%/$QUORUM_NODE5_SERVICE_HOST/g" |  sed "s/%QUORUM-NODE6_SERVICE_HOST%/$QUORUM_NODE6_SERVICE_HOST/g" |  sed "s/%QUORUM-NODE7_SERVICE_HOST%/$QUORUM_NODE7_SERVICE_HOST/g" );
-    echo $PERM_NODE_JSON >  $QUORUM_DATA_DIR/permissioned-nodes.json;
-    cp $QUORUM_DATA_DIR/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
+      "enode://ac6b1096ca56b9f6d004b779ae3728bf83f8e22453404cc3cef16a3d9b96608bc67c4b30db88e0a5a6c6390213f7acbe1153ff6d23ce57380104288ae19373ef@quorum-node1:30303?discport=0&raftport=50401",
+        "enode://0ba6b9f606a43a95edc6247cdb1c1e105145817be7bcafd6b2c0ba15d58145f0dc1a194f70ba73cd6f4cdd6864edc7687f311254c7555cc32e4d45aeb1b80416@quorum-node2:30303?discport=0&raftport=50401",
+        "enode://579f786d4e2830bbcc02815a27e8a9bacccc9605df4dc6f20bcc1a6eb391e7225fff7cb83e5b4ecd1f3a94d8b733803f2f66b7e871961e7b029e22c155c3a778@quorum-node3:30303?discport=0&raftport=50401",
+        "enode://3d9ca5956b38557aba991e31cf510d4df641dce9cc26bfeb7de082f0c07abb6ede3a58410c8f249dabeecee4ad3979929ac4c7c496ad20b8cfdd061b7401b4f5@quorum-node4:30303?discport=0&raftport=50401",
+        "enode://3701f007bfa4cb26512d7df18e6bbd202e8484a6e11d387af6e482b525fa25542d46ff9c99db87bd419b980c24a086117a397f6d8f88e74351b41693880ea0cb@quorum-node5:30303?discport=0&raftport=50401",
+        "enode://eacaa74c4b0e7a9e12d2fe5fee6595eda841d6d992c35dbbcc50fcee4aa86dfbbdeff7dc7e72c2305d5a62257f82737a8cffc80474c15c611c037f52db1a3a7b@quorum-node6:30303?discport=0&raftport=50401",
+        "enode://239c1f044a2b03b6c4713109af036b775c5418fe4ca63b04b1ce00124af00ddab7cc088fc46020cdc783b6207efe624551be4c06a994993d8d70f684688fb7cf@quorum-node7:30303?discport=0&raftport=50401"
+      ]
 
 ---
 apiVersion: v1
@@ -52,7 +45,7 @@ data:
         },
         "server": {
             "port": 9001,
-            "hostName": "http://%THIS_SERVICE_HOST%",
+            "hostName": "http://quorum-node7",
             "bindingAddress": "http://0.0.0.0:9001",
             "sslConfig": {
                 "tls": "OFF",
@@ -74,37 +67,37 @@ data:
         "peer": [
     
              {
-               "url": "http://%QUORUM-NODE1_SERVICE_HOST%:9001"
+               "url": "http://quorum-node1:9001"
              },
     
     
              {
-               "url": "http://%QUORUM-NODE2_SERVICE_HOST%:9001"
+               "url": "http://quorum-node2:9001"
              },
     
     
              {
-               "url": "http://%QUORUM-NODE3_SERVICE_HOST%:9001"
+               "url": "http://quorum-node3:9001"
              },
     
     
              {
-               "url": "http://%QUORUM-NODE4_SERVICE_HOST%:9001"
+               "url": "http://quorum-node4:9001"
              },
     
     
              {
-               "url": "http://%QUORUM-NODE5_SERVICE_HOST%:9001"
+               "url": "http://quorum-node5:9001"
              },
     
     
              {
-               "url": "http://%QUORUM-NODE6_SERVICE_HOST%:9001"
+               "url": "http://quorum-node6:9001"
              },
     
     
              {
-               "url": "http://%QUORUM-NODE7_SERVICE_HOST%:9001"
+               "url": "http://quorum-node7:9001"
              }
     
         ],
@@ -141,7 +134,7 @@ data:
         "serverSocket":{
           "type":"INET",
           "port": 9080,
-          "hostName": "http://%THIS_SERVICE_HOST%"
+          "hostName": "http://quorum-node7"
         },
         "communicationType" : "REST"
       },
@@ -160,7 +153,7 @@ data:
         "serverSocket":{
           "type":"INET",
           "port": 9001,
-          "hostName": "http://%THIS_SERVICE_HOST%",
+          "hostName": "http://quorum-node7",
           "bindingAddress": "http://0.0.0.0:9001"
         },
         "sslConfig": {
@@ -186,37 +179,37 @@ data:
         "peer": [
     
          {
-               "url": "http://%QUORUM-NODE1_SERVICE_HOST%:9001"
+               "url": "http://quorum-node1:9001"
              },
     
     
          {
-               "url": "http://%QUORUM-NODE2_SERVICE_HOST%:9001"
+               "url": "http://quorum-node2:9001"
              },
     
     
          {
-               "url": "http://%QUORUM-NODE3_SERVICE_HOST%:9001"
+               "url": "http://quorum-node3:9001"
              },
     
     
          {
-               "url": "http://%QUORUM-NODE4_SERVICE_HOST%:9001"
+               "url": "http://quorum-node4:9001"
              },
     
     
          {
-               "url": "http://%QUORUM-NODE5_SERVICE_HOST%:9001"
+               "url": "http://quorum-node5:9001"
              },
     
     
          {
-               "url": "http://%QUORUM-NODE6_SERVICE_HOST%:9001"
+               "url": "http://quorum-node6:9001"
              },
     
     
          {
-               "url": "http://%QUORUM-NODE7_SERVICE_HOST%:9001"
+               "url": "http://quorum-node7:9001"
              }
     
         ],
@@ -247,7 +240,7 @@ data:
       {
         "app":"ThirdParty",
         "enabled": true,
-        "serverAddress": "http://%THIS_SERVICE_HOST%:9080",
+        "serverAddress": "http://quorum-node7:9080",
         "cors": {
             "allowedMethods": [
                 "GET",
@@ -268,7 +261,7 @@ data:
       {
         "app":"P2P",
         "enabled": true,
-        "serverAddress":"http://%THIS_SERVICE_HOST%:9001",
+        "serverAddress":"http://quorum-node7:9001",
         "sslConfig": {
           "tls": "OFF",
           "generateKeyStoreIfNotExisted": true,
@@ -292,37 +285,37 @@ data:
         "peer": [
     
          {
-               "url": "http://%QUORUM-NODE1_SERVICE_HOST%:9001"
+               "url": "http://quorum-node1:9001"
              },
     
     
          {
-               "url": "http://%QUORUM-NODE2_SERVICE_HOST%:9001"
+               "url": "http://quorum-node2:9001"
              },
     
     
          {
-               "url": "http://%QUORUM-NODE3_SERVICE_HOST%:9001"
+               "url": "http://quorum-node3:9001"
              },
     
     
          {
-               "url": "http://%QUORUM-NODE4_SERVICE_HOST%:9001"
+               "url": "http://quorum-node4:9001"
              },
     
     
          {
-               "url": "http://%QUORUM-NODE5_SERVICE_HOST%:9001"
+               "url": "http://quorum-node5:9001"
              },
     
     
          {
-               "url": "http://%QUORUM-NODE6_SERVICE_HOST%:9001"
+               "url": "http://quorum-node6:9001"
              },
     
     
          {
-               "url": "http://%QUORUM-NODE7_SERVICE_HOST%:9001"
+               "url": "http://quorum-node7:9001"
              }
     
         ],
@@ -461,6 +454,63 @@ data:
     echo | tee -a $RAFT_ADD_ERR $RAFT_ADD_LOG
 
 
+
+## include ibft helpers as we don't know which nodes will be running which consensus.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-management
+  
+  labels:
+    app: qubernetes
+    name: node-management
+data:
+  ibft_propose.sh: |-
+    #/bin/ash
+    
+    if [ $# -lt 1 ]; then
+      echo " An address to vote in, or out, must be provided: "
+      echo " ./propose_ibft.sh HEX_ADDRESS (true|false)"
+    fi
+    
+    ADDRESS=$1
+    VOTE_BOOL=true
+    
+    if [ $# -eq 2 ]; then
+     VOTE_BOOL=$2
+    fi
+    RES=$(geth --exec "istanbul.propose(\"$1\", $VOTE_BOOL)" attach ipc:$QUORUM_HOME/dd/geth.ipc)
+    echo $RES
+  ibft_propose_all.sh: |-
+    #!/bin/ash
+    set -xe
+    
+    for Addr in $( awk '/validators/,0' $QHOME/istanbul-validator-config.toml/istanbul-validator-config.toml | grep "0x" | sed 's/,//g; s/"//g' ); do
+      echo $Addr
+      $QHOME/node-management/ibft_propose.sh $Addr true
+    done
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: istanbul-validator-config.toml
+  
+  labels:
+    app: qubernetes
+    name: istanbul-validator-config
+data:
+  istanbul-validator-config.toml: |-
+    vanity = "0x00" 
+    validators = [
+    "0xd8Dba507e85F116b1f7e231cA8525fC9008A6966",
+    "0x6571D97f340c8495B661a823F2C2145cA47D63c2",
+    "0xe36cbeB565B061217930767886474e3cDe903AC5",
+    "0xF512a992F3fb749857d758fFDa1330e590fa915E",
+    "0xb912De287F9b047B4228436E94B5b78E3Ee16171",
+    "0x8157D4437104e3B8dF4451a85F7B2438ef6699FF",
+    "0xb131288F355BC27090E542aE0be213c20350B767",
+    ]
 
 ---
 apiVersion: v1

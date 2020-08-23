@@ -111,17 +111,15 @@ spec:
           initialDelaySeconds: 20
           periodSeconds: 3
         command: [ "sh" ]
-        # TODO: have to generate sed files
-        #       PERM_NODE_JSON=$(echo $PERM_NODE_TMPL | sed \"s/%QUORUM-NODE01_SERVICE_HOST%/$QUORUM_NODE01_SERVICE_HOST/g\" | sed \"s/%QUORUM-NODE02_SERVICE_HOST%/$QUORUM_NODE02_SERVICE_HOST/g\");
-        # sleep to give constellation some time to start up and discover the other nodes.
-        #  --maxpeers 7
         args:
         - "-cx"
         - "
            apk add curl;
            apk add jq;
 
-           sh $QHOME/permission-nodes/permissioned-update.sh;
+           ln -s $QUORUM_HOME/permission-nodes/permissioned-nodes.json $QUORUM_DATA_DIR/permissioned-nodes.json;
+           ln -s $QUORUM_HOME/permission-nodes/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
+
            rm -r /etc/quorum/qdata/contracts-tmp;
            echo what in this dir;
            ls  $QUORUM_DATA_DIR;
@@ -153,14 +151,14 @@ spec:
            --rpcapi $RPC_APIS \
            --wsapi $RPC_APIS \
            --wsport 8546 \
-           --port 21000 \
+           --port 30303 \
             \
            --password $QUORUM_DATA_DIR/password.txt 2>&1 | tee -a /etc/quorum/qdata/logs/quorum.log;"
         ports:
           - containerPort: 50401
           - containerPort: 8545
           - containerPort: 8546
-          - containerPort: 21000
+          - containerPort: 30303
         
         env:
         - name: PRIVATE_CONFIG
@@ -217,9 +215,7 @@ spec:
           name: quorum-permissioned-config
           items:
           - key: permissioned-nodes.json
-            path: permissioned-nodes.json.tmpl
-          - key: permissioned-update.sh
-            path: permissioned-update.sh
+            path: permissioned-nodes.json
       - name: genesis-config-persistent-storage
         configMap:
           name: genesis-config

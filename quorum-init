@@ -24,16 +24,16 @@ OptionParser.new do |opts|
 end.parse!
 
 # setup the config file to use to generate the quorum resources and kubernetes API resources.
-@CONFIG_FILE = "qubernetes.yaml"
-@OPTIONAL_CONFIG_FILE=ARGV[0]
+@config_file = "qubernetes.yaml"
+@optional_config_file=ARGV[0]
 ARGV.clear
 
-if @OPTIONAL_CONFIG_FILE != nil
-  @CONFIG_FILE = @OPTIONAL_CONFIG_FILE
+if @optional_config_file != nil
+  @config_file = @optional_config_file
 end
-puts "using config file: " + @CONFIG_FILE
+puts "using config file: " + @config_file
 
-@config                = YAML.load_file(@CONFIG_FILE)
+@config                = YAML.load_file(@config_file)
 
 # decide to create new resources
 action = options[:action]
@@ -78,7 +78,8 @@ mkdir -p out/config
 # generate the nodes.yaml
 # file for the set number of
 # nodes.
-./quorum-create-nodes #{@CONFIG_FILE}
+# DEPRECATED
+#./quorum-create-nodes #{@config_file}
 `
 puts ""
 puts "  Generating keys..."
@@ -86,7 +87,7 @@ puts "  Generating keys..."
 # generate the keygen script
 # to generate nodekey, account keys, and
 # quorum transaction manger (tm.pub,tm.key) keys.
-./quorum-keygen #{@CONFIG_FILE}
+./quorum-keygen #{@config_file}
 `
 
 puts "  Generating Quorum configs..."
@@ -94,7 +95,7 @@ puts "  Generating Quorum configs..."
 # generate the appropriate config files:
 #   permissioned-nodes.json
 #   genesis.json
-./quorum-config #{@CONFIG_FILE}
+./quorum-config #{@config_file}
 `
 
 puts ""

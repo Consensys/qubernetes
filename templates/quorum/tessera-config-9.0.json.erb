@@ -24,7 +24,7 @@ end
   {
     "app":"ThirdParty",
     "enabled": true,
-    "serverAddress": "http://<%= @Node_UserIdent %>:<%= @Tm_3Party_Port %>",
+    "serverAddress": "http://%THIS_SERVICE_HOST%:<%= @Tm_3Party_Port %>",
     "cors": {
         "allowedMethods": [
             "GET",
@@ -45,7 +45,7 @@ end
   {
     "app":"P2P",
     "enabled": true,
-    "serverAddress":"http://<%= @Node_UserIdent %>:<%= @Tm_Port %>",
+    "serverAddress":"http://%THIS_SERVICE_HOST%:<%= @Tm_Port %>",
     "sslConfig": {
       "tls": "OFF",
       "generateKeyStoreIfNotExisted": true,

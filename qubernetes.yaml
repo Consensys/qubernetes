@@ -72,9 +72,21 @@ nodes:
         # (tessera|constellation)
         Name: tessera
         Tm_Version: 0.10.4
-# add more nodes if you'd like
+# #add more nodes if you'd like
 #  - Node_UserIdent: quorum-node5
 #    Key_Dir: key5
+#    quorum:
+#      quorum:
+#        # supported: (raft | istanbul)
+#        consensus: istanbul
+#        Quorum_Version: 2.6.0
+#      tm:
+#        # (tessera|constellation)
+#        Name: tessera
+#        Tm_Version: 0.10.4
+#  #add more nodes if you'd like
+#  - Node_UserIdent: quorum-node6
+#    Key_Dir: key6
 #    quorum:
 #      quorum:
 #        # supported: (raft | istanbul)

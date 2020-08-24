@@ -44,7 +44,8 @@ for URL in $ENODE_URLS; do
     # holds all raft nodes added so far on this node.
     echo "$RAFTID,$URL" >> $RAFT_ADD_FILE;
   fi
-
+  ## sleep after adding a node, as there is a race condition where if nodes are added too quickly they get the same raft id.
+  sleep 2
 done
 
 echo | tee -a $RAFT_ADD_ERR $RAFT_ADD_LOG

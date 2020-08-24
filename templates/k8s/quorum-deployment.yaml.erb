@@ -210,7 +210,8 @@ spec:
            NETWORK_ID=<%= @Geth_Network_Id %>
            RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
          <%- if @Consensus == "raft" -%>
-           args=\" --gcmode archive --raft  --raftport <%= @Raft_Port %> \";
+           <%-# --raftdnsenable is need for adding additional nodes with hostnames. Without this node the network will start up fine, but adding nodes with enode host name URL will fail. -%>
+           args=\" --gcmode archive --raft  --raftport <%= @Raft_Port %> --raftdnsenable \";
            RPC_APIS=\"$RPC_APIS,raft\";
          <%- elsif @Consensus == "istanbul" -%>
            args=\" --gcmode archive --istanbul.blockperiod 3 --syncmode full --mine --minerthreads 1 \";

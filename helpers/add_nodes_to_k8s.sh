@@ -2,6 +2,22 @@
 
 #set -x
 
+function usage() {
+  echo " ./add_nodes_to_k8s.sh $CONSENSUS"
+  echo "  example: "
+  echo " ./add_nodes_to_k8s.sh raft"
+  echo " ./add_nodes_to_k8s.sh istanbul"
+  exit 1
+}
+
+if [[ "$#" -lt 1 ]]; then
+  usage
+fi
+
+CONSENSUS=$1
+CONSENSUS=$(echo $CONSENSUS | awk '{ print toupper($0) }')
+echo  $CONSENSUS
+
 if [ "$#" -eq 2 ]; then
    echo "setting namespace to $2"
    NAMESPACE="--namespace=$2"
@@ -11,100 +27,74 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
+QUORUM_POD_PATTERN=quorum
+
 ## apply the new  configs from the out dir
 ## but don't update the genesis file / config.
 for f in out/*
 do
 	if [[ "$f" == *"genesis"* ]]; then
 	   echo "skip reapplying genesis config"
+	## only apply the yaml files, skipping to the configs, to avoid error output
+	elif [[ "$f" == *"yaml"* ||  "$f" == *"yml"* ]]; then
+	  kubectl apply -f $f
   else
-	   kubectl apply -f $f
+	  echo "skipping $f "
 	fi
 done
+
+## Deploy the new new nodes which should be inthe deployments directory. The old nodes should remain unchanged.
+kubectl apply -f out/deployments
+
 echo
 kubectl get pods
 
-printf "${GREEN} Enter pod name to run update on (once pods are running again): ${NC} \n "
-read POD_NAME
+if [[ $CONSENSUS == "RAFT" ]]; then
 
-printf "${GREEN} Redeploy all nodes [Y/N]? \n"
-printf "${GREEN} 'Y' to redeploy all deployments (takes longer, but all nodes will be peered)\n"
-printf "${GREEN} 'N' to only restart the updated node [Y/N]: ${NC} \n"
-read FULL_REDEPLOY
+  ## Run `raft.addNode(enode)` on one connected node.
+  printf "${GREEN} Enter node/pod name of cluster node to run add node on, e.g. node1: ${NC} \n "
+  read POD_NAME
+  POD=$(kubectl get pods $NAMESPACE | grep Running | grep $POD_NAME |  awk '{print $1}')
 
-if [ "$FULL_REDEPLOY" = "Y" ] || [ "$FULL_REDEPLOY" = "y" ]; then
-  #helpers/restart_deployments.sh
-  printf "Redeploying all running pods \n"
-  helpers/redeploy.sh
-  echo "  Waiting for pods to restart."
-  # this might take a while, so for now have the user check when all the pods
-  # are back up and prompt the script to continue.
-  kubectl get pods
-  printf "${GREEN} When all deployments are back up, hit any key: ${NC} \n"
-  printf "${GREEN} in another window run 'kubectl get -w pods' or 'watch kubectl get pods'"
-  read BACK_UP
-else
-  #helpers/restart_deployments.sh $POD_NAME
-  printf "Only redeploying $POD_NAME \n"
-  helpers/redeploy.sh $POD_NAME
-  echo "  Waiting for pod to restart."
-fi
+  PERMISSION_FILE=$(kubectl $NAMESPACE exec $POD -c quorum -- cat /etc/quorum/qdata/dd/permissioned-nodes.json)
+  echo $PERMISSION_FILE
+  CUR_PERMISSION_FILE=$PERMISSION_FILE
 
-POD=""
-while [ -z $POD ]; do
-    ## wait for the cluster to come back up.
-    POD=$(kubectl get pods $NAMESPACE | grep Running | grep $POD_NAME |  awk '{print $1}')
+  CT=0
+  # wait a max of 120 seconds (MAX_ATTEMPTS * sleep 5), if the file doesn't change, try to run the update anyways, as maybe the user too a long time
+  # to enter the node in the previous step.
+  MAX_ATTEMPTS=24
+  while [[ "$PERMISSION_FILE" == "$CUR_PERMISSION_FILE" && "$CT" -lt "$MAX_ATTEMPTS" ]]; do
     sleep 5
-    echo " waiting for 5..."
-done
+    echo  "${CT} out of ${MAX_ATTEMPTS} attempts"
+    ((CT=CT+1))
+    CUR_PERMISSION_FILE=$(kubectl $NAMESPACE exec $POD -c quorum -- cat /etc/quorum/qdata/dd/permissioned-nodes.json)
+    echo "permissioned-nodes.json: $CUR_PERMISSION_FILE"
+  done
 
-echo
-printf " ${GREEN} waiting for quorum on Pod [$POD] to startup:${NC} \n"
+  # try to run raft.addPeer for every node in the permissioned-nodes.json file, nodes that are already in the cluster
+  # will display an error, but this error is harmless.
+  kubectl $NAMESPACE exec $POD -c quorum -- /etc/quorum/qdata/node-management/raft_add_all_permissioned.sh
 
-RES=1;
-while [ ${RES} -ne 0 ]; do
-  kubectl $NAMESPACE exec -it $POD -c quorum -- /geth-helpers/geth-exec.sh "eth.blockNumber"
-  RES=$?
-  echo "RES IS $RES"
-  sleep 2
-done
+elif [[ $CONSENSUS == "ISTANBUL" || $CONSENSUS == "IBFT" ]]; then
 
-printf " ${GREEN} Quorum is back up. Running update on POD [$POD] ${NC} \n"
+  printf "${GREEN} Do you wish to promote all new nodes to be istanbul validators? [Y/N] ${NC} \n"
+  read RESP
+  RESP=$(echo $RESP | awk '{ print toupper($0) }')
 
-CONTINUE=false;
-while ! ${CONTINUE}; do
-  echo " checking if pod is back up.."
-  #kubectl exec $POD -c quorum -- cat /etc/quorum/qdata/dd/^
-  kubectl exec $POD -c quorum -- /etc/quorum/qdata/contracts/raft_add_all_permissioned.sh
-  RES=$?
-  echo "CONTINUE is $CONTINUE"
-  echo "RES is $RES"
-  if [ $RES -eq 0 ]; then
-    CONTINUE=true
-  else
-    sleep 5;
+  if [[ $RESP == "Y" || $RESP == "YES" ]]; then
+    ## TODO: can add a test to see when all the nodes are up and also to query one healthy node to make sure the config map has been updated.
+    echo "Waiting for 30 seconds to allow the configMaps to update"
+    # echo "update permissioned-nodes.json sh $QHOME/permission-nodes/permissioned-update.sh;"
+    echo "Step 2: proposing IBFT validators to the network."
+
+    PODS=$(kubectl get pods $NAMESPACE | grep $QUORUM_POD_PATTERN | grep Running | awk '{print $1}')
+    # Add all nodes in $QHOME/istanbul-validator-config.toml/istanbul-validator-config.toml as validators.
+    #  kubectl exec $POD -c quorum -- cat /etc/quorum/qdata/istanbul-validator-config.toml/istanbul-validator-config.toml
+    for POD in $PODS; do
+      kubectl $NAMESPACE exec $POD -c quorum -- sh /etc/quorum/qdata/node-management/ibft_propose_all.sh
+    done
   fi
-done
 
-RES=1
-while [ ${RES} -ne 0 ]; do
-  echo "trying to add existing .."
-  helpers/raft_add_existing_update.sh $POD
-  RES=$?
-  echo "RES IS $RES"
-done
-echo "added existing $FAILED"
-
-
-echo
-printf " ${GREEN} Enter path to update deployment yaml \n"
-printf " or <enter> to run all updates in the default \n"
-printf " out/deployments/updates/ directory: ${NC} \n"
-read PATH_TO_DEPLOYMENT_YAML
-
-if [ -z $PATH_TO_DEPLOYMENT_YAML ]; then
-  kubectl apply -f out/deployments/updates/
-else
-  kubectl apply -f $PATH_TO_DEPLOYMENT_YAML
 fi
 

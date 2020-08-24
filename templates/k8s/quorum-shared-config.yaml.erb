@@ -102,12 +102,12 @@ metadata:
     name: node-management
 data:
   ibft_propose.sh: |-
-<%- File.readlines("helpers/ibft_propose.sh").each do |line| -%>
+<%- File.readlines("helpers/container/ibft_propose.sh").each do |line| -%>
     <%= line -%>
 <% end -%>
 
   ibft_propose_all.sh: |-
-<%- File.readlines("helpers/ibft_propose_all.sh").each do |line| -%>
+<%- File.readlines("helpers/container/ibft_propose_all.sh").each do |line| -%>
     <%= line -%>
 <% end -%>
 

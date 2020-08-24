@@ -67,18 +67,27 @@ data:
 <%- File.readlines("contracts/public_contract.js").each do |line| -%>
     <%= line -%>
 <% end -%>
-## Raft management helpers: adding nodes
-  raft_add_node.sh: |-
-<%- File.readlines("helpers/raft_add_node.sh").each do |line| -%>
-    <%= line -%>
-<% end -%>
+
+
+
+## Addition config used to manage the nodes lifecycle, e.g. add /remove nodes.
+<%- if @config["genesis"]["consensus"] == "raft" -%>
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-management
+    <%= @Namespace %>
+  labels:
+    app: qubernetes
+    name: node-management
+data:
+  ## Raft management helpers: adding nodes
   raft_add_all_permissioned.sh: |-
-<%- File.readlines("helpers/raft_add_all_permissioned.sh").each do |line| -%>
-    <%= line -%>
-<% end -%>
-
-
-
+      <%- File.readlines("helpers/container/raft_add_all_permissioned.sh").each do |line| -%>
+      <%= line -%>
+    <% end -%>
+<%- end -%>
 ## include ibft helpers as we don't know which nodes will be running which consensus.
 <%- if @config["genesis"]["consensus"] == "istanbul" -%>
 

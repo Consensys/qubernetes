@@ -6,10 +6,10 @@ set -x
 # and add any new entry into the permissioned set.
 PERMISSION_FILE=$QHOME/dd/permissioned-nodes.json
 ENODE_URLS=$(cat $PERMISSION_FILE | jq '.[]')
-RAFT_ADD_FILE=$QHOME/contracts/raft_add_$(date +%m-%d-%Y)
+RAFT_ADD_FILE=$QHOME/node-management/raft_add_$(date +%m-%d-%Y)
 RAFT_ADD_LOG=$RAFT_ADD_FILE.log
 RAFT_ADD_ERR=$RAFT_ADD_FILE.err
-RAFT_ADD_FILE=$QHOME/contracts/raft_added.csv
+RAFT_ADD_FILE=$QHOME/node-management/raft_added.csv
 
 touch $RAFT_ADD_LOG
 touch $RAFT_ADD_ERR

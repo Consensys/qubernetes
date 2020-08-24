@@ -29,13 +29,13 @@ printf "${GREEN} Enter node/pod name of cluster node to run add node on, e.g. no
 read POD_NAME
 
 ## TODO: could test the permissioned-nodes.sh to see when it changes.
-echo "Giving configs 30 seconds to sync up."
-sleep 30
+echo "Giving configs maps 40 seconds to sync up."
+sleep 40
 
 POD=$(kubectl get pods $NAMESPACE | grep Running | grep $POD_NAME |  awk '{print $1}')
 kubectl $NAMESPACE exec $POD -c quorum -- cat /etc/quorum/qdata/dd/permissioned-nodes.json
 echo " done permission nodes"
 echo "-----------------------"
 echo
-kubectl $NAMESPACE exec $POD -c quorum -- /etc/quorum/qdata/contracts/raft_add_all_permissioned.sh
+kubectl $NAMESPACE exec $POD -c quorum -- /etc/quorum/qdata/node-management/raft_add_all_permissioned.sh
 

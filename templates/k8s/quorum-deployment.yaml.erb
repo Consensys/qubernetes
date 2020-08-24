@@ -56,8 +56,6 @@ spec:
            fi;
            cp -r <%= @Node_DataDir %>/contracts-tmp <%= @Node_DataDir %>/contracts;
            chmod 755  <%= @Node_DataDir %>/contracts/runscript.sh;
-           chmod 755  <%= @Node_DataDir %>/contracts/raft_add_all_permissioned.sh;
-           chmod 755  <%= @Node_DataDir %>/contracts/raft_add_node.sh;
           "
         env:
           - name: QUORUM_DATA_DIR
@@ -305,6 +303,11 @@ spec:
           mountPath: <%= @Node_DataDir%>/node-management/ibft_propose_all.sh
           subPath: ibft_propose_all.sh
         <%- end -%>
+        <%- if @Consensus == "raft" -%>
+        - name: node-management
+          mountPath: <%= @Node_DataDir%>/node-management/raft_add_all_permissioned.sh
+          subPath: raft_add_all_permissioned.sh
+        <%- end -%>
       volumes:
       - name: quorum-permissioned-config
         configMap:
@@ -366,7 +369,7 @@ spec:
             - key: geth-exec.sh
               path: geth-exec.sh
           defaultMode: 0777
-      <% if @Consensus == "istanbul" %>
+      <%- if @Consensus == "istanbul" -%>
       - name: istanbul-validator-config
         configMap:
           name: istanbul-validator-config.toml
@@ -379,7 +382,16 @@ spec:
            - key: ibft_propose_all.sh
              path: ibft_propose_all.sh
            defaultMode: 0777
-      <% end %>
+      <%- end -%>
+      <%- if @Consensus == "raft" -%>
+      - name: node-management
+        configMap:
+          name: node-management
+          items:
+            - key: raft_add_all_permissioned.sh
+              path: raft_add_all_permissioned.sh
+          defaultMode: 0777
+       <%- end -%>
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
       - name: quorum-persistent-storage
         persistentVolumeClaim:

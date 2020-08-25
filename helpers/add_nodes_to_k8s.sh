@@ -83,14 +83,35 @@ elif [[ $CONSENSUS == "ISTANBUL" || $CONSENSUS == "IBFT" ]]; then
   RESP=$(echo $RESP | awk '{ print toupper($0) }')
 
   if [[ $RESP == "Y" || $RESP == "YES" ]]; then
-    ## TODO: can add a test to see when all the nodes are up and also to query one healthy node to make sure the config map has been updated.
-    echo "Waiting for 30 seconds to allow the configMaps to update"
-    # echo "update permissioned-nodes.json sh $QHOME/permission-nodes/permissioned-update.sh;"
-    echo "Step 2: proposing IBFT validators to the network."
 
+    # Obtain any running quorum pod and watch the istanbul-validator-config.toml. This file will be updated with the new nodes
+    # via the ConfigMap in K8s. Once that file is updated, try add all the nodes in that file as validators.
+    # note: for now we are adding all nodes as validators to keep it simple, however we might want to add the new nodes,
+    # and make this more fine grained.
+    PODS=$(kubectl get pods $NAMESPACE | grep $QUORUM_POD_PATTERN | grep Running | grep "2/2" | awk '{print $1}')
+    # Get first element in new line list
+    POD=$(echo "$PODS" | head -1)
+    echo "Waiting for the configMaps to update"
+    ISTANBUL_TOML=$(kubectl $NAMESPACE exec $POD -c quorum -- cat /etc/quorum/qdata/istanbul-validator-config.toml/istanbul-validator-config.toml)
+    echo $ISTANBUL_TOML
+    CUR_ISTANBUL_TOML=$ISTANBUL_TOML
+    CT=0
+    # wait a max of 120 seconds (MAX_ATTEMPTS * sleep 5), if the file doesn't change, try to run the update anyways, as maybe the user too a long time
+    # to enter the node in the previous step.
+    MAX_ATTEMPTS=24
+    while [[ "$ISTANBUL_TOML" == "$CUR_ISTANBUL_TOML" && "$CT" -lt "$MAX_ATTEMPTS" ]]; do
+      sleep 5
+      echo  "${CT} out of ${MAX_ATTEMPTS} attempts"
+      ((CT=CT+1))
+      CUR_ISTANBUL_TOML=$(kubectl $NAMESPACE exec $POD -c quorum -- cat /etc/quorum/qdata/istanbul-validator-config.toml/istanbul-validator-config.toml)
+      echo "istanbul-validator-config.toml: $CUR_ISTANBUL_TOML"
+    done
+
+    echo "Step 2: proposing IBFT validators to the network."
+    sleep 20
+    # Propose all validators on all nodes
     PODS=$(kubectl get pods $NAMESPACE | grep $QUORUM_POD_PATTERN | grep Running | awk '{print $1}')
     # Add all nodes in $QHOME/istanbul-validator-config.toml/istanbul-validator-config.toml as validators.
-    #  kubectl exec $POD -c quorum -- cat /etc/quorum/qdata/istanbul-validator-config.toml/istanbul-validator-config.toml
     for POD in $PODS; do
       kubectl $NAMESPACE exec $POD -c quorum -- sh /etc/quorum/qdata/node-management/ibft_propose_all.sh
     done

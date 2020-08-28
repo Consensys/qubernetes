@@ -6,10 +6,10 @@ set -x
 # and add any new entry into the permissioned set.
 PERMISSION_FILE=$QHOME/dd/permissioned-nodes.json
 ENODE_URLS=$(cat $PERMISSION_FILE | jq '.[]')
-RAFT_ADD_FILE=$QHOME/contracts/raft_add_$(date +%m-%d-%Y)
+RAFT_ADD_FILE=$QHOME/node-management/raft_add_$(date +%m-%d-%Y)
 RAFT_ADD_LOG=$RAFT_ADD_FILE.log
 RAFT_ADD_ERR=$RAFT_ADD_FILE.err
-RAFT_ADD_FILE=$QHOME/contracts/raft_added.csv
+RAFT_ADD_FILE=$QHOME/node-management/raft_added.csv
 
 touch $RAFT_ADD_LOG
 touch $RAFT_ADD_ERR
@@ -44,7 +44,8 @@ for URL in $ENODE_URLS; do
     # holds all raft nodes added so far on this node.
     echo "$RAFTID,$URL" >> $RAFT_ADD_FILE;
   fi
-
+  ## sleep after adding a node, as there is a race condition where if nodes are added too quickly they get the same raft id.
+  sleep 2
 done
 
 echo | tee -a $RAFT_ADD_ERR $RAFT_ADD_LOG

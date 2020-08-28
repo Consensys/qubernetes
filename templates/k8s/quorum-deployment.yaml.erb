@@ -56,8 +56,6 @@ spec:
            fi;
            cp -r <%= @Node_DataDir %>/contracts-tmp <%= @Node_DataDir %>/contracts;
            chmod 755  <%= @Node_DataDir %>/contracts/runscript.sh;
-           chmod 755  <%= @Node_DataDir %>/contracts/raft_add_all_permissioned.sh;
-           chmod 755  <%= @Node_DataDir %>/contracts/raft_add_node.sh;
           "
         env:
           - name: QUORUM_DATA_DIR
@@ -210,7 +208,8 @@ spec:
            NETWORK_ID=<%= @Geth_Network_Id %>
            RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
          <%- if @Consensus == "raft" -%>
-           args=\" --gcmode archive --raft  --raftport <%= @Raft_Port %> \";
+           <%-# --raftdnsenable is need for adding additional nodes with hostnames. Without this node the network will start up fine, but adding nodes with enode host name URL will fail. -%>
+           args=\" --gcmode archive --raft  --raftport <%= @Raft_Port %> --raftdnsenable \";
            RPC_APIS=\"$RPC_APIS,raft\";
          <%- elsif @Consensus == "istanbul" -%>
            args=\" --gcmode archive --istanbul.blockperiod 3 --syncmode full --mine --minerthreads 1 \";
@@ -304,6 +303,11 @@ spec:
           mountPath: <%= @Node_DataDir%>/node-management/ibft_propose_all.sh
           subPath: ibft_propose_all.sh
         <%- end -%>
+        <%- if @Consensus == "raft" -%>
+        - name: node-management
+          mountPath: <%= @Node_DataDir%>/node-management/raft_add_all_permissioned.sh
+          subPath: raft_add_all_permissioned.sh
+        <%- end -%>
       volumes:
       - name: quorum-permissioned-config
         configMap:
@@ -365,7 +369,7 @@ spec:
             - key: geth-exec.sh
               path: geth-exec.sh
           defaultMode: 0777
-      <% if @Consensus == "istanbul" %>
+      <%- if @Consensus == "istanbul" -%>
       - name: istanbul-validator-config
         configMap:
           name: istanbul-validator-config.toml
@@ -378,7 +382,16 @@ spec:
            - key: ibft_propose_all.sh
              path: ibft_propose_all.sh
            defaultMode: 0777
-      <% end %>
+      <%- end -%>
+      <%- if @Consensus == "raft" -%>
+      - name: node-management
+        configMap:
+          name: node-management
+          items:
+            - key: raft_add_all_permissioned.sh
+              path: raft_add_all_permissioned.sh
+          defaultMode: 0777
+       <%- end -%>
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
       - name: quorum-persistent-storage
         persistentVolumeClaim:

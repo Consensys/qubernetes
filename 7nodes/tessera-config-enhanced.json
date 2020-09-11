@@ -16,7 +16,7 @@
     "serverSocket":{
       "type":"INET",
       "port": 9080,
-      "hostName": "http://quorum-node7"
+      "hostName": "http://%THIS_SERVICE_HOST%"
     },
     "communicationType" : "REST"
   },
@@ -35,7 +35,7 @@
     "serverSocket":{
       "type":"INET",
       "port": 9001,
-      "hostName": "http://quorum-node7",
+      "hostName": "http://%THIS_SERVICE_HOST%",
       "bindingAddress": "http://0.0.0.0:9001"
     },
     "sslConfig": {

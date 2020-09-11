@@ -25,8 +25,6 @@ end.parse!
 
 @action_flag=options[:action]
 
-puts "using action flag : " + @action_flag
-
 # setup the config file to use to generate the quorum resources and kubernetes API resources.
 @config_file = "qubernetes.yaml"
 @optional_config_file=ARGV[0]

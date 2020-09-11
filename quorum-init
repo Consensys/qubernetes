@@ -68,7 +68,7 @@ end
 
 # delete out directory if creating new
 if createNew
-    `rm -r out`
+    `rm -r -f out`
 end
 
 `
@@ -95,7 +95,7 @@ puts "  Generating Quorum configs..."
 # generate the appropriate config files:
 #   permissioned-nodes.json
 #   genesis.json
-./quorum-config #{@config_file}
+./quorum-config #{@config_file} --action=#{action}
 `
 
 puts ""

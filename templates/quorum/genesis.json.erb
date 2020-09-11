@@ -157,32 +157,7 @@ end
    # is then given as input to the istanbul tool, which will calculate the necessary extradata field.
   %>
   <%-
-  @IstanbulConfig = @Key_Dir_Base + "/istanbul-validator-config.toml"
-  File.open(@IstanbulConfig, "w") do |f|
-    f.puts ("vanity = \"0x00\" \nvalidators = [")
-  end
-
- @nodes.each do |node|
-   set_node_template_vars(node)
-   #puts(@Key_Dir_Base + "/" + @Node_Key_Dir + "/nodekey")
-   File.open(@Key_Dir_Base + "/" + @Node_Key_Dir + "/nodekey", "r") do |f|
-    f.each_line do |nodekey|
-      nodeAcct=`ethkey generate tmpkey.json --passwordfile #{@Key_Dir_Base}/#{@Node_Key_Dir}/password.txt --privatekey #{@Key_Dir_Base}/#{@Node_Key_Dir}/nodekey | sed 's/Address: //g' | sed 's/}//g'`
-      `rm tmpkey.json`
-
-      puts("node account for Istanbul is: " + nodeAcct)
-
-      nodeAcct=nodeAcct.strip
-      File.open(@IstanbulConfig, "a") do |f|
-        f.puts "\"" + nodeAcct + "\","
-      end
-    end
-   end
-  end
-  File.open(@IstanbulConfig, "a") do |f|
-     f.puts "]"
-  end
-   extraData=`istanbul extra encode --config #{@IstanbulConfig} | awk '{print $4}'`
+   extraData=`istanbul extra encode --config #{@Istanbul_Validator_Config} | awk '{print $4}'`
    extraData=extraData.strip
    puts("Generated istanbul \"extraData\"=\"" + extraData + "\"")
    -%>

@@ -2,6 +2,26 @@
 
 require "yaml"
 require "erb"
+require 'optparse'
+
+# set up flag options
+options = {action: 'ask'}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: ./quorum-config [options]"
+
+  opts.on("-a", "--action [ACTION]", String,
+          "create: generate all new resources.
+                                     update: do not regenerate the genesis.json.") do |a|
+    options[:action] = a
+  end
+
+  opts.on("-h", "--help", "prints this help.") do
+    puts opts
+    exit
+  end
+
+end.parse!
 
 def set_node_template_vars(values)
   @Node_UserIdent        = values["Node_UserIdent"]
@@ -29,6 +49,13 @@ if @optional_config_file != nil
 end
 puts "using config file: " + @config_file
 
+# decide to create new resources
+action = options[:action]
+generateGenesis=true
+if (action == 'update')
+  generateGenesis=false
+end
+
 @config     = YAML.load_file(@config_file)
 @nodes      = @config["nodes"] #YAML.load_file("nodes.yaml")["nodes"]
 
@@ -51,6 +78,8 @@ end
 if @config.dig("config","Genesis_File")
   @Genesis_File = @config["config"]["Genesis_File"]
 end
+
+@Istanbul_Validator_Config = @Key_Dir_Base + "/istanbul-validator-config.toml"
 
 @Chain_Id=1101
 if @config.dig("config","Chain_Id")
@@ -96,11 +125,18 @@ end
 @base_template_path = "templates/quorum"
 `mkdir -p out/config`
 
+
+puts(@Istanbul_Validator_Config)
+File.open(@Istanbul_Validator_Config , "w") do |f|
+  f.puts (ERB.new(File.read(@base_template_path + "/istanbul-validator.toml.erb"), nil, "-").result)
+end
+
 # create genesis files with all discovered keystore accounts pre alloc with funds.
-puts(@Genesis_File)
-File.open(@Genesis_File, "w") do |f|
-  #f.puts (ERB.new(File.read(@base_template_path + "/genesis.json.erb"), nil, "-").result(binding))
-  f.puts (ERB.new(File.read(@base_template_path + "/genesis.json.erb"), nil, "-").result)
+if generateGenesis
+  puts(@Genesis_File)
+  File.open(@Genesis_File, "w") do |f|
+    f.puts (ERB.new(File.read(@base_template_path + "/genesis.json.erb"), nil, "-").result)
+  end
 end
 
 # create permission nodes file containing all the nodes.

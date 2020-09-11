@@ -13,7 +13,7 @@
   {
     "app":"ThirdParty",
     "enabled": true,
-    "serverAddress": "http://quorum-node7:9080",
+    "serverAddress": "http://%THIS_SERVICE_HOST%:9080",
     "cors": {
         "allowedMethods": [
             "GET",
@@ -34,7 +34,7 @@
   {
     "app":"P2P",
     "enabled": true,
-    "serverAddress":"http://quorum-node7:9001",
+    "serverAddress":"http://%THIS_SERVICE_HOST%:9001",
     "sslConfig": {
       "tls": "OFF",
       "generateKeyStoreIfNotExisted": true,

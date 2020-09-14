@@ -7,7 +7,7 @@ network creation / deletion, etc.
 
 ### Install
 ```
-> go get https://github.com/ConsenSys/qubernetes/qctl 
+> GO111MODULE=on go get github.com/ConsenSys/qubernetes/qctl 
 ```
 
 ```
@@ -84,7 +84,7 @@ This requires a running K8s network, either local (kind, minikube, docker on des
 or other managed K8s runtime.
 
 ```
-$>  export QUBE_K8S_DIR=/Users/libby/Workspace.Quorum/qubernetes-priv/qctl/out
+$> export QUBE_K8S_DIR=/Users/libby/Workspace.Quorum/qubernetes-priv/qctl/out
 $> qctl create network
 
 $> qctl delete network
@@ -98,13 +98,16 @@ $> qctl delete network
 $> qctl ls config
 $> qctl ls config --long
 
+$> qctl ls nodes 
+$> qctl ls nodes --all
+
 $> qctl add node --name=quorum-node5
 
 ## Generate the additional config
 $> qctl generate network --update
 
 ## Deploy the new node to K8s
-$> qctl  network
+$> qctl deploy network
 ```
 
 ## Interacting With A Running Quorum Network

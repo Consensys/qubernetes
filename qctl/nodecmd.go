@@ -17,7 +17,7 @@ var (
 		Usage:     "connect to nodes / pods",
 		ArgsUsage: "[pod_substring] [quorum | tessera | constellation]",
 		Action: func(c *cli.Context) error {
-			if c.Args().Len() < 2 {
+			if c.Args().Len() < 1 {
 				c.App.Run([]string{"qctl", "help", "connect", "node"})
 				return cli.Exit("wrong number of arguments", 2)
 			}

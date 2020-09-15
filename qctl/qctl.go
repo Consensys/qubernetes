@@ -46,8 +46,9 @@ func main() {
 			},
 		},
 		{
-			Name:  "delete",
-			Usage: "options for deleting networks / resources",
+			Name:    "delete",
+			Aliases: []string{"destroy"},
+			Usage:   "options for deleting networks / resources",
 			Subcommands: []*cli.Command{
 				&networkDeleteCommand,
 			},

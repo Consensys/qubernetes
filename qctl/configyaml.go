@@ -24,8 +24,9 @@ type QuorumEntry struct {
 }
 
 type Quorum struct {
-	Consensus     string `yaml:"consensus"`
-	QuorumVersion string `yaml:"Quorum_Version"`
+	Consensus      string `yaml:"consensus"`
+	QuorumVersion  string `yaml:"Quorum_Version"`
+	DockerRepoFull string `yaml:"Docker_Repo_Full"` //quorum-local:latest
 }
 
 type Tm struct {

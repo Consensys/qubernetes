@@ -75,6 +75,10 @@ var (
 				Name:  "tm",
 				Usage: "Transaction Manger to user: tessera | constellation.",
 			},
+			&cli.StringFlag{
+				Name:  "qimagefull",
+				Usage: "The full repo + image name of the quorum image.",
+			},
 		},
 		Action: func(c *cli.Context) error {
 			// defaults should be obtained from the config
@@ -87,6 +91,7 @@ var (
 			quorumVersion := c.String("qversion")
 			tmVersion := c.String("tmversion")
 			txManger := c.String("tm")
+			quorumImageFull := c.String("qimagefull")
 
 			configFile := c.String("config")
 
@@ -151,11 +156,11 @@ var (
 			fmt.Println(fmt.Sprintf("Adding node [%s] key dir [%s]", name, keyDir))
 			currentNum := len(configFileYaml.Nodes)
 			fmt.Println(fmt.Sprintf("config currently has %d nodes", currentNum))
-			nodeEntry := createNodeEntry(name, keyDir, consensus, quorumVersion, txManger, tmVersion)
+			nodeEntry := createNodeEntry(name, keyDir, consensus, quorumVersion, txManger, tmVersion, quorumImageFull)
 			configFileYaml.Nodes = append(configFileYaml.Nodes, nodeEntry)
 			fmt.Println()
 			green.Println("Adding Node: ")
-			displayNode("", nodeEntry, true, true, true, true, true, true, false)
+			displayNode("", nodeEntry, true, true, true, true, true, true, false, true)
 			// write file back
 			WriteYamlConfig(configFileYaml, configFile)
 			return nil
@@ -222,6 +227,7 @@ var (
 			isTmVersion := c.Bool("tmversion")
 			isKeyDir := c.Bool("keydir")
 			isEnodeUrl := c.Bool("enodeurl")
+			isQuorumImageFull := c.Bool("qimagefull")
 			isAll := c.Bool("all")
 			k8sdir := c.String("k8sdir")
 			// set all values to true
@@ -234,6 +240,7 @@ var (
 				if k8sdir != "" {
 					isEnodeUrl = true
 				}
+				isQuorumImageFull = true
 			}
 			configFile := c.String("config")
 
@@ -264,6 +271,12 @@ var (
 			fmt.Println()
 			fmt.Println("  " + configFile)
 			fmt.Println()
+			if k8sdir != "" {
+				green.Println("  K8sdir set to:")
+				fmt.Println()
+				fmt.Println("  " + k8sdir)
+				fmt.Println()
+			}
 			fmt.Println("*****************************************************************************************")
 			fmt.Println()
 			// the config file must exist or this is an error.
@@ -284,7 +297,7 @@ var (
 			currentNum := len(configFileYaml.Nodes)
 			fmt.Printf("config currently has %d nodes \n", currentNum)
 			for i := 0; i < len(configFileYaml.Nodes); i++ {
-				displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl)
+				displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull)
 			}
 
 			return nil
@@ -292,10 +305,11 @@ var (
 	}
 )
 
-func createNodeEntry(nodeName, nodeKeyDir, consensus, quorumVersion, txManger, tmVersion string) NodeEntry {
+func createNodeEntry(nodeName, nodeKeyDir, consensus, quorumVersion, txManger, tmVersion, quorumImageFull string) NodeEntry {
 	quorum := Quorum{
-		Consensus:     consensus,
-		QuorumVersion: quorumVersion,
+		Consensus:      consensus,
+		QuorumVersion:  quorumVersion,
+		DockerRepoFull: quorumImageFull,
 	}
 	tm := Tm{
 		Name:      txManger,
@@ -334,7 +348,7 @@ func getEnodeId(nodeName, qubeK8sDir string) string {
 	return enodeUrl
 }
 
-func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, quorumVersion, txManger, tmVersion, isEnodeUrl bool) {
+func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, quorumVersion, txManger, tmVersion, isEnodeUrl, isQuorumImageFull bool) {
 	fmt.Println()
 	green.Println(fmt.Sprintf("     [%s]", nodeEntry.NodeUserIdent))
 	if keydir {
@@ -351,6 +365,9 @@ func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, qu
 	}
 	if tmVersion {
 		green.Println(fmt.Sprintf("     [%s] tmVersion: [%s]", nodeEntry.NodeUserIdent, nodeEntry.QuorumEntry.Tm.TmVersion))
+	}
+	if isQuorumImageFull {
+		green.Println(fmt.Sprintf("     [%s] quorumImage: [%s]", nodeEntry.NodeUserIdent, nodeEntry.QuorumEntry.Quorum.DockerRepoFull))
 	}
 	if isEnodeUrl {
 		if k8sdir == "" {

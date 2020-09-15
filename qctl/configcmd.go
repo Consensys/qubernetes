@@ -48,6 +48,10 @@ var (
 				Usage: "The chain id for the network.",
 				Value: DefaultChainId,
 			},
+			&cli.StringFlag{
+				Name:  "qimagefull",
+				Usage: "The full repo + image name of the quorum image.",
+			},
 		},
 
 		Action: func(c *cli.Context) error {
@@ -65,6 +69,7 @@ var (
 			transacationManger := c.String("tm")
 			consensus := c.String("consensus")
 			chainId := c.String("chainid")
+			qimagefull := c.String("qimagefull")
 
 			// no configuration file provided, check for flags and use the default.
 			configFile = pwd + "/qubernetes.generate.yaml"
@@ -73,8 +78,9 @@ var (
 
 			for i := 1; i <= numberNodes; i++ {
 				quorum := Quorum{
-					Consensus:     consensus,
-					QuorumVersion: quorumVersion,
+					Consensus:      consensus,
+					QuorumVersion:  quorumVersion,
+					DockerRepoFull: qimagefull,
 				}
 				tm := Tm{
 					Name:      transacationManger,

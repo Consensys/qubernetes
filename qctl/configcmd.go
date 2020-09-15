@@ -36,11 +36,11 @@ var (
 				Name:    "tmversion",
 				Aliases: []string{"tmv"},
 				Value:   DefaultTesseraVersion,
-				Usage:   "Transaction Manger Version.",
+				Usage:   "transaction Manger Version.",
 			},
 			&cli.StringFlag{
 				Name:  "tm",
-				Usage: "Transaction Manger to user: tessera | constellation.",
+				Usage: "transaction Manger to user: tessera | constellation.",
 				Value: DefaultTmName,
 			},
 			&cli.StringFlag{
@@ -66,7 +66,7 @@ var (
 			numberNodes := c.Int("num")
 			quorumVersion := c.String("qversion")
 			tmVersion := c.String("tmversion")
-			transacationManger := c.String("tm")
+			transactionManger := c.String("tm")
 			consensus := c.String("consensus")
 			chainId := c.String("chainid")
 			qimagefull := c.String("qimagefull")
@@ -83,7 +83,7 @@ var (
 					DockerRepoFull: qimagefull,
 				}
 				tm := Tm{
-					Name:      transacationManger,
+					Name:      transactionManger,
 					TmVersion: tmVersion,
 				}
 				quorumEntry := QuorumEntry{
@@ -132,7 +132,7 @@ var (
 			green.Println(fmt.Sprintf("  consensus = %s", consensus))
 			green.Println(fmt.Sprintf("  quorumVersion = %s", quorumVersion))
 			green.Println(fmt.Sprintf("  tmVersion = %s", tmVersion))
-			green.Println(fmt.Sprintf("  transacationManger = %s", transacationManger))
+			green.Println(fmt.Sprintf("  transactionnManger = %s", transactionManger))
 			green.Println(fmt.Sprintf("  chainId = %s", chainId))
 			fmt.Println()
 			fmt.Println("To set this as your default config for future commands, run: ")
@@ -248,7 +248,7 @@ func displayConfigLong(configFileYaml QConfig) {
 	green.Println(fmt.Sprintf("  quorumVersion = %s", configFileYaml.Genesis.QuorumVersion))
 	for i := 0; i < len(configFileYaml.Nodes); i++ {
 		fmt.Println()
-		green.Println(fmt.Sprintf("     [%s] transacationManger = %s", configFileYaml.Nodes[i].NodeUserIdent, configFileYaml.Nodes[i].QuorumEntry.Tm.Name))
+		green.Println(fmt.Sprintf("     [%s] transactionManger = %s", configFileYaml.Nodes[i].NodeUserIdent, configFileYaml.Nodes[i].QuorumEntry.Tm.Name))
 		green.Println(fmt.Sprintf("     [%s] tmVersion = %s", configFileYaml.Nodes[i].NodeUserIdent, configFileYaml.Nodes[i].QuorumEntry.Tm.TmVersion))
 		green.Println(fmt.Sprintf("     [%s] quorumVersion = %s", configFileYaml.Nodes[i].NodeUserIdent, configFileYaml.Nodes[i].QuorumEntry.Quorum.QuorumVersion))
 		green.Println(fmt.Sprintf("     [%s] consensus = %s", configFileYaml.Nodes[i].NodeUserIdent, configFileYaml.Nodes[i].QuorumEntry.Quorum.Consensus))
@@ -262,7 +262,7 @@ func displayConfigShort(configFileYaml QConfig) {
 	green.Println(fmt.Sprintf("  consensus = %s", configFileYaml.Genesis.Consensus))
 	green.Println(fmt.Sprintf("  quorumVersion = %s", configFileYaml.Genesis.QuorumVersion))
 	fmt.Println()
-	green.Println(fmt.Sprintf("     [%s] transacationManger = %s", configFileYaml.Nodes[0].NodeUserIdent, configFileYaml.Nodes[0].QuorumEntry.Tm.Name))
+	green.Println(fmt.Sprintf("     [%s] transactionnManger = %s", configFileYaml.Nodes[0].NodeUserIdent, configFileYaml.Nodes[0].QuorumEntry.Tm.Name))
 	green.Println(fmt.Sprintf("     [%s] tmVersion = %s", configFileYaml.Nodes[0].NodeUserIdent, configFileYaml.Nodes[0].QuorumEntry.Tm.TmVersion))
 	green.Println(fmt.Sprintf("     [%s] quorumVersion = %s", configFileYaml.Nodes[0].NodeUserIdent, configFileYaml.Nodes[0].QuorumEntry.Quorum.QuorumVersion))
 	green.Println(fmt.Sprintf("     [%s] consensus = %s", configFileYaml.Nodes[0].NodeUserIdent, configFileYaml.Nodes[0].QuorumEntry.Quorum.Consensus))

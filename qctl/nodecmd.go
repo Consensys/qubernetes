@@ -69,11 +69,11 @@ var (
 			&cli.StringFlag{
 				Name:    "tmversion",
 				Aliases: []string{"tmv"},
-				Usage:   "Transaction Manger Version.",
+				Usage:   "Transaction Manager Version.",
 			},
 			&cli.StringFlag{
 				Name:  "tm",
-				Usage: "Transaction Manger to user: tessera | constellation.",
+				Usage: "Transaction Manager to user: tessera | constellation.",
 			},
 			&cli.StringFlag{
 				Name:  "qimagefull",

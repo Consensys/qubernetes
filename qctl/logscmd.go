@@ -30,13 +30,16 @@ var (
 			},
 		},
 		Action: func(c *cli.Context) error {
-			if c.Args().Len() < 2 {
+			if c.Args().Len() < 1 {
 				c.App.Run([]string{"qctl", "help", "logs"})
 				return cli.Exit("wrong number of arguments", 2)
 			}
 			nodeName := c.Args().First()
 			// quorum, tessera or constellation
 			container := c.Args().Get(1)
+			if container == "" {
+				container = "quorum"
+			}
 			follow := c.Bool("follow")
 			namespace := c.String("namespace")
 			//fmt.Println("namespace", namespace)

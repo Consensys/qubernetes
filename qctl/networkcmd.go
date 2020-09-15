@@ -133,10 +133,13 @@ var (
 			if err != nil {
 				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
 			}
-			//log.Printf("create network from configfile [%v] pwd [%v]", configFile, pwd)
-			//docker run --rm -it -v /Users/libby/Workspace.Quorum/qubernetes-priv/qctl/:/qubernetes/qubes.yaml -v /Users/libby/Workspace.Quorum/qubernetes-priv/qctl/out:/qubernetes/out quorumengineering/qubernetes:0.1.0.2 ./qube-init qubes.yaml
-			//cmd := exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", pwd+"/out:/qubernetes/out", "quorumengineering/qubernetes:"+qubernetesVersion, "./qube-init", "qubes.yaml")
-			// if the flags --update or --create are not set, prompt the user if the config already exists.
+
+			// if the quberentes version is set to latest, try to pull it from the remote, as it may have changed upstream.
+			if qubernetesVersion == "latest" {
+				pullContainerCmd := exec.Command("docker", "pull", "quorumengineering/qubernetes:latest")
+				runCmd(pullContainerCmd)
+			}
+
 			cmd := exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", pwd+"/out:/qubernetes/out", "quorumengineering/qubernetes:"+qubernetesVersion, "./qube-init", "qubes.yaml")
 			if update {
 				cmd = exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", pwd+"/out:/qubernetes/out", "quorumengineering/qubernetes:"+qubernetesVersion, "./qube-init", "--action=update", "qubes.yaml")
@@ -159,7 +162,6 @@ var (
 			fmt.Println()
 			fmt.Println("  " + configFile)
 			fmt.Println()
-			//fmt.Println("The Quorum network values are:")
 			fmt.Println()
 			// tell the defaults
 			fmt.Println("  Network Configuration: ")

@@ -46,7 +46,12 @@ spec:
       <%- end -%>
       initContainers:
       - name: quorum-genesis-init-container
+        <%- if @Quorum_Docker_Repo_Full != "" -%>
+        image: <%= @Quorum_Docker_Repo_Full %>
+        imagePullPolicy: Never
+        <%- else -%>
         image: <%= @Quorum_Docker_Repo %>/quorum:<%= @Quorum_Version %>
+        <%- end -%>
         command: [ "sh" ]
         args:
         - "-cx"
@@ -168,7 +173,12 @@ spec:
           subPath: tessera-config-9.0.json.tmpl
         <%- end -%>
       - name: quorum
+        <%- if @Quorum_Docker_Repo_Full != "" -%>
+        image: <%= @Quorum_Docker_Repo_Full %>
+        imagePullPolicy: Never
+        <%- else -%>
         image: <%= @Quorum_Docker_Repo %>/quorum:<%= @Quorum_Version %>
+        <%- end -%>
         readinessProbe:
           exec:
             command:

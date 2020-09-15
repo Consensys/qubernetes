@@ -46,7 +46,11 @@ def set_node_template_vars(values)
   if values.dig("quorum","quorum", "Docker_Repo")
     @Quorum_Docker_Repo = values["quorum"]["quorum"]["Docker_Repo"]
   end
-
+  # Allow the user to set the full repo, e.g. quorum-local, e.g. the case they are using skaffold, or other local dev.
+  @Quorum_Docker_Repo_Full = ""
+  if values.dig("quorum","quorum", "Docker_Repo_Full")
+    @Quorum_Docker_Repo_Full = values["quorum"]["quorum"]["Docker_Repo_Full"]
+  end
 # default quorumengineering/quorum
   @Tm_Docker_Repo =  "quorumengineering"
   if values.dig("quorum","tm","Docker_Repo")

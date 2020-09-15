@@ -175,17 +175,15 @@ var (
 				EnvVars:  []string{"QUBE_CONFIG"},
 				Required: true,
 			},
-			&cli.StringFlag{ // this is only required to get the enodeId
-				Name:     "k8sdir",
-				Usage:    "The k8sdir (usually out) containing the output k8s resources",
-				EnvVars:  []string{"QUBE_K8S_DIR"},
-				Required: true,
+			&cli.StringFlag{ // this is only required to get the enodeurl
+				Name:    "k8sdir",
+				Usage:   "The k8sdir (usually out) containing the output k8s resources",
+				EnvVars: []string{"QUBE_K8S_DIR"},
 			},
 			&cli.BoolFlag{
 				Name:  "all",
 				Usage: "display all node values",
 			},
-			// TODO: have a --filter=name,consensus,quorumversion
 			&cli.BoolFlag{
 				Name:  "name",
 				Usage: "display the name of the node",
@@ -225,6 +223,7 @@ var (
 			isKeyDir := c.Bool("keydir")
 			isEnodeUrl := c.Bool("enodeurl")
 			isAll := c.Bool("all")
+			k8sdir := c.String("k8sdir")
 			// set all values to true
 			if isAll {
 				isName = true
@@ -232,9 +231,11 @@ var (
 				isQuorumVersion = true
 				isTmName = true
 				isTmVersion = true
+				if k8sdir != "" {
+					isEnodeUrl = true
+				}
 			}
 			configFile := c.String("config")
-			k8sdir := c.String("k8sdir")
 
 			// get the current directory path, we'll use this in case the config file passed in was a relative path.
 			pwdCmd := exec.Command("pwd")
@@ -352,9 +353,13 @@ func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, qu
 		green.Println(fmt.Sprintf("     [%s] tmVersion: [%s]", nodeEntry.NodeUserIdent, nodeEntry.QuorumEntry.Tm.TmVersion))
 	}
 	if isEnodeUrl {
-		enodeUrl := getEnodeId(nodeEntry.NodeUserIdent, k8sdir)
-		if enodeUrl != "" {
-			green.Println(fmt.Sprintf("     [%s] enodeUrl: [%s]", nodeEntry.NodeUserIdent, enodeUrl))
+		if k8sdir == "" {
+			red.Println("Set --k8sdir flag or QUBE_K8S_DIR env in order to display enodeurl")
+		} else {
+			enodeUrl := getEnodeId(nodeEntry.NodeUserIdent, k8sdir)
+			if enodeUrl != "" {
+				green.Println(fmt.Sprintf("     [%s] enodeUrl: [%s]", nodeEntry.NodeUserIdent, enodeUrl))
+			}
 		}
 	}
 	fmt.Println()

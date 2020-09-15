@@ -163,6 +163,15 @@ var (
 			displayNode("", nodeEntry, true, true, true, true, true, true, false, true)
 			// write file back
 			WriteYamlConfig(configFileYaml, configFile)
+			fmt.Println("The node(s) have been added to the config file [%s]", configFile)
+			fmt.Println("Next, generate (update) the additional node resources for quorum and k8s:")
+			fmt.Println()
+			fmt.Println("**********************************************************************************************")
+			fmt.Println()
+			green.Println(fmt.Sprintf("  $> qctl generate network --update"))
+			fmt.Println()
+			fmt.Println("**********************************************************************************************")
+
 			return nil
 		},
 	}

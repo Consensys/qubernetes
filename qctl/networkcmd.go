@@ -55,7 +55,12 @@ var (
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:  "create",
-				Usage: "create or re-create all config, this is a discructive op.",
+				Usage: "create or re-create all config, this is a destructive op.",
+			},
+			&cli.StringFlag{ // this is only required to get the enodeurl
+				Name:    "k8sdir",
+				Usage:   "The k8sdir (usually out) containing the output k8s resources",
+				EnvVars: []string{"QUBE_K8S_DIR"},
 			},
 			&cli.BoolFlag{
 				Name:  "update",
@@ -90,10 +95,19 @@ var (
 			// update / create
 			update := c.Bool("update")
 			create := c.Bool("create")
+			k8sdir := c.String("k8sdir")
+
+			// If we are running an update, the k8s directory is required, because the additional resources will be generate there.
+			if k8sdir == "" && update {
+				c.App.Run([]string{"qctl", "help", "init"})
+				red.Println("When updating a network, k8sdir must be provided! Either via he flag [k8sdir] or env var [QUBE_K8S_DIR]")
+				return cli.Exit(fmt.Sprintf("When updating a network, k8sOutDir must be provided!  k8sOutDir [%s]", k8sdir), 3)
+			} else if k8sdir == "" { // if the k8sdir is not set and it is not an update, set it to the default out directoy in the current dir.
+				k8sdir = pwd + "/out"
+			}
 
 			//force := c.Bool("force")
 			configFile := c.String("config")
-
 			if configFile == "" {
 				c.App.Run([]string{"qctl", "help", "init"})
 
@@ -116,6 +130,12 @@ var (
 			fmt.Println()
 			fmt.Println("  " + configFile)
 			fmt.Println()
+			if k8sdir != "" {
+				green.Println("  Using k8soutdir:")
+				fmt.Println()
+				fmt.Println("  " + k8sdir)
+				fmt.Println()
+			}
 			fmt.Println("*****************************************************************************************")
 			fmt.Println()
 			// the config file must exist or this is an error.
@@ -140,23 +160,22 @@ var (
 				runCmd(pullContainerCmd)
 			}
 
-			cmd := exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", pwd+"/out:/qubernetes/out", "quorumengineering/qubernetes:"+qubernetesVersion, "./qube-init", "qubes.yaml")
+			cmd := exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", k8sdir+":/qubernetes/out", "quorumengineering/qubernetes:"+qubernetesVersion, "./qube-init", "qubes.yaml")
 			if update {
-				cmd = exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", pwd+"/out:/qubernetes/out", "quorumengineering/qubernetes:"+qubernetesVersion, "./qube-init", "--action=update", "qubes.yaml")
+				cmd = exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", k8sdir+":/qubernetes/out", "quorumengineering/qubernetes:"+qubernetesVersion, "./qube-init", "--action=update", "qubes.yaml")
 			} else if create {
-				cmd = exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", pwd+"/out:/qubernetes/out", "quorumengineering/qubernetes:"+qubernetesVersion, "./qube-init", "--action=create", "qubes.yaml")
+				cmd = exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", k8sdir+":/qubernetes/out", "quorumengineering/qubernetes:"+qubernetesVersion, "./qube-init", "--action=create", "qubes.yaml")
 			}
 
 			//fmt.Println(cmd)
 			dropIntoCmd(cmd)
 			fmt.Println()
 
-			k8sOutDir := pwd + "/out"
 			fmt.Println("=======================================================================================")
 			fmt.Println()
 			green.Println("  The Quorum and K8s resources have been generated in the directory:")
 			fmt.Println()
-			fmt.Println("  " + k8sOutDir)
+			fmt.Println("  " + k8sdir)
 			fmt.Println()
 			fmt.Println("  Using config file:")
 			fmt.Println()
@@ -177,7 +196,7 @@ var (
 			fmt.Println("  by running: ")
 			fmt.Println()
 			fmt.Println("*****************************************************************************************")
-			green.Println(fmt.Sprintf("  $> export QUBE_K8S_DIR=%s", k8sOutDir))
+			green.Println(fmt.Sprintf("  $> export QUBE_K8S_DIR=%s", k8sdir))
 			green.Println(fmt.Sprintf("  $> qctl deploy network"))
 			fmt.Println("*****************************************************************************************")
 			fmt.Println()

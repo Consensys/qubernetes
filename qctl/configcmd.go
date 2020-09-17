@@ -52,6 +52,10 @@ var (
 				Name:  "qimagefull",
 				Usage: "The full repo + image name of the quorum image.",
 			},
+			&cli.StringFlag{
+				Name:  "gethparams",
+				Usage: "additional geth startup params to run on the node.",
+			},
 		},
 
 		Action: func(c *cli.Context) error {
@@ -70,6 +74,7 @@ var (
 			consensus := c.String("consensus")
 			chainId := c.String("chainid")
 			qimagefull := c.String("qimagefull")
+			gethparams := c.String("gethparams")
 
 			// no configuration file provided, check for flags and use the default.
 			configFile = pwd + "/qubernetes.generate.yaml"
@@ -90,10 +95,14 @@ var (
 					Quorum: quorum,
 					Tm:     tm,
 				}
+				gethEntry := GethEntry{
+					GetStartupParams: gethparams,
+				}
 				nodeEntry := NodeEntry{
 					NodeUserIdent: fmt.Sprintf("quorum-node%d", i),
 					KeyDir:        fmt.Sprintf("key%d", i),
 					QuorumEntry:   quorumEntry,
+					GethEntry:     gethEntry,
 				}
 				config.Nodes = append(config.Nodes, nodeEntry)
 
@@ -149,7 +158,7 @@ var (
 	}
 	describeConfigCommand = cli.Command{
 		Name:  "config",
-		Usage: "displays infor about the quberentes config.",
+		Usage: "displays info about the quberentes config.",
 		//#ArgsUsage: "[pod_substring]",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -157,6 +166,11 @@ var (
 				Usage:   "Load configuration from `FULL_PATH_FILE`",
 				EnvVars: []string{"QUBE_CONFIG"},
 				//Required: true,
+			},
+			&cli.StringFlag{ // this is only required to get the enodeurl
+				Name:    "k8sdir",
+				Usage:   "The k8sdir (usually out) containing the output k8s resources",
+				EnvVars: []string{"QUBE_K8S_DIR"},
 			},
 			&cli.BoolFlag{
 				Name:  "long, l",
@@ -173,6 +187,7 @@ var (
 
 			configFile := c.String("config")
 			outputLong := c.Bool("long")
+			k8sdir := c.String("k8sdir")
 
 			if configFile == "" {
 				c.App.Run([]string{"qctl", "help", "init"})
@@ -191,13 +206,7 @@ var (
 				fmt.Println()
 				return cli.Exit("--config flag must be set to the fullpath of your config file.", 3)
 			}
-			fmt.Println()
-			green.Println("  Using config file:")
-			fmt.Println()
-			fmt.Println("  " + configFile)
-			fmt.Println()
-			fmt.Println("*****************************************************************************************")
-			fmt.Println()
+
 			// the config file must exist or this is an error.
 			if fileExists(configFile) {
 				// check if config file is full path or relative path.
@@ -214,18 +223,33 @@ var (
 				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
 			}
 			//TODO: get the global or passed in k8s dir.
-			//k8sOutDir := pwd + "/out"
-			fmt.Println("=======================================================================================")
-			//fmt.Println()
-			//fmt.Println("  " + k8sOutDir)
 			fmt.Println()
-			fmt.Println("  Using config file:")
+			fmt.Println("=======================================================================================")
+			fmt.Println()
+			green.Println("  Using qubernetes config file:")
 			fmt.Println()
 			fmt.Println("  " + configFile)
 			fmt.Println()
-			//fmt.Println("The Quorum network values are:")
+			green.Println("  Using k8sdir:")
 			fmt.Println()
-			// tell the defaults
+			if k8sdir != "" {
+				fmt.Println("  " + k8sdir)
+			} else {
+				fmt.Println("  NOT SET")
+			}
+			fmt.Println()
+			fmt.Println()
+			fmt.Println("  To export:")
+			fmt.Println()
+			green.Println("  export QUBE_CONFIG=" + configFile)
+			if k8sdir != "" {
+				green.Println("  export QUBE_K8S_DIR=" + k8sdir)
+			}
+			fmt.Println()
+			fmt.Println("=======================================================================================")
+			fmt.Println()
+
+			// display the config contents
 			fmt.Println("  Network Configuration: ")
 			fmt.Println()
 			if outputLong {

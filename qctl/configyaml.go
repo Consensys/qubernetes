@@ -23,6 +23,10 @@ type QuorumEntry struct {
 	Tm     Tm
 }
 
+type GethEntry struct {
+	GetStartupParams string `yaml:"Geth_Startup_Params"` //--raftjoinexisting 7
+}
+
 type Quorum struct {
 	Consensus      string `yaml:"consensus"`
 	QuorumVersion  string `yaml:"Quorum_Version"`
@@ -38,6 +42,7 @@ type NodeEntry struct {
 	NodeUserIdent string      `yaml:"Node_UserIdent"`
 	KeyDir        string      `yaml:"Key_Dir"`
 	QuorumEntry   QuorumEntry `yaml:"quorum"`
+	GethEntry     GethEntry   `yaml:"geth"`
 }
 
 type QConfig struct {

@@ -34,6 +34,107 @@ var (
 			return nil
 		},
 	}
+
+	nodeDeleteCommand = cli.Command{
+		Name:  "node",
+		Usage: "delete node and its associated resources (hard delete).",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "config, c",
+				Usage:    "Load configuration from `FULL_PATH_FILE`",
+				EnvVars:  []string{"QUBE_CONFIG"},
+				Required: true,
+			},
+			&cli.StringFlag{ // this is only required if the user wants to delete the generated (k8s/quorum) resources as well.
+				Name:    "k8sdir",
+				Usage:   "The k8sdir (usually out) containing the output k8s resources",
+				EnvVars: []string{"QUBE_K8S_DIR"},
+			},
+			//&cli.StringFlag{
+			//	Name:     "name",
+			//	Usage:    "Unique name of node to delete",
+			//	Required: true,
+			//},
+		},
+		Action: func(c *cli.Context) error {
+			if c.Args().Len() < 1 {
+				c.App.Run([]string{"qctl", "help", "delete", "node"})
+				return cli.Exit("wrong number of arguments", 2)
+			}
+			nodeName := c.Args().First()
+			fmt.Println("Delete node " + nodeName)
+			// TODO: abstract this away as it is used in multiple places now.
+			configFile := c.String("config")
+			k8sdir := c.String("k8sdir")
+			// get the current directory path, we'll use this in case the config file passed in was a relative path.
+			pwdCmd := exec.Command("pwd")
+			b := runCmd(pwdCmd)
+			pwd := strings.TrimSpace(b.String())
+
+			if configFile == "" {
+				c.App.Run([]string{"qctl", "help", "init"})
+
+				// QUBE_CONFIG or flag
+				fmt.Println()
+
+				fmt.Println()
+				red.Println("  --config flag must be provided.")
+				red.Println("             or ")
+				red.Println("     QUBE_CONFIG environment variable needs to be set to your config file.")
+				fmt.Println()
+				red.Println(" If you need to generate a qubernetes.yaml config use the command: ")
+				fmt.Println()
+				green.Println("   qctl generate config")
+				fmt.Println()
+				return cli.Exit("--config flag must be set to the fullpath of your config file.", 3)
+			}
+			fmt.Println()
+			green.Println("  Using config file:")
+			fmt.Println()
+			fmt.Println("  " + configFile)
+			fmt.Println()
+			fmt.Println("*****************************************************************************************")
+			fmt.Println()
+			// the config file must exist or this is an error.
+			if fileExists(configFile) {
+				// check if config file is full path or relative path.
+				if !strings.HasPrefix(configFile, "/") {
+					configFile = pwd + "/" + configFile
+				}
+
+			} else {
+				c.App.Run([]string{"qctl", "help", "init"})
+				return cli.Exit(fmt.Sprintf("ConfigFile must exist! Given configFile [%v]", configFile), 3)
+			}
+			configFileYaml, err := LoadYamlConfig(configFile)
+			if err != nil {
+				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
+			}
+			currentNum := len(configFileYaml.Nodes)
+			fmt.Printf("config currently has %d nodes \n", currentNum)
+			for i := 0; i < len(configFileYaml.Nodes); i++ {
+				//displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull)
+				if configFileYaml.Nodes[i].NodeUserIdent == nodeName {
+					fmt.Println("Deleting node " + nodeName)
+					// Remove K8s key resources if k8s dir set
+					if k8sdir != "" {
+						keyDirToDelete := configFileYaml.Nodes[i].KeyDir
+						rmContents := exec.Command("rm", k8sdir+"/"+keyDirToDelete+"/*")
+						fmt.Println(rmContents)
+						rmdir := exec.Command("rmdir", k8sdir+"/"+keyDirToDelete)
+						fmt.Println(rmdir)
+						// TODO: delete  deployment, e.g. name: node5-deployment
+					}
+					configFileYaml.Nodes = append(configFileYaml.Nodes[:i], configFileYaml.Nodes[i+1:]...)
+				}
+			}
+
+			// write file back
+			WriteYamlConfig(configFileYaml, configFile)
+
+			return nil
+		},
+	}
 	//qctl add node --id=node3 --consensus=ibft --quorum
 	//TODO: get the defaults from the config file.
 	nodeAddCommand = cli.Command{
@@ -136,6 +237,16 @@ var (
 				return cli.Exit(fmt.Sprintf("ConfigFile must exist! Given configFile [%v]", configFile), 3)
 			}
 			configFileYaml, err := LoadYamlConfig(configFile)
+			// check if the name is already taken
+			for i := 0; i < len(configFileYaml.Nodes); i++ {
+				nodeEntry := configFileYaml.Nodes[i]
+				if name == nodeEntry.NodeUserIdent {
+					red.Println(fmt.Sprintf("Node name [%s] already exist!", name))
+					displayNode("", nodeEntry, true, true, true, true, true, true, false, true)
+					red.Println(fmt.Sprintf("Node name [%s] exists", name))
+					return cli.Exit(fmt.Sprintf("Node name [%s] exists, node names must be unique", name), 3)
+				}
+			}
 			if err != nil {
 				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
 			}

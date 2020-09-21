@@ -286,6 +286,150 @@ var (
 			return nil
 		},
 	}
+	// TODO: consolidate this and add node
+	nodeUpdateCommand = cli.Command{
+		Name:    "node",
+		Usage:   "update node",
+		Aliases: []string{"n", "nodes"},
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "config, c",
+				Usage:   "Load configuration from `FULL_PATH_FILE`",
+				EnvVars: []string{"QUBE_CONFIG"},
+				//Required: true,
+			},
+			&cli.StringFlag{
+				Name:     "name",
+				Usage:    "Unique name of node to create",
+				Required: true,
+			},
+			// TODO: set default to Node-name-key-dir
+			&cli.StringFlag{
+				Name:  "keydir",
+				Usage: "key dir where the newly generated key will be placed",
+			},
+			&cli.StringFlag{
+				Name:  "consensus",
+				Usage: "Consensus to use raft | istanbul.",
+			},
+			&cli.StringFlag{
+				Name:    "qversion",
+				Aliases: []string{"qv"},
+				Usage:   "Quorum Version.",
+			},
+			&cli.StringFlag{
+				Name:    "tmversion",
+				Aliases: []string{"tmv"},
+				Usage:   "Transaction Manager Version.",
+			},
+			&cli.StringFlag{
+				Name:  "tm",
+				Usage: "Transaction Manager to user: tessera | constellation.",
+			},
+			&cli.StringFlag{
+				Name:  "qimagefull",
+				Usage: "The full repo + image name of the quorum image.",
+			},
+			&cli.StringFlag{
+				Name:  "gethparams",
+				Usage: "Set the geth startup params.",
+			},
+		},
+		Action: func(c *cli.Context) error {
+			// defaults should be obtained from the config
+			name := c.String("name")
+			keyDir := c.String("keydir")
+			if keyDir == "" {
+				keyDir = fmt.Sprintf("key-%s", name)
+			}
+			//consensus := c.String("consensus")
+			//quorumVersion := c.String("qversion")
+			//tmVersion := c.String("tmversion")
+			//txManger := c.String("tm")
+			quorumImageFull := c.String("qimagefull")
+			gethparams := c.String("gethparams")
+			configFile := c.String("config")
+
+			// get the current directory path, we'll use this in case the config file passed in was a relative path.
+			pwdCmd := exec.Command("pwd")
+			b := runCmd(pwdCmd)
+			pwd := strings.TrimSpace(b.String())
+
+			if configFile == "" {
+				c.App.Run([]string{"qctl", "help", "init"})
+
+				// QUBE_CONFIG or flag
+				fmt.Println()
+
+				fmt.Println()
+				red.Println("  --config flag must be provided.")
+				red.Println("             or ")
+				red.Println("     QUBE_CONFIG environment variable needs to be set to your config file.")
+				fmt.Println()
+				red.Println(" If you need to generate a qubernetes.yaml config use the command: ")
+				fmt.Println()
+				green.Println("   qctl generate config")
+				fmt.Println()
+				return cli.Exit("--config flag must be set to the fullpath of your config file.", 3)
+			}
+			fmt.Println()
+			green.Println("  Using config file:")
+			fmt.Println()
+			fmt.Println("  " + configFile)
+			fmt.Println()
+			fmt.Println("*****************************************************************************************")
+			fmt.Println()
+			// the config file must exist or this is an error.
+			if fileExists(configFile) {
+				// check if config file is full path or relative path.
+				if !strings.HasPrefix(configFile, "/") {
+					configFile = pwd + "/" + configFile
+				}
+
+			} else {
+				c.App.Run([]string{"qctl", "help", "init"})
+				return cli.Exit(fmt.Sprintf("ConfigFile must exist! Given configFile [%v]", configFile), 3)
+			}
+			configFileYaml, err := LoadYamlConfig(configFile)
+			if err != nil {
+				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
+			}
+			// find the nodes
+			var updatedNode NodeEntry
+			for i := 0; i < len(configFileYaml.Nodes); i++ {
+				nodeEntry := configFileYaml.Nodes[i]
+				if name == nodeEntry.NodeUserIdent {
+					displayNode("", nodeEntry, true, true, true, true, true, true, false, true)
+					if gethparams != "" {
+						nodeEntry.GethEntry.GetStartupParams = gethparams
+					}
+					if quorumImageFull != "" {
+						nodeEntry.QuorumEntry.Quorum.DockerRepoFull = quorumImageFull
+					}
+					updatedNode = nodeEntry
+					configFileYaml.Nodes[i] = updatedNode
+					red.Println(fmt.Sprintf("updated nodes is [%v]", updatedNode))
+				}
+			}
+
+			fmt.Println(fmt.Sprintf("Updating node [%s] key dir [%s]", name, keyDir))
+			fmt.Println()
+			green.Println("Updating Node: ")
+			displayNode("", updatedNode, true, true, true, true, true, true, false, true)
+			// write file back
+			WriteYamlConfig(configFileYaml, configFile)
+			fmt.Println("The node have been updated the config file [%s]", configFile)
+			fmt.Println("Next, generate (update) the additional node resources for quorum and k8s:")
+			fmt.Println()
+			fmt.Println("**********************************************************************************************")
+			fmt.Println()
+			green.Println(fmt.Sprintf("  $> qctl generate network --update"))
+			fmt.Println()
+			fmt.Println("**********************************************************************************************")
+
+			return nil
+		},
+	}
 	// qctl ls node --name --consensus --quorumversion
 	// qctl ls node --name --consensus --quorumversion --tmversion --tmname
 	nodeListCommand = cli.Command{
@@ -499,5 +643,6 @@ func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, qu
 			}
 		}
 	}
+	green.Println(fmt.Sprintf("     [%s] geth params: [%s]", nodeEntry.NodeUserIdent, nodeEntry.GethEntry.GetStartupParams))
 	fmt.Println()
 }

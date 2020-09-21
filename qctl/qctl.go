@@ -51,9 +51,17 @@ func main() {
 			Usage:   "options for deleting networks / resources",
 			Subcommands: []*cli.Command{
 				&networkDeleteCommand,
+				// TODO: Think this through a bit, hard delete vs soft delete, etc.
+				//&nodeDeleteCommand,
 			},
 		},
-
+		{
+			Name:  "update",
+			Usage: "options for updating nodes / resources",
+			Subcommands: []*cli.Command{
+				&nodeUpdateCommand,
+			},
+		},
 		{
 			Name:  "deploy",
 			Usage: "options for deploying networks / resources to K8s",

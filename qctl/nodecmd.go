@@ -411,7 +411,16 @@ var (
 					red.Println(fmt.Sprintf("updated nodes is [%v]", updatedNode))
 				}
 			}
-
+			// If the node name the user entered to update does not exists, error out and notify the user.
+			if updatedNode.NodeUserIdent == "" {
+				red.Println(fmt.Sprintf("Node name [%s] does not exist, not updating any nodes.", name))
+				fmt.Println()
+				red.Println("to see current nodes run: ")
+				fmt.Println()
+				red.Println("  qctl ls nodes")
+				fmt.Println()
+				return cli.Exit(fmt.Sprintf("node name doesn't exist [%s]", name), 3)
+			}
 			fmt.Println(fmt.Sprintf("Updating node [%s] key dir [%s]", name, keyDir))
 			fmt.Println()
 			green.Println("Updating Node: ")

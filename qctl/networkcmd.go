@@ -151,7 +151,7 @@ var (
 			}
 			configFileYaml, err := LoadYamlConfig(configFile)
 			if err != nil {
-				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
+				log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", configFile, err)
 			}
 
 			// if the quberentes version is set to latest, try to pull it from the remote, as it may have changed upstream.

@@ -16,6 +16,11 @@ var (
 		Name:  "init",
 		Usage: "creates a base qubernetes.yaml file which can be used to create a Quorum network.",
 		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "config, c",
+				Usage:   "Load configuration from `FULL_PATH_FILE`",
+				EnvVars: []string{"QUBE_CONFIG"},
+			},
 			&cli.IntFlag{
 				Name:  "num",
 				Usage: "Number of nodes in the network.",
@@ -62,8 +67,14 @@ var (
 			pwdCmd := exec.Command("pwd")
 			b := runCmd(pwdCmd)
 			pwd := strings.TrimSpace(b.String())
-			// TODO: do we want to warn the user if they already have an env set to a generate config file?
-			configFile := "" //c.String("config")
+			// If the QUBE_CONFIG env is set or the flag passed in, use this file path and generate the config there.
+			// this is helpful when creating, deleting, networks repeatedly so that the config dirs can be set once and
+			// will be generated to the same place.
+			configFile := c.String("config")
+			if configFile == "" {
+				// no configuration file provided, check for flags and use the default.
+				configFile = pwd + "/qubernetes.generate.yaml"
+			}
 
 			// TODO: it might be nice to allow these to override the config file, load the config then set any additional
 			// params that were passed in.
@@ -76,10 +87,7 @@ var (
 			qimagefull := c.String("qimagefull")
 			gethparams := c.String("gethparams")
 
-			// no configuration file provided, check for flags and use the default.
-			configFile = pwd + "/qubernetes.generate.yaml"
-
-			config := GetYamlConfig()
+			configYaml := GetYamlConfig()
 
 			for i := 1; i <= numberNodes; i++ {
 				quorum := Quorum{
@@ -104,16 +112,16 @@ var (
 					QuorumEntry:   quorumEntry,
 					GethEntry:     gethEntry,
 				}
-				config.Nodes = append(config.Nodes, nodeEntry)
+				configYaml.Nodes = append(configYaml.Nodes, nodeEntry)
 
 			}
 
-			config.Genesis.QuorumVersion = quorumVersion
-			config.Genesis.Consensus = consensus
-			config.Genesis.Chain_Id = chainId
+			configYaml.Genesis.QuorumVersion = quorumVersion
+			configYaml.Genesis.Consensus = consensus
+			configYaml.Genesis.Chain_Id = chainId
 
 			//fmt.Println(config.ToString())
-			configBytes := []byte(config.ToString())
+			configBytes := []byte(configYaml.ToString())
 
 			// write the generated file out to disk this file will be used to initialize the network.
 			ioutil.WriteFile(configFile, configBytes, 0644)

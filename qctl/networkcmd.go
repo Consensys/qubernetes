@@ -36,9 +36,63 @@ var (
 				EnvVars:  []string{"QUBE_K8S_DIR"},
 				Required: true,
 			},
+			&cli.StringFlag{
+				Name:     "config",
+				Usage:    "the path of the qubernetes config file being used.",
+				EnvVars:  []string{"QUBE_CONFIG"},
+			},
+			&cli.BoolFlag{
+				Name:    "wait",
+				Usage:   "wait for the network to become available, e.g. all pods running, before exiting.",
+				Aliases: []string{"f"},
+			},
 		},
 		Action: func(c *cli.Context) error {
-			return k8sCreateDeleteCluster(c, "apply")
+			wait := c.Bool("wait")
+			var configFileYaml QConfig
+			if wait { // if the wait flag is set, the qubernetes flag / env var is required, to check the status of the network.
+				config := c.String("config")
+				configYaml, err := LoadYamlConfig(config)
+				if err != nil || config == "" {
+					log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", config, err)
+				}
+				configFileYaml = configYaml
+			}
+			err := k8sCreateDeleteCluster(c, "apply")
+			if err != nil {
+				return cli.Exit(fmt.Sprintf("Error while trying to create k8s cluster [%v]", err), 3)
+			}
+			if wait {
+				waitForPodsReadyState(configFileYaml)
+			}
+			return nil
+		},
+	}
+	nodeStatusCommand = cli.Command{
+		Name:  "status",
+		Usage: "list the status of the running network.",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "k8s-dir",
+				Usage:    "the path of the dir containing the K8s resource yaml.",
+				EnvVars:  []string{"QUBE_K8S_DIR"},
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     "config, c",
+				Usage:    "Load configuration from `FULL_PATH_FILE`",
+				EnvVars:  []string{"QUBE_CONFIG"},
+				Required: true,
+			},
+		},
+		Action: func(c *cli.Context) error {
+			config := c.String("config")
+			configFileYaml, err := LoadYamlConfig(config)
+			if err != nil {
+				log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", config, err)
+			}
+			waitForPodsReadyState(configFileYaml)
+			return nil
 		},
 	}
 
@@ -76,7 +130,6 @@ var (
 				Name:  "version",
 				Usage: "Which version of qubernetes to use.",
 				Value: "latest",
-				//Required: true,
 			},
 			&cli.BoolFlag{
 				Name:    "force",
@@ -156,8 +209,11 @@ var (
 
 			// if the quberentes version is set to latest, try to pull it from the remote, as it may have changed upstream.
 			if qubernetesVersion == "latest" {
+				fmt.Println("trying to pull latest container")
 				pullContainerCmd := exec.Command("docker", "pull", "quorumengineering/qubernetes:latest")
-				runCmd(pullContainerCmd)
+				dropIntoCmd(pullContainerCmd)
+				fmt.Println()
+				fmt.Println()
 			}
 
 			cmd := exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", k8sdir+":/qubernetes/out", "quorumengineering/qubernetes:"+qubernetesVersion, "./qube-init", "qubes.yaml")
@@ -210,6 +266,7 @@ func k8sCreateDeleteCluster(c *cli.Context, action string) error {
 	// if the passed in k8s dir does not exit, tell the user and do not proceed.
 	if _, err := os.Stat(k8sdir); os.IsNotExist(err) {
 		log.Error("the --k8s-dir [%v] does not exist!", k8sdir)
+		return err
 	}
 	namespace := c.String("namespace")
 	log.Printf("%s network in k8sdir [%v]", action, k8sdir)
@@ -224,3 +281,5 @@ func k8sCreateDeleteCluster(c *cli.Context, action string) error {
 	dropIntoCmd(cmd)
 	return nil
 }
+
+

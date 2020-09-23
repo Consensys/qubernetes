@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 var (
@@ -28,7 +29,7 @@ func podNameFromPrefix(prefix string, namespace string) string {
 	//log.Printf("connecting to node [%v] ", prefix)
 	//TODO: extract this into a utils function
 	c1 := exec.Command("kubectl", "--namespace="+namespace, "get", "pods")
-	fmt.Println(c1.String())
+	//fmt.Println(c1.String())
 
 	c2 := exec.Command("grep", prefix)
 	r, w := io.Pipe()
@@ -229,4 +230,106 @@ func fileExists(filename string) bool {
 		return false
 	}
 	return !info.IsDir()
+}
+
+func waitForPodsReadyState(qconfigYaml QConfig) {
+	nodeNames := getNodeNames(qconfigYaml)
+	allContainersReady := false
+	nodeNotDeployed := false
+	var nodeNotDeployedName string
+	for {
+		if allContainersReady {
+			break
+		}
+		allContainersReady = true
+		if nodeNotDeployed {
+			fmt.Println()
+			red.Println(fmt.Sprintf("  node [%s] found in config, but not deploy to k8s, try running:", nodeNotDeployedName))
+			fmt.Println()
+			red.Println( "    > qctl generate network --update ")
+			red.Println( "    > qctl deploy network ")
+			fmt.Println()
+			break
+		}
+		// loop through this till 2/2 RUNNING is true for all nodes in the config file.
+		// if any pod doesn't have both containers running break, set to false, wait and loop again.
+		for i := 0; i < len(nodeNames); i++ {
+			podName := podNameFromPrefix(nodeNames[i], "")
+
+			// get the full pod status for the current pod, e.g.:
+			// NAME                                READY   STATUS    RESTARTS   AGE
+			// node5-deployment-54d7d99575-ztgbv   2/2     Running   0          9h
+			c1 := exec.Command("kubectl", "get", "pod", podName)
+			// get the pod status part only ignoring the header, e.g.:
+			// node5-deployment-54d7d99575-ztgbv   2/2     Running   0          9h
+			c2 := exec.Command("grep", podName)
+			r, w := io.Pipe()
+			c1.Stdout = w
+			c2.Stdin = r
+			var b2 bytes.Buffer
+			c2.Stdout = &b2
+			c1.Start()
+			c2.Start()
+			c1.Wait()
+			w.Close()
+			c2.Wait()
+			b2.String()
+			podOutput := b2.String()
+
+			podParts := strings.Fields(podOutput)
+			isRunning := false
+			if len(podParts) < 1 {
+				allContainersReady = false
+				nodeNotDeployed = true
+				nodeNotDeployedName =  nodeNames[i]
+				break
+			}
+			status := podParts[2]
+			if strings.ToUpper(status) == "RUNNING" {
+				isRunning = true
+			} else { // break
+				allContainersReady = false
+				fmt.Println(podOutput)
+				red.Println("not in running state")
+				red.Println(strings.ToUpper(status))
+				red.Println("wait for 5 seconds before checking the network again")
+				time.Sleep(5 * time.Second)
+				break
+			}
+			if isRunning {
+				// make sure both container are ready, e.g. 2/2 Running:
+				// node5-deployment-54d7d99575-ztgbv 2/2 Running
+				numContainersRunning := podParts[1]
+				if numContainersRunning == "2/2" {
+					allContainersReady = true
+				} else { // break
+					fmt.Println(podOutput)
+					red.Println("not all containers are running")
+					red.Println(fmt.Sprintf("num container running: [%s]", numContainersRunning))
+					red.Println("wait for 5 seconds before checking the network again")
+					allContainersReady = false
+					time.Sleep(5 * time.Second)
+					break
+				}
+			}
+		}
+	}
+	fmt.Println()
+	firstNode := nodeNames[0]
+	green.Println("  Your Quorum network is ready to go")
+	green.Println("  To geth attach to a node in the network, run: ")
+	fmt.Println()
+	green.Println(fmt.Sprintf("    > qctl geth attach %s", firstNode))
+	fmt.Println()
+	fmt.Println()
+	return
+}
+
+func getNodeNames(configFileYaml QConfig) []string {
+
+	var names []string
+	for i := 0; i < len(configFileYaml.Nodes); i++ {
+		names = append(names, configFileYaml.Nodes[i].NodeUserIdent)
+	}
+	return names
 }

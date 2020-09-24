@@ -246,8 +246,8 @@ func waitForPodsReadyState(qconfigYaml QConfig) {
 			fmt.Println()
 			red.Println(fmt.Sprintf("  node [%s] found in config, but not deploy to k8s, try running:", nodeNotDeployedName))
 			fmt.Println()
-			red.Println( "    > qctl generate network --update ")
-			red.Println( "    > qctl deploy network ")
+			red.Println("    > qctl generate network --update ")
+			red.Println("    > qctl deploy network ")
 			fmt.Println()
 			break
 		}
@@ -281,7 +281,7 @@ func waitForPodsReadyState(qconfigYaml QConfig) {
 			if len(podParts) < 1 {
 				allContainersReady = false
 				nodeNotDeployed = true
-				nodeNotDeployedName =  nodeNames[i]
+				nodeNotDeployedName = nodeNames[i]
 				break
 			}
 			status := podParts[2]

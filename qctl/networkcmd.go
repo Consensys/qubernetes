@@ -37,9 +37,9 @@ var (
 				Required: true,
 			},
 			&cli.StringFlag{
-				Name:     "config",
-				Usage:    "the path of the qubernetes config file being used.",
-				EnvVars:  []string{"QUBE_CONFIG"},
+				Name:    "config",
+				Usage:   "the path of the qubernetes config file being used.",
+				EnvVars: []string{"QUBE_CONFIG"},
 			},
 			&cli.BoolFlag{
 				Name:    "wait",
@@ -281,5 +281,3 @@ func k8sCreateDeleteCluster(c *cli.Context, action string) error {
 	dropIntoCmd(cmd)
 	return nil
 }
-
-

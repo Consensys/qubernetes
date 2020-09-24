@@ -242,7 +242,7 @@ var (
 				nodeEntry := configFileYaml.Nodes[i]
 				if name == nodeEntry.NodeUserIdent {
 					red.Println(fmt.Sprintf("Node name [%s] already exist!", name))
-					displayNode("", nodeEntry, true, true, true, true, true, true, false, true)
+					displayNode("", nodeEntry, true, true, true, true, true, true, false, true, true)
 					red.Println(fmt.Sprintf("Node name [%s] exists", name))
 					return cli.Exit(fmt.Sprintf("Node name [%s] exists, node names must be unique", name), 3)
 				}
@@ -271,7 +271,7 @@ var (
 			configFileYaml.Nodes = append(configFileYaml.Nodes, nodeEntry)
 			fmt.Println()
 			green.Println("Adding Node: ")
-			displayNode("", nodeEntry, true, true, true, true, true, true, false, true)
+			displayNode("", nodeEntry, true, true, true, true, true, true, false, true, true)
 			// write file back
 			WriteYamlConfig(configFileYaml, configFile)
 			fmt.Println("The node(s) have been added to the config file [%s]", configFile)
@@ -399,7 +399,7 @@ var (
 			for i := 0; i < len(configFileYaml.Nodes); i++ {
 				nodeEntry := configFileYaml.Nodes[i]
 				if name == nodeEntry.NodeUserIdent {
-					displayNode("", nodeEntry, true, true, true, true, true, true, false, true)
+					displayNode("", nodeEntry, true, true, true, true, true, true, false, true, true)
 					if gethparams != "" {
 						nodeEntry.GethEntry.GetStartupParams = gethparams
 					}
@@ -424,7 +424,7 @@ var (
 			fmt.Println(fmt.Sprintf("Updating node [%s] key dir [%s]", name, keyDir))
 			fmt.Println()
 			green.Println("Updating Node: ")
-			displayNode("", updatedNode, true, true, true, true, true, true, false, true)
+			displayNode("", updatedNode, true, true, true, true, true, true, false, true, true)
 			// write file back
 			WriteYamlConfig(configFileYaml, configFile)
 			fmt.Println("The node have been updated the config file [%s]", configFile)
@@ -490,6 +490,10 @@ var (
 				Name:  "enodeurl",
 				Usage: "display the enodeurl of the node",
 			},
+			&cli.BoolFlag{
+				Name:  "gethparams",
+				Usage: "display the geth startup params of the node",
+			},
 		},
 		Action: func(c *cli.Context) error {
 
@@ -501,6 +505,7 @@ var (
 			isKeyDir := c.Bool("keydir")
 			isEnodeUrl := c.Bool("enodeurl")
 			isQuorumImageFull := c.Bool("qimagefull")
+			isGethParams := c.Bool("gethparams")
 			isAll := c.Bool("all")
 			k8sdir := c.String("k8sdir")
 			// set all values to true
@@ -514,6 +519,7 @@ var (
 					isEnodeUrl = true
 				}
 				isQuorumImageFull = true
+				isGethParams = true
 			}
 			configFile := c.String("config")
 
@@ -570,7 +576,7 @@ var (
 			currentNum := len(configFileYaml.Nodes)
 			fmt.Printf("config currently has %d nodes \n", currentNum)
 			for i := 0; i < len(configFileYaml.Nodes); i++ {
-				displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull)
+				displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isGethParams)
 			}
 
 			return nil
@@ -621,9 +627,9 @@ func getEnodeId(nodeName, qubeK8sDir string) string {
 	return enodeUrl
 }
 
-func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, quorumVersion, txManger, tmVersion, isEnodeUrl, isQuorumImageFull bool) {
+func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, quorumVersion, txManger, tmVersion, isEnodeUrl, isQuorumImageFull, isGethParms bool) {
 	fmt.Println()
-	green.Println(fmt.Sprintf("     [%s]", nodeEntry.NodeUserIdent))
+	green.Println(fmt.Sprintf("     [%s] unique name", nodeEntry.NodeUserIdent))
 	if keydir {
 		green.Println(fmt.Sprintf("     [%s] keydir: [%s]", nodeEntry.NodeUserIdent, nodeEntry.KeyDir))
 	}
@@ -652,6 +658,8 @@ func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, qu
 			}
 		}
 	}
-	green.Println(fmt.Sprintf("     [%s] geth params: [%s]", nodeEntry.NodeUserIdent, nodeEntry.GethEntry.GetStartupParams))
+	if isGethParms {
+		green.Println(fmt.Sprintf("     [%s] geth params: [%s]", nodeEntry.NodeUserIdent, nodeEntry.GethEntry.GetStartupParams))
+	}
 	fmt.Println()
 }

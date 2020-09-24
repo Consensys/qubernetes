@@ -31,13 +31,6 @@ func main() {
 		&logCommand,
 		//TODO: should init not take a parameter? what else would you init besides a config?
 		&initConfigCommand,
-		//{
-		//	Name:  "init",
-		//	Usage: "options for initializing a qubernetes project, e.g. creates initial config",
-		//	Subcommands: []*cli.Command{
-		//		&initConfigCommand,
-		//	},
-		//},
 		{
 			Name:  "generate",
 			Usage: "options for generating base config / resources",
@@ -73,7 +66,6 @@ func main() {
 		{
 			Name:  "geth",
 			Usage: "options for interacting with geth",
-			//Category: "Geth Commands",
 			Subcommands: []*cli.Command{
 				&gethAttachCommand,
 				&gethExecCommand,
@@ -84,18 +76,17 @@ func main() {
 			Name:    "list",
 			Aliases: []string{"ls", "get"},
 			Usage:   "options for listing resources",
-			//Category: "LIST ACTIONS",
 			Subcommands: []*cli.Command{
 				&nodeListCommand,
 				&allListCommand,
 				&urlGetCommand,
 				&describeConfigCommand,
+				&nodeStatusCommand,
 			},
 		},
 
 		{
 			Name:    "add",
-			Aliases: []string{"ls", "get"},
 			Usage:   "options for adding resources",
 			Subcommands: []*cli.Command{
 				&nodeAddCommand,

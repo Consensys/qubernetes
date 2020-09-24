@@ -32,6 +32,13 @@ func main() {
 		//TODO: should init not take a parameter? what else would you init besides a config?
 		&initConfigCommand,
 		{
+			Name:  "test",
+			Usage: "run tests against the running network",
+			Subcommands: []*cli.Command{
+				&testContractCmd,
+			},
+		},
+		{
 			Name:  "generate",
 			Usage: "options for generating base config / resources",
 			Subcommands: []*cli.Command{
@@ -86,8 +93,8 @@ func main() {
 		},
 
 		{
-			Name:    "add",
-			Usage:   "options for adding resources",
+			Name:  "add",
+			Usage: "options for adding resources",
 			Subcommands: []*cli.Command{
 				&nodeAddCommand,
 			},

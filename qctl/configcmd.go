@@ -158,7 +158,7 @@ var (
 			fmt.Println()
 			green.Println(fmt.Sprintf("  $> export QUBE_CONFIG=%s", configFile))
 			fmt.Println()
-			green.Println(fmt.Sprintf("  $> qctl generate network"))
+			green.Println(fmt.Sprintf("  $> qctl generate network --create"))
 			fmt.Println()
 			fmt.Println("**********************************************************************************************")
 			return nil

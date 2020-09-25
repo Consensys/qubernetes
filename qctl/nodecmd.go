@@ -487,16 +487,28 @@ var (
 				Usage: "display the keydir of the node",
 			},
 			&cli.BoolFlag{
-				Name:  "enodeurl",
-				Usage: "display the enodeurl of the node",
+				Name:    "enodeurl",
+				Aliases: []string{"enode"},
+				Usage:   "display the enodeurl of the node",
 			},
 			&cli.BoolFlag{
-				Name:  "gethparams",
-				Usage: "display the geth startup params of the node",
+				Name:    "gethparams",
+				Aliases: []string{"gp"},
+				Usage:   "display the geth startup params of the node",
+			},
+			&cli.BoolFlag{
+				Name:    "bare",
+				Aliases: []string{"b"},
+				Usage:   "display the minimum output, useful for scripts / automation",
 			},
 		},
 		Action: func(c *cli.Context) error {
-
+			// potentially show only this node
+			nodeName := c.Args().First()
+			nodeFound := true
+			if nodeName != "" { // if the user request a specific node, we want to make sure we let them know it was found or not.
+				nodeFound = false
+			}
 			isName := c.Bool("name")
 			isConsensus := c.Bool("consensus")
 			isQuorumVersion := c.Bool("quorumversion")
@@ -507,6 +519,7 @@ var (
 			isQuorumImageFull := c.Bool("qimagefull")
 			isGethParams := c.Bool("gethparams")
 			isAll := c.Bool("all")
+			isBare := c.Bool("bare")
 			k8sdir := c.String("k8sdir")
 			// set all values to true
 			if isAll {
@@ -545,19 +558,21 @@ var (
 				fmt.Println()
 				return cli.Exit("--config flag must be set to the fullpath of your config file.", 3)
 			}
-			fmt.Println()
-			green.Println("  Using config file:")
-			fmt.Println()
-			fmt.Println("  " + configFile)
-			fmt.Println()
-			if k8sdir != "" {
-				green.Println("  K8sdir set to:")
+			if !isBare {
 				fmt.Println()
-				fmt.Println("  " + k8sdir)
+				green.Println("  Using config file:")
+				fmt.Println()
+				fmt.Println("  " + configFile)
+				fmt.Println()
+				if k8sdir != "" {
+					green.Println("  K8sdir set to:")
+					fmt.Println()
+					fmt.Println("  " + k8sdir)
+					fmt.Println()
+				}
+				fmt.Println("*****************************************************************************************")
 				fmt.Println()
 			}
-			fmt.Println("*****************************************************************************************")
-			fmt.Println()
 			// the config file must exist or this is an error.
 			if fileExists(configFile) {
 				// check if config file is full path or relative path.
@@ -574,11 +589,36 @@ var (
 				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
 			}
 			currentNum := len(configFileYaml.Nodes)
-			fmt.Printf("config currently has %d nodes \n", currentNum)
-			for i := 0; i < len(configFileYaml.Nodes); i++ {
-				displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isGethParams)
+			if !isBare {
+				fmt.Printf("config currently has %d nodes \n", currentNum)
 			}
 
+			for i := 0; i < len(configFileYaml.Nodes); i++ {
+				if nodeName == "" { // node name not set always show node
+					if isBare { // show the bare version, cleaner for scripts.
+						displayNodeBare(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isGethParams)
+					} else {
+						displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isGethParams)
+					}
+				} else if nodeName == configFileYaml.Nodes[i].NodeUserIdent {
+					nodeFound = true
+					if isBare { // show the bare version, cleaner for scripts.
+						displayNodeBare(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isGethParams)
+					} else {
+						displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isGethParams)
+					}
+				}
+			}
+			// if the nodename was specified, but not found in the config, list the names of the nodes for the user.
+			if !nodeFound {
+				fmt.Println()
+				red.Println(fmt.Sprintf("  Node name [%s] not found in config file ", nodeName))
+				fmt.Println()
+				fmt.Println(fmt.Sprintf("  Node Names are: "))
+				for i := 0; i < len(configFileYaml.Nodes); i++ {
+					fmt.Println(fmt.Sprintf("    [%s]", configFileYaml.Nodes[i].NodeUserIdent))
+				}
+			}
 			return nil
 		},
 	}
@@ -624,6 +664,7 @@ func getEnodeId(nodeName, qubeK8sDir string) string {
 	w.Close()
 	c2.Wait()
 	enodeUrl := strings.TrimSpace(out.String())
+	enodeUrl = strings.ReplaceAll(enodeUrl, ",", "")
 	return enodeUrl
 }
 
@@ -662,4 +703,39 @@ func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, qu
 		green.Println(fmt.Sprintf("     [%s] geth params: [%s]", nodeEntry.NodeUserIdent, nodeEntry.GethEntry.GetStartupParams))
 	}
 	fmt.Println()
+}
+
+func displayNodeBare(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, quorumVersion, txManger, tmVersion, isEnodeUrl, isQuorumImageFull, isGethParms bool) {
+	if name {
+		fmt.Println(nodeEntry.NodeUserIdent)
+	}
+	if keydir {
+		fmt.Println(nodeEntry.KeyDir)
+	}
+	if consensus {
+		fmt.Println(nodeEntry.QuorumEntry.Quorum.Consensus)
+	}
+	if quorumVersion {
+		fmt.Println(nodeEntry.QuorumEntry.Quorum.QuorumVersion)
+	}
+	if txManger {
+		fmt.Println(nodeEntry.QuorumEntry.Tm.Name)
+	}
+	if tmVersion {
+		fmt.Println(nodeEntry.QuorumEntry.Tm.TmVersion)
+	}
+	if isQuorumImageFull {
+		fmt.Println(nodeEntry.QuorumEntry.Quorum.DockerRepoFull)
+	}
+	if isEnodeUrl {
+		if k8sdir == "" {
+			red.Println("Set --k8sdir flag or QUBE_K8S_DIR env in order to display enodeurl")
+		} else {
+			enodeUrl := getEnodeId(nodeEntry.NodeUserIdent, k8sdir)
+			fmt.Println(enodeUrl)
+		}
+	}
+	if isGethParms {
+		fmt.Println(nodeEntry.GethEntry.GetStartupParams)
+	}
 }

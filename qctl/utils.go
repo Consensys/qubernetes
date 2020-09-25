@@ -316,9 +316,13 @@ func waitForPodsReadyState(qconfigYaml QConfig) {
 	}
 	fmt.Println()
 	firstNode := nodeNames[0]
-	green.Println("  Your Quorum network is ready to go")
-	green.Println("  To geth attach to a node in the network, run: ")
+	green.Println("  Your Quorum network is ready to go!")
 	fmt.Println()
+	green.Println("  To run the test contract, check the block number and")
+	green.Println("  geth attach to a node in the network, run: ")
+	fmt.Println()
+	green.Println(fmt.Sprintf("    > qctl test contract %s", firstNode))
+	green.Println(fmt.Sprintf("    > qctl geth exec %s 'eth.blockNumber'", firstNode))
 	green.Println(fmt.Sprintf("    > qctl geth attach %s", firstNode))
 	fmt.Println()
 	fmt.Println()

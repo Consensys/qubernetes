@@ -253,7 +253,7 @@ var (
 			fmt.Println()
 			fmt.Println("*****************************************************************************************")
 			green.Println(fmt.Sprintf("  $> export QUBE_K8S_DIR=%s", k8sdir))
-			green.Println(fmt.Sprintf("  $> qctl deploy network"))
+			green.Println(fmt.Sprintf("  $> qctl deploy network --wait"))
 			fmt.Println("*****************************************************************************************")
 			fmt.Println()
 			return nil

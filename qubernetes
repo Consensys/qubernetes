@@ -219,14 +219,12 @@ puts "deployments"
 @Kubectl_Cmd="  $> kubectl apply -f out"
 if @sep_deployment_files
   `mkdir -p out/deployments`
-  ct=1
   @nodes.each do |node|
     set_node_template_vars(node)
     # create each deployment in a separate file.
-    File.open("out/deployments/0" + ct.to_s + "-quorum-single-deployment.yaml", "w") do |f|
+    File.open("out/deployments/" + @Node_UserIdent + "-quorum-deployment.yaml", "w") do |f|
       f.puts (ERB.new(File.read(@base_template_path + "/quorum-deployment.yaml.erb"), nil, "-").result)
     end
-    ct = ct + 1
   end
   @Kubectl_Cmd="  $> kubectl apply -f out -f out/deployments"
 else

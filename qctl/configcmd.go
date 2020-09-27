@@ -61,6 +61,11 @@ var (
 				Name:  "gethparams",
 				Usage: "additional geth startup params to run on the node.",
 			},
+			&cli.BoolFlag{
+				Name:  "monitor",
+				Usage: "enable monitoring on the geth / quorum node (prometheus).",
+				Value: false,
+			},
 		},
 
 		Action: func(c *cli.Context) error {
@@ -86,9 +91,9 @@ var (
 			chainId := c.String("chainid")
 			qimagefull := c.String("qimagefull")
 			gethparams := c.String("gethparams")
+			isMonitoring := c.Bool("monitor")
 
-			configYaml := GetYamlConfig()
-
+			configYaml := QConfig{}
 			for i := 1; i <= numberNodes; i++ {
 				quorum := Quorum{
 					Consensus:      consensus,
@@ -120,7 +125,11 @@ var (
 			configYaml.Genesis.Consensus = consensus
 			configYaml.Genesis.Chain_Id = chainId
 
-			//fmt.Println(config.ToString())
+			if isMonitoring {
+				//configYaml.Prometheus.NodePort = DefaultPrometheusNodePort
+				configYaml.Prometheus.Enabled = true
+			}
+			//fmt.Println(configYaml.ToString())
 			configBytes := []byte(configYaml.ToString())
 
 			// write the generated file out to disk this file will be used to initialize the network.

@@ -42,6 +42,10 @@ var (
 				serviceNames := serviceNamesFromPrefix(nodeName, namespace, false)
 				for _, serviceName := range serviceNames {
 					nodeServiceInfo := serviceInfoForNode(serviceName, urlType, namespace)
+					if strings.Contains(serviceName, "monitor") { // monitor only support nodeport
+						fmt.Println(" prometheus server - " + nodeIp + ":" + nodeServiceInfo.NodePortPrometheus)
+						break
+					}
 					if urlType == "nodeport" {
 						if nodeServiceInfo.NodePortCakeshop != "" {
 							fmt.Println("cakeshop - " + nodeIp + ":" + nodeServiceInfo.NodePortCakeshop)
@@ -73,9 +77,10 @@ type NodeServiceInfo struct {
 	ClusterIPTmURL       string
 	ClusterIPCakeshopURL string
 
-	NodePortGeth     string
-	NodePortTm       string
-	NodePortCakeshop string
+	NodePortGeth       string
+	NodePortTm         string
+	NodePortCakeshop   string
+	NodePortPrometheus string
 }
 
 func serviceInfoForNode(nodeName, urlType, namespace string) NodeServiceInfo {
@@ -85,6 +90,10 @@ func serviceInfoForNode(nodeName, urlType, namespace string) NodeServiceInfo {
 	for _, serviceName := range serviceNames {
 		serviceName = strings.TrimSpace(serviceName)
 		srvOut := serviceForPrefix(serviceName, namespace, false)
+		if strings.Contains(serviceName, "monitor") { // only support nodeport
+			nodePortProm := nodePortFormClusterPort(srvOut, DefaultPrometheusClusterPort)
+			nodeServiceInfo.NodePortPrometheus = nodePortProm
+		}
 		// NodePort will display the geth and tessera node ports for the specified node(s)
 		// the nodePort can be accessed via the %Node_IP%:NodePort, the $NodeIP must be obtained
 		// by the user, or outside this cli as various K8s have different ways of obtaining the $NodeIP, e.g.

@@ -45,12 +45,19 @@ type NodeEntry struct {
 	GethEntry     GethEntry   `yaml:"geth"`
 }
 
+type Prometheus struct {
+	//#monitor_params_geth: --metrics --metrics.expensive --pprof --pprofaddr=0.0.0.0
+	//monitorParamsGeth string `yaml:"monitor_params_geth"`
+	NodePort string `yaml:"nodePort_prom,omitempty"`
+	Enabled  bool   `yaml:"enabled,omitempty"`
+}
 type QConfig struct {
 	Genesis struct {
 		Consensus     string `yaml:"consensus"`
 		QuorumVersion string `yaml:"Quorum_Version"`
 		Chain_Id      string `yaml:"Chain_Id"`
 	}
+	Prometheus Prometheus `yaml:"prometheus,omitempty"`
 
 	Nodes []NodeEntry
 }

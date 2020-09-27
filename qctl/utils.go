@@ -16,13 +16,22 @@ var (
 	red   = color.New(color.FgRed)
 	green = color.New(color.FgGreen)
 
-	DefaultQuorumVersion        = "2.6.0"
+	DefaultQuorumVersion        = "2.7.0"
 	DefaultTmName               = "tessera"
-	DefaultTesseraVersion       = "0.10.4"
+	DefaultTesseraVersion       = "0.10.6"
 	DefaultConstellationVersion = "0.3.2"
 	DefaultConesensus           = "istanbul"
 	DefaultNodeNumber           = 4
 	DefaultChainId              = "1000"
+
+	DefaultGethPort    = "8545"
+	DefaultTesseraPort = "9080"
+
+	ServiceTypeNodePort  = "nodeport"
+	ServiceTypeClusterIP = "clusterip"
+
+	RaftConsensus     = "raft"
+	IstanbulConsensus = "istanbul"
 )
 
 func podNameFromPrefix(prefix string, namespace string) string {
@@ -150,7 +159,7 @@ func clusterIpForService(serviceOutputStr string) string {
 // get the NodePort for the given service output and the clusterPort (internal K8s port)
 // serviceOutput is the output of kubectl get service for a single service.
 // TODO slice awk output on ','
-func nodePortForClusterPort(serviceOutputStr string, clusterPort string) string {
+func nodePortFormClusterPort(serviceOutputStr string, clusterPort string) string {
 	c1 := exec.Command("echo", serviceOutputStr)
 	c2 := exec.Command("awk", `{print $5}`)
 	//fmt.Println(c1.String())
@@ -194,7 +203,7 @@ func nodePortForClusterPort(serviceOutputStr string, clusterPort string) string 
 	return nodePort
 }
 func nodePortForService(serviceOutputStr string) string {
-	return nodePortForClusterPort(serviceOutputStr, "")
+	return nodePortFormClusterPort(serviceOutputStr, "")
 }
 
 func showPods(namespace string) {

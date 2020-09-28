@@ -94,12 +94,12 @@ func serviceInfoForNode(nodeName, urlType, namespace string) NodeServiceInfo {
 			// minikube --> minikube ip
 			// > qctl get url --type=nodeport | sed "s/<K8s_NODE_IP>/$(minikube ip)/g"
 			// > qctl get url --type=nodeport --nodeip=$(minikube ip)
-			if urlType == ServiceTypeNodePort {
+			if strings.ToLower(urlType) == strings.ToLower(ServiceTypeNodePort) {
 				nodePortGeth := nodePortFormClusterPort(srvOut, DefaultGethPort)
 				nodePortTessera := nodePortFormClusterPort(srvOut, DefaultTesseraPort)
 				nodeServiceInfo.NodePortGeth = nodePortGeth
 				nodeServiceInfo.NodePortTm = nodePortTessera
-			} else if urlType == ServiceTypeClusterIP { // the internal IP:Port of the specified node(s)
+			} else if strings.ToLower(urlType) == strings.ToLower(ServiceTypeClusterIP) { // the internal IP:Port of the specified node(s)
 				clusterIp := clusterIpForService(srvOut)
 				nodeServiceInfo.ClusterIP = clusterIp
 				nodeServiceInfo.ClusterIPGethURL = clusterIp + ":" + DefaultGethPort

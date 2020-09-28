@@ -60,6 +60,19 @@ type Cakeshop struct {
 	}
 }
 
+type Ingress struct {
+	//OneToMany | OneToOne
+	Strategy string `yaml:"Strategy,omitempty"`
+	Host     string `yaml:"Host,omitempty"`
+}
+
+type K8s struct {
+	Service struct {
+		Type    string  `yaml:"type,omitempty"`
+		Ingress Ingress `yaml:"Ingress,omitempty"`
+	}
+}
+
 type QConfig struct {
 	Genesis struct {
 		Consensus     string `yaml:"consensus"`
@@ -68,7 +81,9 @@ type QConfig struct {
 	}
 	Prometheus Prometheus `yaml:"prometheus,omitempty"`
 	Cakeshop   Cakeshop   `yaml:"cakeshop,omitempty"`
-	Nodes      []NodeEntry
+	K8s        K8s        `yaml:"k8s,omitempty"`
+
+	Nodes []NodeEntry
 }
 
 func GetYamlConfig() QConfig {

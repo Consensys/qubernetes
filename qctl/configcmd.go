@@ -66,6 +66,11 @@ var (
 				Usage: "enable monitoring on the geth / quorum node (prometheus).",
 				Value: false,
 			},
+			&cli.BoolFlag{
+				Name:  "cakeshop",
+				Usage: "deploy cakeshop with the Quorum network.",
+				Value: false,
+			},
 		},
 
 		Action: func(c *cli.Context) error {
@@ -92,6 +97,7 @@ var (
 			qimagefull := c.String("qimagefull")
 			gethparams := c.String("gethparams")
 			isMonitoring := c.Bool("monitor")
+			isCakeshop := c.Bool("cakeshop")
 
 			configYaml := QConfig{}
 			for i := 1; i <= numberNodes; i++ {
@@ -129,7 +135,9 @@ var (
 				//configYaml.Prometheus.NodePort = DefaultPrometheusNodePort
 				configYaml.Prometheus.Enabled = true
 			}
-			//fmt.Println(configYaml.ToString())
+			if isCakeshop {
+				configYaml.Cakeshop.Version = "latest"
+			}
 			configBytes := []byte(configYaml.ToString())
 
 			// write the generated file out to disk this file will be used to initialize the network.

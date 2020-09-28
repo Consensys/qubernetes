@@ -8,6 +8,7 @@ import (
 
 // commands related to networking services.
 var (
+	//  qctl ls url --node=cakeshop --node=quorum --node-ip=$(minikube ip)
 	urlGetCommand = cli.Command{
 		Name:    "url",
 		Usage:   "list url for node(s)/pod(s)",
@@ -43,25 +44,15 @@ var (
 				for _, serviceName := range serviceNames {
 					nodeServiceInfo := serviceInfoForNode(serviceName, urlType, namespace)
 					if strings.Contains(serviceName, "monitor") { // monitor only support nodeport
-						fmt.Println(" prometheus server - " + nodeIp + ":" + nodeServiceInfo.NodePortPrometheus)
-						break
-					}
-					if urlType == "nodeport" {
-						if nodeServiceInfo.NodePortCakeshop != "" {
-							fmt.Println("cakeshop - " + nodeIp + ":" + nodeServiceInfo.NodePortCakeshop)
-						} else {
-							fmt.Println(" geth      - " + nodeIp + ":" + nodeServiceInfo.NodePortGeth)
-							fmt.Println(" tessera   - " + nodeIp + ":" + nodeServiceInfo.NodePortTm)
-						}
+						fmt.Println("prometheus server - " + nodeIp + ":" + nodeServiceInfo.NodePortPrometheus)
+					} else if strings.Contains(serviceName, "cakeshop") { // cakeshop only support nodeport
+						fmt.Println("cakeshop server - " + nodeIp + ":" + nodeServiceInfo.NodePortCakeshop)
+					} else if urlType == "nodeport" {
+						fmt.Println(serviceName + " geth      - " + nodeIp + ":" + nodeServiceInfo.NodePortGeth)
+						fmt.Println(serviceName + " tessera   - " + nodeIp + ":" + nodeServiceInfo.NodePortTm)
 					} else if urlType == "clusterip" { // the internal IP:Port of the specified node(s)
-						if nodeServiceInfo.ClusterIPCakeshopURL != "" {
-							//nodePort := nodePortForService(srvOut)
-							fmt.Println("cakeshop - " + nodeServiceInfo.ClusterIPCakeshopURL)
-						} else {
-							fmt.Println(" geth      - " + nodeServiceInfo.ClusterIPGethURL)
-							fmt.Println(" tessera   - " + nodeServiceInfo.ClusterIPTmURL)
-
-						}
+						fmt.Println(serviceName + " geth      - " + nodeServiceInfo.ClusterIPGethURL)
+						fmt.Println(serviceName + " tessera   - " + nodeServiceInfo.ClusterIPTmURL)
 					}
 				}
 			}
@@ -73,9 +64,9 @@ var (
 type NodeServiceInfo struct {
 	ClusterIP string
 
-	ClusterIPGethURL     string
-	ClusterIPTmURL       string
-	ClusterIPCakeshopURL string
+	ClusterIPGethURL string
+	ClusterIPTmURL   string
+	//ClusterIPCakeshopURL string
 
 	NodePortGeth       string
 	NodePortTm         string
@@ -93,30 +84,24 @@ func serviceInfoForNode(nodeName, urlType, namespace string) NodeServiceInfo {
 		if strings.Contains(serviceName, "monitor") { // only support nodeport
 			nodePortProm := nodePortFormClusterPort(srvOut, DefaultPrometheusClusterPort)
 			nodeServiceInfo.NodePortPrometheus = nodePortProm
-		}
-		// NodePort will display the geth and tessera node ports for the specified node(s)
-		// the nodePort can be accessed via the %Node_IP%:NodePort, the $NodeIP must be obtained
-		// by the user, or outside this cli as various K8s have different ways of obtaining the $NodeIP, e.g.
-		// minikube --> minikube ip
-		// > qctl get url --type=nodeport | sed "s/<K8s_NODE_IP>/$(minikube ip)/g"
-		// > qctl get url --type=nodeport --nodeip=$(minikube ip)
-		if urlType == ServiceTypeNodePort {
-			nodePortGeth := nodePortFormClusterPort(srvOut, DefaultGethPort)
-			nodePortTessera := nodePortFormClusterPort(srvOut, DefaultTesseraPort)
-			nodeServiceInfo.NodePortGeth = nodePortGeth
-			nodeServiceInfo.NodePortTm = nodePortTessera
-			if strings.Contains(serviceName, "cakeshop") {
-				nodePort := nodePortForService(srvOut)
-				nodeServiceInfo.NodePortCakeshop = nodePort
-			}
-		} else if urlType == ServiceTypeClusterIP { // the internal IP:Port of the specified node(s)
-			clusterIp := clusterIpForService(srvOut)
-			nodeServiceInfo.ClusterIP = clusterIp
-			if strings.Contains(serviceName, "cakeshop") {
-				nodePort := nodePortForService(srvOut)
-				fmt.Println(serviceName + "- " + clusterIp + ":" + nodePort)
-				nodeServiceInfo.ClusterIPCakeshopURL = clusterIp + ":" + nodePort
-			} else {
+		} else if strings.Contains(serviceName, "cakeshop") { // only support nodePort for now
+			nodePort := nodePortForService(srvOut)
+			nodeServiceInfo.NodePortCakeshop = nodePort
+		} else {
+			// NodePort will display the geth and tessera node ports for the specified node(s)
+			// the nodePort can be accessed via the %Node_IP%:NodePort, the $NodeIP must be obtained
+			// by the user, or outside this cli as various K8s have different ways of obtaining the $NodeIP, e.g.
+			// minikube --> minikube ip
+			// > qctl get url --type=nodeport | sed "s/<K8s_NODE_IP>/$(minikube ip)/g"
+			// > qctl get url --type=nodeport --nodeip=$(minikube ip)
+			if urlType == ServiceTypeNodePort {
+				nodePortGeth := nodePortFormClusterPort(srvOut, DefaultGethPort)
+				nodePortTessera := nodePortFormClusterPort(srvOut, DefaultTesseraPort)
+				nodeServiceInfo.NodePortGeth = nodePortGeth
+				nodeServiceInfo.NodePortTm = nodePortTessera
+			} else if urlType == ServiceTypeClusterIP { // the internal IP:Port of the specified node(s)
+				clusterIp := clusterIpForService(srvOut)
+				nodeServiceInfo.ClusterIP = clusterIp
 				nodeServiceInfo.ClusterIPGethURL = clusterIp + ":" + DefaultGethPort
 				nodeServiceInfo.ClusterIPTmURL = clusterIp + ":" + DefaultTesseraPort
 				//fmt.Println(serviceName + " geth      - " + clusterIp + ":" + DefaultGethPort)

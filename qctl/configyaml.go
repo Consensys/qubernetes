@@ -51,6 +51,15 @@ type Prometheus struct {
 	NodePort string `yaml:"nodePort_prom,omitempty"`
 	Enabled  bool   `yaml:"enabled,omitempty"`
 }
+
+type Cakeshop struct {
+	Version string `yaml:"version,omitempty"`
+	Service struct {
+		Type     string `yaml:"type,omitempty"`
+		NodePort string `yaml:"nodePort,omitempty"`
+	}
+}
+
 type QConfig struct {
 	Genesis struct {
 		Consensus     string `yaml:"consensus"`
@@ -58,8 +67,8 @@ type QConfig struct {
 		Chain_Id      string `yaml:"Chain_Id"`
 	}
 	Prometheus Prometheus `yaml:"prometheus,omitempty"`
-
-	Nodes []NodeEntry
+	Cakeshop   Cakeshop   `yaml:"cakeshop,omitempty"`
+	Nodes      []NodeEntry
 }
 
 func GetYamlConfig() QConfig {

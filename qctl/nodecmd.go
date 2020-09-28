@@ -6,6 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -34,7 +35,7 @@ var (
 			return nil
 		},
 	}
-
+	// qctl delete node --hard  quorum-node5
 	nodeDeleteCommand = cli.Command{
 		Name:  "node",
 		Usage: "delete node and its associated resources (hard delete).",
@@ -50,11 +51,11 @@ var (
 				Usage:   "The k8sdir (usually out) containing the output k8s resources",
 				EnvVars: []string{"QUBE_K8S_DIR"},
 			},
-			//&cli.StringFlag{
-			//	Name:     "name",
-			//	Usage:    "Unique name of node to delete",
-			//	Required: true,
-			//},
+			&cli.BoolFlag{ // this is only required if the user wants to delete the generated (k8s/quorum) resources as well.
+				Name:  "hard",
+				Usage: "delete all associated resources with this node, e.g. keys, configs, etc.",
+				Value: false,
+			},
 		},
 		Action: func(c *cli.Context) error {
 			if c.Args().Len() < 1 {
@@ -66,6 +67,7 @@ var (
 			// TODO: abstract this away as it is used in multiple places now.
 			configFile := c.String("config")
 			k8sdir := c.String("k8sdir")
+			isHardDelete := c.Bool("hard")
 			// get the current directory path, we'll use this in case the config file passed in was a relative path.
 			pwdCmd := exec.Command("pwd")
 			b := runCmd(pwdCmd)
@@ -73,10 +75,7 @@ var (
 
 			if configFile == "" {
 				c.App.Run([]string{"qctl", "help", "init"})
-
-				// QUBE_CONFIG or flag
 				fmt.Println()
-
 				fmt.Println()
 				red.Println("  --config flag must be provided.")
 				red.Println("             or ")
@@ -108,29 +107,78 @@ var (
 			}
 			configFileYaml, err := LoadYamlConfig(configFile)
 			if err != nil {
-				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
+				log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", configFile, err)
 			}
 			currentNum := len(configFileYaml.Nodes)
 			fmt.Printf("config currently has %d nodes \n", currentNum)
+			var nodeToDelete NodeEntry
 			for i := 0; i < len(configFileYaml.Nodes); i++ {
 				//displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull)
 				if configFileYaml.Nodes[i].NodeUserIdent == nodeName {
 					fmt.Println("Deleting node " + nodeName)
-					// Remove K8s key resources if k8s dir set
-					if k8sdir != "" {
-						keyDirToDelete := configFileYaml.Nodes[i].KeyDir
-						rmContents := exec.Command("rm", k8sdir+"/"+keyDirToDelete+"/*")
-						fmt.Println(rmContents)
-						rmdir := exec.Command("rmdir", k8sdir+"/"+keyDirToDelete)
-						fmt.Println(rmdir)
-						// TODO: delete  deployment, e.g. name: node5-deployment
+					nodeToDelete = configFileYaml.Nodes[i]
+					// try to remove the running k8s resources
+					stopNode(nodeName)
+					rmPersistentData(nodeName)
+					rmService(nodeName)
+					// TEST, if it is raft, remove it from the cluster
+					if configFileYaml.Nodes[i].QuorumEntry.Quorum.Consensus == "raft" {
+						// TODO: find a running node? it could either be the previous node or next node, check the index.
+						// run raft.removePeer(raftId)
 					}
+					// Delete the resources files associated with the node, e.g. keys, k8s files, etc.
+					if k8sdir != "" && isHardDelete {
+						red.Println("Is hard delete remove key files and directory")
+						keyDirToDelete := configFileYaml.Nodes[i].KeyDir
+						nodeToDeleteKeyDir := k8sdir + "/config/" + keyDirToDelete
+
+						// TODO: hard delete delete keys
+						//rmContents := exec.Command("rm", "-f", nodeToDeleteKeyDir+"/*")
+						// explicitly delete all the files that should be in the directory.
+						rmContents := exec.Command("rm", "-f", nodeToDeleteKeyDir+"/acctkeyfile.json")
+						dropIntoCmd(rmContents)
+						rmContents = exec.Command("rm", "-f", nodeToDeleteKeyDir+"/enode")
+						dropIntoCmd(rmContents)
+						rmContents = exec.Command("rm", "-f", nodeToDeleteKeyDir+"/nodekey")
+						dropIntoCmd(rmContents)
+						rmContents = exec.Command("rm", "-f", nodeToDeleteKeyDir+"/password.txt")
+						dropIntoCmd(rmContents)
+						rmContents = exec.Command("rm", "-f", nodeToDeleteKeyDir+"/tm.key")
+						dropIntoCmd(rmContents)
+						rmContents = exec.Command("rm", "-f", nodeToDeleteKeyDir+"/tm.pub")
+						dropIntoCmd(rmContents)
+						// instead of running  rm -r, run rmdir on what should be an empty dir,
+						// rmdir will return an error if the directory doesn't exist, so check if dir exists first.
+						_, err := os.Stat(nodeToDeleteKeyDir)
+						if os.IsNotExist(err) {
+							log.Fatal(fmt.Sprintf("Directory does not exist, ignoring dir [%s]", nodeToDeleteKeyDir))
+						} else {
+							rmdir := exec.Command("rmdir", nodeToDeleteKeyDir)
+							fmt.Println(rmdir)
+							dropIntoCmd(rmdir)
+						}
+
+						//rmdir := exec.Command("rm", "-r", "-f", nodeToDeleteKeyDir)
+
+					}
+					// TODO: delete k8s deployment file, e.g. name: quorum-node5-quorum-deployment.yaml
+					rmDeploymentFile := exec.Command("rm", "-f", k8sdir+"/deployments/"+nodeToDelete.NodeUserIdent+"-quorum-deployment.yaml")
+					runCmd(rmDeploymentFile)
+					// finally remove the node from the the qubernetes config, if the resources have not been delete,
+					// it can be added back using the old name and it will use the keys that have not been deleted.
 					configFileYaml.Nodes = append(configFileYaml.Nodes[:i], configFileYaml.Nodes[i+1:]...)
 				}
 			}
 
 			// write file back
 			WriteYamlConfig(configFileYaml, configFile)
+			green.Println(fmt.Sprintf("  Deleted node [%s]", nodeToDelete.NodeUserIdent))
+			if nodeToDelete.QuorumEntry.Quorum.Consensus == "raft" {
+				green.Println(fmt.Sprintf("  This was raft node, and has not been removed from the cluster. "))
+				green.Println(fmt.Sprintf("  To remove it from the current raft cluster, run on an healthy node: "))
+				green.Println(fmt.Sprintf("  qctl geth exec node1 'raft.cluster'"))
+				green.Println(fmt.Sprintf("  qctl geth exec node1 'raft.removePeer()'"))
+			}
 
 			return nil
 		},
@@ -738,4 +786,46 @@ func displayNodeBare(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir
 	if isGethParms {
 		fmt.Println(nodeEntry.GethEntry.GetStartupParams)
 	}
+}
+
+// stop node should just remove the deployment, and not delete any resources or persistent data.
+func stopNode(nodeName string) error {
+	// TODO: should there be a separate delete and remove node? where remove only removes it from the cluster, but delete removes all traces?
+	rmRunningDeployment := exec.Command("kubectl", "delete", "deployment", nodeName+"-deployment")
+	fmt.Println(rmRunningDeployment)
+	// TODO: run should return the error so we can handle it or ignore it.
+	var out bytes.Buffer
+	rmRunningDeployment.Stdout = &out
+	err := rmRunningDeployment.Run()
+	if err != nil { // log the error but don't throw any
+		log.Info("deployment not found in k8s, ignoring.")
+	}
+	return err
+}
+
+// TODO: handle errors, etc.
+func rmPersistentData(nodeName string) error {
+	// remove the persistent data.
+	rmPVC := exec.Command("kubectl", "delete", "pvc", nodeName+"-pvc")
+	fmt.Println(rmPVC)
+	var out bytes.Buffer
+	rmPVC.Stdout = &out
+	err := rmPVC.Run()
+	if err != nil { // log the error but don't throw any
+		log.Info("PVC / Persistent data not found in k8s, ignoring.")
+	}
+	return err
+}
+
+func rmService(nodeName string) error {
+	// remove the persistent data.
+	rmService := exec.Command("kubectl", "delete", "service", nodeName)
+	fmt.Println(rmService)
+	var out bytes.Buffer
+	rmService.Stdout = &out
+	err := rmService.Run()
+	if err != nil { // log the error but don't throw any
+		log.Info("service not found in k8s, ignoring.")
+	}
+	return err
 }

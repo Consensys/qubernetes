@@ -71,6 +71,11 @@ var (
 				Usage: "deploy cakeshop with the Quorum network.",
 				Value: false,
 			},
+			&cli.BoolFlag{
+				Name:  "ingress",
+				Usage: "include a k8s ingress with the Quorum network.",
+				Value: false,
+			},
 		},
 
 		Action: func(c *cli.Context) error {
@@ -99,6 +104,9 @@ var (
 			isMonitoring := c.Bool("monitor")
 			isCakeshop := c.Bool("cakeshop")
 
+			// k8s specific
+			isIngress := c.Bool("ingress")
+
 			configYaml := QConfig{}
 			for i := 1; i <= numberNodes; i++ {
 				quorum := Quorum{
@@ -113,6 +121,12 @@ var (
 				quorumEntry := QuorumEntry{
 					Quorum: quorum,
 					Tm:     tm,
+				}
+				// for now we need to replace =" with =\"  and *" with *\"
+				// this cleans the params for inserting them into the pod, as " must be escaped.
+				if gethparams != "" {
+					gethparams = strings.ReplaceAll(gethparams, "=\"", "=\\\"")
+					gethparams = strings.ReplaceAll(gethparams, "*\"", "*\\\"")
 				}
 				gethEntry := GethEntry{
 					GetStartupParams: gethparams,
@@ -137,6 +151,11 @@ var (
 			}
 			if isCakeshop {
 				configYaml.Cakeshop.Version = "latest"
+			}
+
+			if isIngress {
+				configYaml.K8s.Service.Type = ServiceTypeNodePort
+				configYaml.K8s.Service.Ingress.Strategy = "OneToMany"
 			}
 			configBytes := []byte(configYaml.ToString())
 

@@ -30,8 +30,8 @@ var (
 	DefaultPrometheusClusterPort = "9090"
 	DefaultPrometheusNodePort    = "31323"
 
-	ServiceTypeNodePort  = "nodeport"
-	ServiceTypeClusterIP = "clusterip"
+	ServiceTypeNodePort  = "NodePort"
+	ServiceTypeClusterIP = "ClusterIP"
 
 	RaftConsensus     = "raft"
 	IstanbulConsensus = "istanbul"

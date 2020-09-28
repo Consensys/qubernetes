@@ -52,7 +52,7 @@ func main() {
 			Subcommands: []*cli.Command{
 				&networkDeleteCommand,
 				// TODO: Think this through a bit, hard delete vs soft delete, etc.
-				//&nodeDeleteCommand,
+				&nodeDeleteCommand,
 			},
 		},
 		{

@@ -56,6 +56,13 @@ func main() {
 			},
 		},
 		{
+			Name:  "stop",
+			Usage: "options for stopping nodes.",
+			Subcommands: []*cli.Command{
+				&nodeStopCommand,
+			},
+		},
+		{
 			Name:  "update",
 			Usage: "options for updating nodes / resources",
 			Subcommands: []*cli.Command{

@@ -183,6 +183,112 @@ var (
 			return nil
 		},
 	}
+
+	/*
+	 * stops the give node, stopping will only remove the deployment from the K8s cluster, it will not remove any other
+	 * associated resources, such as the PVC (persistent volume claim) therefore maintaining the state of the node. The
+	 * services, key, and other resources are kept.
+	 * The node can be restarted again, by running `qctl network create`
+	 *
+	 * > qctl stop node quorum-node5
+	 */
+	nodeStopCommand = cli.Command{
+		Name:  "node",
+		Usage: "stop the node(s) by deleting the associated K8s deployment.",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "config, c",
+				Usage:    "Load configuration from `FULL_PATH_FILE`",
+				EnvVars:  []string{"QUBE_CONFIG"},
+				Required: true,
+			},
+		},
+		Action: func(c *cli.Context) error {
+			if c.Args().Len() < 1 {
+				c.App.Run([]string{"qctl", "help", "stop", "node"})
+				return cli.Exit("wrong number of arguments", 2)
+			}
+			nodeName := c.Args().First()
+
+			// TODO: abstract this away as it is used in multiple places now.
+			configFile := c.String("config")
+			// get the current directory path, we'll use this in case the config file passed in was a relative path.
+			pwdCmd := exec.Command("pwd")
+			b := runCmd(pwdCmd)
+			pwd := strings.TrimSpace(b.String())
+
+			if configFile == "" {
+				c.App.Run([]string{"qctl", "help", "init"})
+				fmt.Println()
+				fmt.Println()
+				red.Println("  --config flag must be provided.")
+				red.Println("             or ")
+				red.Println("     QUBE_CONFIG environment variable needs to be set to your config file.")
+				fmt.Println()
+				red.Println(" If you need to generate a qubernetes.yaml config use the command: ")
+				fmt.Println()
+				green.Println("   qctl generate config")
+				fmt.Println()
+				return cli.Exit("--config flag must be set to the fullpath of your config file.", 3)
+			}
+			fmt.Println()
+			green.Println("  Using config file:")
+			fmt.Println()
+			fmt.Println("  " + configFile)
+			fmt.Println()
+			fmt.Println("*****************************************************************************************")
+			fmt.Println()
+			// the config file must exist or this is an error.
+			if fileExists(configFile) {
+				// check if config file is full path or relative path.
+				if !strings.HasPrefix(configFile, "/") {
+					configFile = pwd + "/" + configFile
+				}
+
+			} else {
+				c.App.Run([]string{"qctl", "help", "init"})
+				return cli.Exit(fmt.Sprintf("ConfigFile must exist! Given configFile [%v]", configFile), 3)
+			}
+			configFileYaml, err := LoadYamlConfig(configFile)
+			if err != nil {
+				log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", configFile, err)
+			}
+			currentNum := len(configFileYaml.Nodes)
+			fmt.Printf("config currently has %d nodes \n", currentNum)
+			var nodeToStop NodeEntry
+			for i := 0; i < len(configFileYaml.Nodes); i++ {
+				if configFileYaml.Nodes[i].NodeUserIdent == nodeName {
+					fmt.Println("Stopping node " + nodeName)
+					nodeToStop = configFileYaml.Nodes[i]
+					// try to remove the running k8s resources
+					stopNode(nodeName)
+					green.Println(fmt.Sprintf("  Stopped node [%s]", nodeToStop.NodeUserIdent))
+					green.Println()
+					green.Println("  to restart node run: ")
+					green.Println()
+					green.Println(fmt.Sprintf("    qctl deploy network"))
+					green.Println()
+					if nodeToStop.QuorumEntry.Quorum.Consensus == "raft" {
+						green.Println(fmt.Sprintf("  This was raft node, and has not been removed from the cluster. "))
+						green.Println(fmt.Sprintf("  To remove it from the current raft cluster, run on an healthy node: "))
+						green.Println(fmt.Sprintf("  qctl geth exec node1 'raft.cluster'"))
+						green.Println(fmt.Sprintf("  qctl geth exec node1 'raft.removePeer()'"))
+					}
+				}
+			}
+			if nodeToStop.NodeUserIdent == "" {
+				fmt.Println()
+				red.Println(fmt.Sprintf("  Node [%s] not found in config", nodeName))
+				fmt.Println()
+				red.Println(fmt.Sprintf("  To list nodes run:"))
+				fmt.Println()
+				red.Println("    qctl ls nodes ")
+				fmt.Println()
+			}
+
+			return nil
+		},
+	}
 	//qctl add node --id=node3 --consensus=ibft --quorum
 	//TODO: get the defaults from the config file.
 	nodeAddCommand = cli.Command{

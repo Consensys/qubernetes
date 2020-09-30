@@ -9,8 +9,9 @@ import (
 var (
 	// qctl test contract --private node1
 	testContractCmd = cli.Command{
-		Name:  "contract",
-		Usage: "deploy the test contract(s) on a node.",
+		Name:    "contract",
+		Aliases: []string{"contracts"},
+		Usage:   "deploy the test contract(s) on a node.",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:  "both",

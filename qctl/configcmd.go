@@ -159,9 +159,11 @@ var (
 			}
 			configBytes := []byte(configYaml.ToString())
 
-			// write the generated file out to disk this file will be used to initialize the network.
-			ioutil.WriteFile(configFile, configBytes, 0644)
-
+			// try to write the generated file out to disk this file will be used to initialize the network.
+			err := ioutil.WriteFile(configFile, configBytes, 0644)
+			if err != nil {
+				log.Fatal("error writing configFile to [%v]. err: [%v]", configFile, err)
+			}
 			// TODO: check the config file was properly generated
 			// Set the configfile to the full path
 			if fileExists(configFile) {

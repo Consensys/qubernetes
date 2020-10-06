@@ -146,9 +146,12 @@ var (
 			//fmt.Println(config.ToString())
 			configBytes := []byte(acceptanceTestYaml)
 			acceptanceTestYamlFile := k8sdir + "/config/application-qctl-generated.yml"
-			// write the generated file out to disk this file will be used to initialize the network.
+			// try writing the generated file out to disk this file will be used to initialize the network.
 			// TODO: it might be best to store in K8s itself
-			ioutil.WriteFile(acceptanceTestYamlFile, configBytes, 0644)
+			err = ioutil.WriteFile(acceptanceTestYamlFile, configBytes, 0644)
+			if err != nil {
+				log.Fatal("error writing acceptanceTestYamlFil to [%v]. err: [%v]", acceptanceTestYamlFile, err)
+			}
 			return nil
 		},
 	}
@@ -180,9 +183,9 @@ var (
 				Required: true,
 			},
 			&cli.StringFlag{
-				Name:  "tags",
+				Name:    "tags",
 				Aliases: []string{"t", "tag"},
-				Usage: "tags indicating which test to run, if not set, defaults to: (basic || basic-{CONSENSUS} || networks/typical::{CONSENSUS}) && !extension ",
+				Usage:   "tags indicating which test to run, if not set, defaults to: (basic || basic-{CONSENSUS} || networks/typical::{CONSENSUS}) && !extension ",
 			},
 		},
 		Action: func(c *cli.Context) error {
@@ -218,10 +221,13 @@ var (
 			// if an acceptance test config file wasn't provided, create one against the running network now.
 			acceptanceTestYaml := createAcceptanceTestConfigString(configFileYaml, k8sNodeIp)
 			configBytes := []byte(acceptanceTestYaml)
-			// write the generated file out to disk this file will be used to initialize the network.
+			// try writing the generated file out to disk this file will be used to initialize the network.
 			// TODO: it might be best to store in K8s itself
 			acceptanceTestYamlFile := k8sdir + "/config/application-qctl-generated.yml"
-			ioutil.WriteFile(acceptanceTestYamlFile, configBytes, 0644)
+			err = ioutil.WriteFile(acceptanceTestYamlFile, configBytes, 0644)
+			if err != nil {
+				log.Fatal("error writing acceptanceTestYamlFil to [%v]. err: [%v]", acceptanceTestYamlFile, err)
+			}
 
 			acceptanceTestProfile := "qctl-generated"
 			// Depending on the consensus (raft or istanbul) of the network, set the tags accordingly.

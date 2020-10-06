@@ -117,7 +117,7 @@ func WriteYamlConfig(qconfig QConfig, filename string) (QConfig, error) {
 		log.Fatalf("error: %v", err)
 		return qconfig, err
 	}
-	ioutil.WriteFile(filename, bs, os.ModePerm)
+	err = ioutil.WriteFile(filename, bs, os.ModePerm)
 	return qconfig, err
 }
 

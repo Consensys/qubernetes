@@ -935,3 +935,27 @@ func rmService(nodeName string) error {
 	}
 	return err
 }
+
+func getTmPublicKey(nodeName string) string {
+	//c1 := exec.Command("cat", qubeK8sDir+"/config/" + nodeKeyDir + "tm.pub")
+	//kc get configMaps quorum-node3-tm-key-config -o yaml | grep "tm.pub:"
+	c1 := exec.Command("kubectl", "get", "configMap", nodeName+"-tm-key-config", "-o", "yaml")
+	c2 := exec.Command("grep", "tm.pub:")
+
+	r, w := io.Pipe()
+	c1.Stdout = w
+	c2.Stdin = r
+
+	var out bytes.Buffer
+	c2.Stdout = &out
+	c1.Start()
+	c2.Start()
+	c1.Wait()
+	w.Close()
+	c2.Wait()
+	// output will look like:
+	// tm.pub: dF+Y81qRKI3Noh6ldI+FnQmqmjRYvOqLCaooTi5txi4=
+	tmPublicKey := strings.ReplaceAll(out.String(), "tm.pub:", "")
+	tmPublicKey = strings.TrimSpace(tmPublicKey)
+	return tmPublicKey
+}

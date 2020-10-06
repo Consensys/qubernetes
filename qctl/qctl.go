@@ -36,6 +36,7 @@ func main() {
 			Usage: "run tests against the running network",
 			Subcommands: []*cli.Command{
 				&testContractCmd,
+				&acceptanceTestRunCmd,
 			},
 		},
 		{

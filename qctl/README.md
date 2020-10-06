@@ -25,6 +25,7 @@ COMMANDS:
    test             run tests against the running network
    generate         options for generating base config / resources
    delete, destroy  options for deleting networks / resources
+   stop             options for stopping nodes.
    update           options for updating nodes / resources
    deploy           options for deploying networks / resources to K8s
    geth             options for interacting with geth
@@ -52,8 +53,8 @@ The Quorum network values are:
 
   num nodes = 4
   consensus = istanbul
-  quorumVersion = 2.6.0
-  tmVersion = 0.10.4
+  quorumVersion = 2.7.0
+  tmVersion = 0.10.6
   transactionnManger = tessera
   chainId = 1000
 
@@ -73,9 +74,9 @@ $> qctl generate network --create
   Network Configuration:
   num nodes = 4
   consensus = istanbul
-  quorumVersion = 2.6.0
+  quorumVersion = 2.7.0
   (node1) txManger = tessera
-  (node1) tmVersion = 0.10.4
+  (node1) tmVersion = 0.10.6
   (node1) chainId = 1000
 
   To enable future commands, e.g. qctl create network, qctl delete network, to use this network
@@ -95,7 +96,7 @@ $>  export QUBE_K8S_DIR=/Users/matcha/Workspace.Quorum/qctl-config/out
 This requires a running K8s network, either local (kind, minikube, docker on desktop) or cloud provider (GKE, EKS, Azure),
 or other managed K8s runtime.
 
-Start up your K8s environment, e.g. `minikube start --memory 8192`
+Start up your K8s environment, e.g. `minikube start --memory 6144`
 
 ```
 $> export QUBE_K8S_DIR=/Users/matcha/Workspace.Quorum/qctl-config/out
@@ -116,6 +117,7 @@ $> qctl ls nodes
 $> qctl ls nodes --all
 $> qctl ls nodes --bare --enode
 $> qctl ls nodes --bare --enode quorum-node1
+"enode://3a1912d30257c99d10f3795bff6731493f7985dfaf188f85f46ff8c8074d98a456eab1a850a6f57cdc3f28611cbfb10da001e7a3f10a73baaf095866b7f1acb1@quorum-node1:30303?discport=0&raftport=50401"
 
 ## To add a new node to the network run: add, generate, deploy
 ## 1. add the node to the config
@@ -134,9 +136,9 @@ $> qctl deploy network --wait
 ### Run the test contract on the node (public/private) 
 ```
 # tests both private and public contract deployment, if not flag is specified.
-> qctl test contract node1
-> qctl test contract node1 --private
-> qctl test contract node1 --public
+> qctl test contract quorum-node1
+> qctl test contract quorum-node1 --private
+> qctl test contract quorum-node1 --public
 ```
 
 ### Execute a geth command on a specific node
@@ -146,7 +148,18 @@ $> qctl deploy network --wait
 
 ### Attach to geth on a specific node
 ```
-> qctl geth attach node1
+> qctl geth attach quorum-node1
+
+connecting to geth /etc/quorum/qdata
+Welcome to the Geth JavaScript console!
+
+instance: Geth/v1.9.7-stable-6005360c(quorum-v2.7.0)/linux-amd64/go1.13.13
+coinbase: 0x5dc833a384369714e05d1311e40a8b244be772af
+at block: 19 (Tue, 06 Oct 2020 00:24:05 UTC)
+ datadir: /etc/quorum/qdata/dd
+ modules: admin:1.0 debug:1.0 eth:1.0 istanbul:1.0 miner:1.0 net:1.0 personal:1.0 quorumExtension:1.0 rpc:1.0 txpool:1.0 web3:1.0
+
+>
 ```
 
 ### Follow Quorum Logs
@@ -158,3 +171,9 @@ $> qctl deploy network --wait
 ```
 > qctl logs -f quorum-node1 tessera 
 ```
+
+### (for developers) Run the acceptance test
+example running with minikube
+```
+> qctl test accepttest --node-ip=$(minikube ip)
+``` 

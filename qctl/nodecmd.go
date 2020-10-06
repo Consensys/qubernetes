@@ -496,10 +496,10 @@ var (
 			if keyDir == "" {
 				keyDir = fmt.Sprintf("key-%s", name)
 			}
-			//consensus := c.String("consensus")
-			//quorumVersion := c.String("qversion")
-			//tmVersion := c.String("tmversion")
-			//txManger := c.String("tm")
+			consensus := c.String("consensus")
+			quorumVersion := c.String("qversion")
+			tmVersion := c.String("tmversion")
+			txManger := c.String("tm")
 			quorumImageFull := c.String("qimagefull")
 			gethparams := c.String("gethparams")
 			configFile := c.String("config")
@@ -559,6 +559,18 @@ var (
 					}
 					if quorumImageFull != "" {
 						nodeEntry.QuorumEntry.Quorum.DockerRepoFull = quorumImageFull
+					}
+					if quorumVersion != "" {
+						nodeEntry.QuorumEntry.Quorum.QuorumVersion = quorumVersion
+					}
+					if tmVersion != "" {
+						nodeEntry.QuorumEntry.Tm.TmVersion = tmVersion
+					}
+					if txManger != "" {
+						nodeEntry.QuorumEntry.Tm.Name = txManger
+					}
+					if consensus != "" {
+						nodeEntry.QuorumEntry.Quorum.Consensus = consensus
 					}
 					updatedNode = nodeEntry
 					configFileYaml.Nodes[i] = updatedNode

@@ -3,12 +3,13 @@ package main
 import (
 	"bytes"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
 	"io"
 	"os"
 	"os/exec"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 )
 
 var (
@@ -396,7 +397,7 @@ var (
 				nodeEntry := configFileYaml.Nodes[i]
 				if name == nodeEntry.NodeUserIdent {
 					red.Println(fmt.Sprintf("Node name [%s] already exist!", name))
-					displayNode("", nodeEntry, true, true, true, true, true, true, false, true, true)
+					displayNode("", nodeEntry, true, true, true, true, true, true, false, true, true, true)
 					red.Println(fmt.Sprintf("Node name [%s] exists", name))
 					return cli.Exit(fmt.Sprintf("Node name [%s] exists, node names must be unique", name), 3)
 				}
@@ -425,7 +426,7 @@ var (
 			configFileYaml.Nodes = append(configFileYaml.Nodes, nodeEntry)
 			fmt.Println()
 			green.Println("Adding Node: ")
-			displayNode("", nodeEntry, true, true, true, true, true, true, false, true, true)
+			displayNode("", nodeEntry, true, true, true, true, true, true, false, true, true, true)
 			// write file back
 			WriteYamlConfig(configFileYaml, configFile)
 			fmt.Println("The node(s) have been added to the config file [%s]", configFile)
@@ -485,6 +486,10 @@ var (
 				Usage: "The full repo + image name of the quorum image.",
 			},
 			&cli.StringFlag{
+				Name:  "tmimagefull",
+				Usage: "The full repo + image name of the tm image.",
+			},
+			&cli.StringFlag{
 				Name:  "gethparams",
 				Usage: "Set the geth startup params.",
 			},
@@ -501,6 +506,7 @@ var (
 			tmVersion := c.String("tmversion")
 			txManger := c.String("tm")
 			quorumImageFull := c.String("qimagefull")
+			tmImageFull := c.String("tmimagefull")
 			gethparams := c.String("gethparams")
 			configFile := c.String("config")
 
@@ -553,12 +559,15 @@ var (
 			for i := 0; i < len(configFileYaml.Nodes); i++ {
 				nodeEntry := configFileYaml.Nodes[i]
 				if name == nodeEntry.NodeUserIdent {
-					displayNode("", nodeEntry, true, true, true, true, true, true, false, true, true)
+					displayNode("", nodeEntry, true, true, true, true, true, true, false, true, true, true)
 					if gethparams != "" {
 						nodeEntry.GethEntry.GetStartupParams = gethparams
 					}
 					if quorumImageFull != "" {
 						nodeEntry.QuorumEntry.Quorum.DockerRepoFull = quorumImageFull
+					}
+					if tmImageFull != "" {
+						nodeEntry.QuorumEntry.Tm.DockerRepoFull = tmImageFull
 					}
 					if quorumVersion != "" {
 						nodeEntry.QuorumEntry.Quorum.QuorumVersion = quorumVersion
@@ -590,7 +599,7 @@ var (
 			fmt.Println(fmt.Sprintf("Updating node [%s] key dir [%s]", name, keyDir))
 			fmt.Println()
 			green.Println("Updating Node: ")
-			displayNode("", updatedNode, true, true, true, true, true, true, false, true, true)
+			displayNode("", updatedNode, true, true, true, true, true, true, false, true, true, true)
 			// write file back
 			WriteYamlConfig(configFileYaml, configFile)
 			fmt.Println("The node have been updated the config file [%s]", configFile)
@@ -640,6 +649,14 @@ var (
 				Name:  "quorumversion",
 				Usage: "display the quorumversion of the node",
 			},
+			&cli.StringFlag{
+				Name:  "qimagefull",
+				Usage: "The full repo + image name of the quorum image.",
+			},
+			&cli.StringFlag{
+				Name:  "tmimagefull",
+				Usage: "The full repo + image name of the tm image.",
+			},
 			&cli.BoolFlag{
 				Name:  "tmname",
 				Usage: "display the tm name of the node",
@@ -683,6 +700,7 @@ var (
 			isKeyDir := c.Bool("keydir")
 			isEnodeUrl := c.Bool("enodeurl")
 			isQuorumImageFull := c.Bool("qimagefull")
+			isTmImageFull := c.Bool("tmimagefull")
 			isGethParams := c.Bool("gethparams")
 			isAll := c.Bool("all")
 			isBare := c.Bool("bare")
@@ -698,6 +716,7 @@ var (
 					isEnodeUrl = true
 				}
 				isQuorumImageFull = true
+				isTmImageFull = true
 				isGethParams = true
 			}
 			configFile := c.String("config")
@@ -762,16 +781,16 @@ var (
 			for i := 0; i < len(configFileYaml.Nodes); i++ {
 				if nodeName == "" { // node name not set always show node
 					if isBare { // show the bare version, cleaner for scripts.
-						displayNodeBare(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isGethParams)
+						displayNodeBare(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParams)
 					} else {
-						displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isGethParams)
+						displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParams)
 					}
 				} else if nodeName == configFileYaml.Nodes[i].NodeUserIdent {
 					nodeFound = true
 					if isBare { // show the bare version, cleaner for scripts.
-						displayNodeBare(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isGethParams)
+						displayNodeBare(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParams)
 					} else {
-						displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isGethParams)
+						displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParams)
 					}
 				}
 			}
@@ -834,7 +853,7 @@ func getEnodeId(nodeName, qubeK8sDir string) string {
 	return enodeUrl
 }
 
-func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, quorumVersion, txManger, tmVersion, isEnodeUrl, isQuorumImageFull, isGethParms bool) {
+func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, quorumVersion, txManger, tmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParms bool) {
 	fmt.Println()
 	green.Println(fmt.Sprintf("     [%s] unique name", nodeEntry.NodeUserIdent))
 	if keydir {
@@ -855,6 +874,9 @@ func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, qu
 	if isQuorumImageFull {
 		green.Println(fmt.Sprintf("     [%s] quorumImage: [%s]", nodeEntry.NodeUserIdent, nodeEntry.QuorumEntry.Quorum.DockerRepoFull))
 	}
+	if isTmImageFull {
+		green.Println(fmt.Sprintf("     [%s] tmImage: [%s]", nodeEntry.NodeUserIdent, nodeEntry.QuorumEntry.Tm.DockerRepoFull))
+	}
 	if isEnodeUrl {
 		if k8sdir == "" {
 			red.Println("Set --k8sdir flag or QUBE_K8S_DIR env in order to display enodeurl")
@@ -871,7 +893,7 @@ func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, qu
 	fmt.Println()
 }
 
-func displayNodeBare(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, quorumVersion, txManger, tmVersion, isEnodeUrl, isQuorumImageFull, isGethParms bool) {
+func displayNodeBare(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, quorumVersion, txManger, tmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParms bool) {
 	if name {
 		fmt.Println(nodeEntry.NodeUserIdent)
 	}
@@ -892,6 +914,9 @@ func displayNodeBare(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir
 	}
 	if isQuorumImageFull {
 		fmt.Println(nodeEntry.QuorumEntry.Quorum.DockerRepoFull)
+	}
+	if isTmImageFull {
+		fmt.Println(nodeEntry.QuorumEntry.Tm.DockerRepoFull)
 	}
 	if isEnodeUrl {
 		if k8sdir == "" {

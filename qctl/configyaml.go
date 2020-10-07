@@ -35,8 +35,9 @@ type Quorum struct {
 }
 
 type Tm struct {
-	Name      string `yaml:"Name"`
-	TmVersion string `yaml:"Tm_Version"`
+	Name           string `yaml:"Name"`
+	TmVersion      string `yaml:"Tm_Version"`
+	DockerRepoFull string `yaml:"Docker_Repo_Full"` //tessera-local:latest
 }
 
 type NodeEntry struct {

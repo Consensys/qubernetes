@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os/exec"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
-	"os/exec"
 )
 
 var (

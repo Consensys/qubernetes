@@ -59,6 +59,10 @@ var (
 				Usage: "The full repo + image name of the quorum image.",
 			},
 			&cli.StringFlag{
+				Name:  "tmimagefull",
+				Usage: "The full repo + image name of the tm image.",
+			},
+			&cli.StringFlag{
 				Name:  "gethparams",
 				Usage: "additional geth startup params to run on the node.",
 			},
@@ -101,6 +105,7 @@ var (
 			consensus := c.String("consensus")
 			chainId := c.String("chainid")
 			qimagefull := c.String("qimagefull")
+			tmImageFull := c.String("tmimagefull")
 			gethparams := c.String("gethparams")
 			isMonitoring := c.Bool("monitor")
 			isCakeshop := c.Bool("cakeshop")
@@ -116,8 +121,9 @@ var (
 					DockerRepoFull: qimagefull,
 				}
 				tm := Tm{
-					Name:      transactionManger,
-					TmVersion: tmVersion,
+					Name:           transactionManger,
+					TmVersion:      tmVersion,
+					DockerRepoFull: tmImageFull,
 				}
 				quorumEntry := QuorumEntry{
 					Quorum: quorum,

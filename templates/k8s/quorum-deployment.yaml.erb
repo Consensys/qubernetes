@@ -80,7 +80,12 @@ spec:
       containers:
     <%- if @Tm_Name == "constellation"  -%>
       - name: constellation
+        <%- if @TM_Docker_Repo_Full != "" -%>
+        image: <%= @TM_Docker_Repo_Full %>
+        imagePullPolicy: Never
+        <%- else -%>
         image:  <%= @Tm_Docker_Repo %>/constellation:<%= @Tm_Version %>
+        <%- end -%>
         command: ["sh"]
         args:
         - "-cx"
@@ -98,7 +103,12 @@ spec:
            /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
      <%- else -%>
       - name: tessera
+        <%- if @TM_Docker_Repo_Full != "" -%>
+        image: <%= @TM_Docker_Repo_Full %>
+        imagePullPolicy: Never
+        <%- else -%>
         image: <%= @Tm_Docker_Repo %>/tessera:<%= @Tm_Version %>
+        <%- end -%>
         command: ["sh"]
         args:
         - "-cx"

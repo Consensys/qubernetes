@@ -56,7 +56,11 @@ def set_node_template_vars(values)
   if values.dig("quorum","tm","Docker_Repo")
     @Tm_Docker_Repo = values["quorum"]["tm"]["Docker_Repo"]
   end
-
+  # Allow the user to set the full repo, e.g. tessera-local, e.g. the case they are using skaffold, or other local dev.
+  @TM_Docker_Repo_Full = ""
+  if values.dig("quorum","tm", "Docker_Repo_Full")
+    @TM_Docker_Repo_Full = values["quorum"]["tm"]["Docker_Repo_Full"]
+  end
   return
 end
 

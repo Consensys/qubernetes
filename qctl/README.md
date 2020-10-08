@@ -55,7 +55,7 @@ The Quorum network values are:
   consensus = istanbul
   quorumVersion = 2.7.0
   tmVersion = 0.10.6
-  transactionnManger = tessera
+  transactionManager = tessera
   chainId = 1000
 
 To set this as your default config for future commands, run:
@@ -75,7 +75,7 @@ $> qctl generate network --create
   num nodes = 4
   consensus = istanbul
   quorumVersion = 2.7.0
-  (node1) txManger = tessera
+  (node1) txManager = tessera
   (node1) tmVersion = 0.10.6
   (node1) chainId = 1000
 

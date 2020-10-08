@@ -346,7 +346,7 @@ var (
 			consensus := c.String("consensus")
 			quorumVersion := c.String("qversion")
 			tmVersion := c.String("tmversion")
-			txManger := c.String("tm")
+			txManager := c.String("tm")
 			quorumImageFull := c.String("qimagefull")
 
 			configFile := c.String("config")
@@ -413,8 +413,8 @@ var (
 				consensus = configFileYaml.Genesis.Consensus
 			}
 			// for the transaction manager, set the defaults to what is available on the first node.
-			if txManger == "" {
-				txManger = configFileYaml.Nodes[0].QuorumEntry.Tm.Name
+			if txManager == "" {
+				txManager = configFileYaml.Nodes[0].QuorumEntry.Tm.Name
 			}
 			if tmVersion == "" {
 				tmVersion = configFileYaml.Nodes[0].QuorumEntry.Tm.TmVersion
@@ -422,7 +422,7 @@ var (
 			fmt.Println(fmt.Sprintf("Adding node [%s] key dir [%s]", name, keyDir))
 			currentNum := len(configFileYaml.Nodes)
 			fmt.Println(fmt.Sprintf("config currently has %d nodes", currentNum))
-			nodeEntry := createNodeEntry(name, keyDir, consensus, quorumVersion, txManger, tmVersion, quorumImageFull)
+			nodeEntry := createNodeEntry(name, keyDir, consensus, quorumVersion, txManager, tmVersion, quorumImageFull)
 			configFileYaml.Nodes = append(configFileYaml.Nodes, nodeEntry)
 			fmt.Println()
 			green.Println("Adding Node: ")
@@ -504,7 +504,7 @@ var (
 			consensus := c.String("consensus")
 			quorumVersion := c.String("qversion")
 			tmVersion := c.String("tmversion")
-			txManger := c.String("tm")
+			txManager := c.String("tm")
 			quorumImageFull := c.String("qimagefull")
 			tmImageFull := c.String("tmimagefull")
 			gethparams := c.String("gethparams")
@@ -575,8 +575,8 @@ var (
 					if tmVersion != "" {
 						nodeEntry.QuorumEntry.Tm.TmVersion = tmVersion
 					}
-					if txManger != "" {
-						nodeEntry.QuorumEntry.Tm.Name = txManger
+					if txManager != "" {
+						nodeEntry.QuorumEntry.Tm.Name = txManager
 					}
 					if consensus != "" {
 						nodeEntry.QuorumEntry.Quorum.Consensus = consensus
@@ -809,14 +809,14 @@ var (
 	}
 )
 
-func createNodeEntry(nodeName, nodeKeyDir, consensus, quorumVersion, txManger, tmVersion, quorumImageFull string) NodeEntry {
+func createNodeEntry(nodeName, nodeKeyDir, consensus, quorumVersion, txManager, tmVersion, quorumImageFull string) NodeEntry {
 	quorum := Quorum{
 		Consensus:      consensus,
 		QuorumVersion:  quorumVersion,
 		DockerRepoFull: quorumImageFull,
 	}
 	tm := Tm{
-		Name:      txManger,
+		Name:      txManager,
 		TmVersion: tmVersion,
 	}
 	quorumEntry := QuorumEntry{
@@ -853,7 +853,7 @@ func getEnodeId(nodeName, qubeK8sDir string) string {
 	return enodeUrl
 }
 
-func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, quorumVersion, txManger, tmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParms bool) {
+func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, quorumVersion, txManager, tmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParms bool) {
 	fmt.Println()
 	green.Println(fmt.Sprintf("     [%s] unique name", nodeEntry.NodeUserIdent))
 	if keydir {
@@ -865,8 +865,8 @@ func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, qu
 	if quorumVersion {
 		green.Println(fmt.Sprintf("     [%s] quorumVersion: [%s]", nodeEntry.NodeUserIdent, nodeEntry.QuorumEntry.Quorum.QuorumVersion))
 	}
-	if txManger {
-		green.Println(fmt.Sprintf("     [%s] txManger: [%s]", nodeEntry.NodeUserIdent, nodeEntry.QuorumEntry.Tm.Name))
+	if txManager {
+		green.Println(fmt.Sprintf("     [%s] txManager: [%s]", nodeEntry.NodeUserIdent, nodeEntry.QuorumEntry.Tm.Name))
 	}
 	if tmVersion {
 		green.Println(fmt.Sprintf("     [%s] tmVersion: [%s]", nodeEntry.NodeUserIdent, nodeEntry.QuorumEntry.Tm.TmVersion))
@@ -893,7 +893,7 @@ func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, qu
 	fmt.Println()
 }
 
-func displayNodeBare(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, quorumVersion, txManger, tmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParms bool) {
+func displayNodeBare(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, quorumVersion, txManager, tmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParms bool) {
 	if name {
 		fmt.Println(nodeEntry.NodeUserIdent)
 	}
@@ -906,7 +906,7 @@ func displayNodeBare(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir
 	if quorumVersion {
 		fmt.Println(nodeEntry.QuorumEntry.Quorum.QuorumVersion)
 	}
-	if txManger {
+	if txManager {
 		fmt.Println(nodeEntry.QuorumEntry.Tm.Name)
 	}
 	if tmVersion {

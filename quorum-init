@@ -86,7 +86,7 @@ puts "  Generating keys..."
 `
 # generate the keygen script
 # to generate nodekey, account keys, and
-# quorum transaction manger (tm.pub,tm.key) keys.
+# quorum transaction manager (tm.pub,tm.key) keys.
 ./quorum-keygen #{@config_file}
 `
 

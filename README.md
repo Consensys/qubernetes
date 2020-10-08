@@ -48,7 +48,7 @@ This:
 1. Installs [Kind](https://kubernetes.io/docs/setup/learning-environment/kind/), a tool for running Kubernetes in Docker.
 2. Deletes any existing kind cluster named `quickest-qube` if it exist locally.
 3. Creates a new Kind cluster named `quickest-qube`.
-4. Deploys a 7 node quorum network (or an N node network) configured to use Tessera as the Transaction Manger, and IBFT as the consensus algorithm.
+4. Deploys a 7 node quorum network (or an N node network) configured to use Tessera as the Transaction Manager, and IBFT as the consensus algorithm.
 
 ⭕️&nbsp;&nbsp;**note**: if you experience issues with the nodes starting up, check dockers memory and/or try running a smaller network `./quickest-start.sh 3` .
 
@@ -65,7 +65,7 @@ quorum-node2-deployment-5f776b479c-f7kxs   2/2     Running   2          40s
 ....
 
 # connnect to the running transaction manager on node1 (quorum-node1-deployment-57b6588b6b-5tqdr).
-# assuming tessera was deployed as the transaction manger.
+# assuming tessera was deployed as the transaction manager.
 $> ./connect.sh node1 tessera
 connecting to POD [quorum-node1-deployment-676684fddf-9gwxk]
 / >

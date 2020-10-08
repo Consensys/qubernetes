@@ -243,7 +243,7 @@ var (
 			green.Println(fmt.Sprintf("  num nodes = %d", len(configFileYaml.Nodes)))
 			green.Println(fmt.Sprintf("  consensus = %s", configFileYaml.Genesis.Consensus))
 			green.Println(fmt.Sprintf("  quorumVersion = %s", configFileYaml.Genesis.QuorumVersion))
-			green.Println(fmt.Sprintf("  (node1) txManger = %s", configFileYaml.Nodes[0].QuorumEntry.Tm.Name))
+			green.Println(fmt.Sprintf("  (node1) txManager = %s", configFileYaml.Nodes[0].QuorumEntry.Tm.Name))
 			green.Println(fmt.Sprintf("  (node1) tmVersion = %s", configFileYaml.Nodes[0].QuorumEntry.Tm.TmVersion))
 			green.Println(fmt.Sprintf("  (node1) chainId = %s", configFileYaml.Genesis.Chain_Id))
 			fmt.Println()

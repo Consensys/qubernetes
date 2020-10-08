@@ -141,7 +141,7 @@ list all the nodes and notice that the `quorumImage` field is set on quorum-node
   [quorum-node5] unique name
      [quorum-node5] keydir: [key-quorum-node5]
      [quorum-node5] quorumVersion: [2.7.0]
-     [quorum-node5] txManger: [tessera]
+     [quorum-node5] txManager: [tessera]
      [quorum-node5] tmVersion: [0.10.4]
      [quorum-node5] quorumImage: [quorum-local]
      [quorum-node5] geth params: []

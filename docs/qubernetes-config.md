@@ -102,13 +102,11 @@ nodes.yaml
 ```shell
 nodes:
 
-- member:
-    Node_UserIdent: quorum-node1
-    Key_Dir: key1
+-  Node_UserIdent: quorum-node1
+   Key_Dir: key1
 
-- member:
-    Node_UserIdent: quorum-node2
-    Key_Dir: key2
+-  Node_UserIdent: quorum-node2
+   Key_Dir: key2
 ...
 ```
 

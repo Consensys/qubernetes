@@ -1,43 +1,3 @@
-# number of nodes to deploy
-nodes:
-  number: 3
-quorum:
-  # base quorum data dir as set inside each container.
-  Node_DataDir: /etc/quorum/qdata
-  # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
-  # Either full or relative paths on the machine generating the config
-  Key_Dir_Base: out/config
-  Permissioned_Nodes_File: out/config/permissioned-nodes.json
-  Genesis_File: out/config/genesis.json
-  # related to quorum containers
-  quorum:
-    Raft_Port: 50401
-    # supported: (raft | istanbul)
-    consensus: istanbul
-    # container images at https://hub.docker.com/u/quorumengineering/
-    Quorum_Version: 2.6.0
-  # related to transaction manager containers
-  tm:
-    # container images at https://hub.docker.com/u/quorumengineering/
-    # (tessera|constellation)
-    Name: tessera
-    Tm_Version: 0.10.4
-    Port: 9001
-    3Party_Port: 9080
-    Tessera_Config_Dir: out/config
-# generic geth related options
-geth:
-  Node_RPCPort: 8545
-  NodeP2P_ListenAddr: 30303
-  network:
-    # network id (1: mainnet, 3: ropsten, 4: rinkeby ... )
-    id: 1101
-    # public (true|false) is it a public network?
-    public: false
-  # general verbosity of geth [1..5]
-  verbosity: 9
-  # additional startup params to pass into geth/quorum
-  Geth_Startup_Params: --rpccorsdomain=\"*\" --rpcvhosts=\"*\"
 k8s:
   sep_deployment_files: true
   # optionally  allow a security context to be set for the deployment, e.g. can the user have root access?
@@ -60,3 +20,90 @@ k8s:
       Type: PVC
       ## when redeploying cannot be less than previous values
       Capacity: 200Mi
+
+cakeshop:
+  version: latest
+  service:
+    type: NodePort
+    nodePort: 30108
+
+# monitor will enable prometheus geth monitoring, grafana is kept external for now.
+prometheus:
+  # override the default monitor startup params --metrics --metrics.expensive --pprof --pprofaddr=0.0.0.0.
+  #monitor_params_geth: --metrics --metrics.expensive --pprof --pprofaddr=0.0.0.0
+  nodePort_prom: 31323
+
+# quorum and node specific config
+genesis:
+  # supported: (raft | istanbul)
+  consensus: istanbul
+  Quorum_Version: 2.6.0
+  Chain_Id: 10
+
+# Add as many nodes as you wish below
+# keys and config will be generated locally
+nodes:
+
+  -  Node_UserIdent: quorum-node1
+     Key_Dir: key1
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: istanbul
+         Quorum_Version: 2.6.0
+         Docker_Repo: MY_DOCKER_REPO
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+         Docker_Repo: MY_DOCKER_REPO
+     geth:
+       network:
+         # network id (1: mainnet, 3: ropsten, 4: rinkeby ... )
+         id: 1101
+       verbosity: 9
+       Geth_Startup_Params: --rpccorsdomain=\"*\"
+
+  -  Node_UserIdent: quorum-node2
+     Key_Dir: key2
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: istanbul
+         Quorum_Version: 2.6.0
+         # the docker repo that hold your quorum container
+         Docker_Repo: MY_DOCKER_REPO
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+         # the docker repo that hold your quorum container
+         Docker_Repo: MY_DOCKER_REPO
+     geth:
+       Geth_Startup_Params: --rpccorsdomain=\"*\"
+
+  -  Node_UserIdent: quorum-node3
+     Key_Dir: key3
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: istanbul
+         Quorum_Version: 2.6.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+     geth:
+       Geth_Startup_Params: --rpccorsdomain=\"*\"
+
+  -  Node_UserIdent: quorum-node4
+     Key_Dir: key4
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: istanbul
+         Quorum_Version: 2.6.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4

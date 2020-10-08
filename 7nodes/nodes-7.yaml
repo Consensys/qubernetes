@@ -5,30 +5,23 @@
 # 2. keys should be set locally.
 nodes:
 
-- member:
-    Node_UserIdent: quorum-node1
-    Key_Dir: key1
+    - Node_UserIdent: quorum-node1
+      Key_Dir: key1
 
-- member:
-    Node_UserIdent: quorum-node2
-    Key_Dir: key2
+    - Node_UserIdent: quorum-node2
+      Key_Dir: key2
 
-- member:
-    Node_UserIdent: quorum-node3
-    Key_Dir: key3
+    - Node_UserIdent: quorum-node3
+      Key_Dir: key3
 
-- member:
-    Node_UserIdent: quorum-node4
-    Key_Dir: key4
+    - Node_UserIdent: quorum-node4
+      Key_Dir: key4
 
-- member:
-    Node_UserIdent: quorum-node5
-    Key_Dir: key5
+    - Node_UserIdent: quorum-node5
+      Key_Dir: key5
 
-- member:
-    Node_UserIdent: quorum-node6
-    Key_Dir: key6
+    - Node_UserIdent: quorum-node6
+      Key_Dir: key6
 
-- member:
-    Node_UserIdent: quorum-node7
-    Key_Dir: key7
+    - Node_UserIdent: quorum-node7
+      Key_Dir: key7

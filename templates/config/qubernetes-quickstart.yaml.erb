@@ -1,0 +1,49 @@
+# Core configuration generator, to help get started quickly.
+# Given a number of nodes, this will write out the node entries.
+k8s:
+  # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+  # test locally and on GCP
+  # The data dir is persisted here
+  storage:
+    # PVC (Persistent_Volume_Claim - tested with GCP).
+    Type: PVC
+    ## when redeploying cannot be less than previous values
+    Capacity: 200Mi
+
+genesis:
+  # supported: (raft | istanbul)
+  consensus: <%= @consensus %>
+  Quorum_Version: <%= @Quorum_Version %>
+  Chain_Id: <%= @Chain_Id %>
+
+# Add as many nodes as you wish below
+# Note:  keys should be set locally.
+nodes:
+    <%  for i in 1..@Num_Nodes do %>
+  -  Node_UserIdent: quorum-node<%= i%>
+     Key_Dir: key<%= i%>
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: <%= @consensus %>
+         Quorum_Version: <%= @Quorum_Version %>
+         <%- if @Docker_Repo  -%>
+         Docker_Repo: <%= @Docker_Repo %>
+         <%- end -%>
+       tm:
+         # (tessera|constellation)
+         Name: <%= @Tm_Name %>
+         Tm_Version: <%= @Tm_Version %>
+         <%- if @Docker_Repo  -%>
+         Docker_Repo: <%= @Docker_Repo %>
+         <%- end -%>
+       geth:
+         network:
+           id: <%= @Chain_Id %>
+         <%- if @Geth_Verbosity and @Geth_Verbosity != "" -%>
+         verbosity: <%= @Geth_Verbosity %>
+         <%- end -%>
+         <%- if @Geth_Startup_Params and @Geth_Startup_Params != "" -%>
+         Geth_Startup_Params: <%= @Geth_Startup_Params %>
+         <%- end -%>
+    <% end %>

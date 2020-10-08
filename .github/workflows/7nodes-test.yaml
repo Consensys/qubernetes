@@ -1,7 +1,7 @@
 # Workflow to test the generation of 7nodes examples against the most recently committed qubernetes files:
 #
 # 1. Generates the necessary K8s resource files for various quorum networks configurations:
-#    Privacy Manger (tessera and constellation) and  consensus (IBFT and Raft).
+#    Privacy Manager (tessera and constellation) and  consensus (IBFT and Raft).
 # 2. Deploys each network to a running kubernetes service (kind) and tests deploying a contract (private and public).
 
 name: CI

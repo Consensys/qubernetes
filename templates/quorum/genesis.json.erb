@@ -5,21 +5,26 @@ def set_node_template_vars(values)
     return
 end
 
-@Geth_Network_Id  = 1101
-if @config["geth"] and @config["geth"]["network"] and @config["geth"]["network"]["id"]
-  @Geth_Network_Id = @config["geth"]["network"]["id"]
+@Chain_Id  = 1101
+if @config["genesis"] and @config["genesis"]["Chain_Id"]
+  @Chain_Id = @config["genesis"]["Chain_Id"]
 end
+## The genesis consensus and the quorum version must be set in the config file.
+@Genesis_Consensus = @config["genesis"]["consensus"]
+@Genesis_Quorum_Version = @config["genesis"]["Quorum_Version"]
+
 @Account_Allocs = ""
 @Node_Index = 0
 
 -%>
 
-<% if @config["quorum"]["quorum"]["consensus"] == "raft" %>
+<% if @Genesis_Consensus == "raft" %>
 {
 "alloc": {
 <%- @nodes.each_with_index do |node, indexNode|
 
-    set_node_template_vars(node.values.first)
+    set_node_template_vars(node)
+    puts(@Node_Key_Dir)
     @Keystores=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/acctkey*"]
     puts(@Keystores)
     # Need to keep track of when the last account in the last node
@@ -55,7 +60,7 @@ end
     "eip155block": 0,
     "eip158block": 0,
     <%-# for 2.6 maxCodeSize config has changed. -%>
-    <%- if @config["quorum"]["quorum"]["Quorum_Version"] >= "2.6.0" -%>
+    <%- if @Genesis_Quorum_Version >= "2.6.0" -%>
     "maxCodeSizeConfig" : [
       {
         "block" : 0,
@@ -66,7 +71,7 @@ end
     "maxCodeSize": 35,
     "maxCodeSizeChangeBlock" : 0,
     <%- end -%>
-    "chainId": <%= @Geth_Network_Id %>,
+    "chainId": <%= @Chain_Id %>,
     "isQuorum":true
   },
   "difficulty": "0x0",
@@ -77,11 +82,11 @@ end
   "parenthash": "0x0000000000000000000000000000000000000000000000000000000000000000",
   "timestamp": "0x00"
 }
-<% elsif @config["quorum"]["quorum"]["consensus"] == "istanbul" %>
+<% elsif @Genesis_Consensus == "istanbul" %>
 {
 "alloc": {
 <%- @nodes.each_with_index do |node, indexNode|
-    set_node_template_vars(node.values.first)
+    set_node_template_vars(node)
     @Keystores=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/acctkey*"]
     puts(@Keystores)
     # Need to keep track of when the last account in the last node
@@ -122,7 +127,7 @@ end
       "policy": 0
     },
     <%-# for 2.6 maxCodeSize config has changed. -%>
-    <%- if @config["quorum"]["quorum"]["Quorum_Version"] >= "2.6.0" -%>
+    <%- if @Genesis_Quorum_Version >= "2.6.0" -%>
     "maxCodeSizeConfig" : [
       {
         "block" : 0,
@@ -133,7 +138,7 @@ end
     "maxCodeSize": 35,
     "maxCodeSizeChangeBlock" : 0,
     <%- end -%>
-    "chainId": <%= @Geth_Network_Id %>,
+    "chainId": <%= @Chain_Id %>,
     "isQuorum": true
   },
 
@@ -145,35 +150,14 @@ end
    # $> istanbul extra encode --config ./cmd/istanbul/example/config.toml
    #
    # Note: this requires istanbul-tools and nodejs to be installed on the host.
+   #
+   # for each node we need to generate their istanbul account which will be placed inside the
+   # extradata field and used to verify the validators.
+   # To do this, we need to create the istanbul-validator-config.toml from the ethereum nodekey. The istanbul-validator-config.toml
+   # is then given as input to the istanbul tool, which will calculate the necessary extradata field.
   %>
   <%-
-  @IstanbulConfig = @Key_Dir_Base + "/istanbul-validator-config.toml"
-  File.open(@IstanbulConfig, "w") do |f|
-    f.puts ("vanity = \"0x00\" \nvalidators = [")
-  end
-
- @nodes.each_with_index do |node, indexNode|
-   set_node_template_vars(node.values.first)
-
-   #puts(@Key_Dir_Base + "/" + @Node_Key_Dir + "/nodekey")
-   File.open(@Key_Dir_Base + "/" + @Node_Key_Dir + "/nodekey", "r") do |f|
-    f.each_line do |nodekey|
-      nodeAcct=`ethkey generate tmpkey.json --passwordfile #{@Key_Dir_Base}/#{@Node_Key_Dir}/password.txt --privatekey #{@Key_Dir_Base}/#{@Node_Key_Dir}/nodekey | sed 's/Address: //g' | sed 's/}//g'`
-      `rm tmpkey.json`
-
-      puts("node account for Istanbul is: " + nodeAcct)
-
-      nodeAcct=nodeAcct.strip
-      File.open(@IstanbulConfig, "a") do |f|
-        f.puts "\"" + nodeAcct + "\","
-      end
-    end
-   end
-  end
-  File.open(@IstanbulConfig, "a") do |f|
-     f.puts "]"
-  end
-   extraData=`istanbul extra encode --config #{@IstanbulConfig} | awk '{print $4}'`
+   extraData=`istanbul extra encode --config #{@Istanbul_Validator_Config} | awk '{print $4}'`
    extraData=extraData.strip
    puts("Generated istanbul \"extraData\"=\"" + extraData + "\"")
    -%>

@@ -29,13 +29,13 @@ Generates Kuberenetes API resources from existing Quorum resources: keys, config
 ## Quickest Start
 Requires docker to be running on your machine with sufficient memory ~8GB for a 7 node cluster. 
 ```bash
-# default 7nodes
+# default 4 nodes IBFT network 
 $> ./quickest-start.sh
 ```
 
 ```bash 
 # N node network
-$> ./quickest-start.sh 3
+$> ./quickest-start.sh 4
 ```
 
 ```bash
@@ -48,9 +48,9 @@ This:
 1. Installs [Kind](https://kubernetes.io/docs/setup/learning-environment/kind/), a tool for running Kubernetes in Docker.
 2. Deletes any existing kind cluster named `quickest-qube` if it exist locally.
 3. Creates a new Kind cluster named `quickest-qube`.
-4. Deploys a 7 node quorum network (or an N node network) configured to use Tessera as the Transaction Manger, and IBFT as the consensus algorithm.
+4. Deploys a 7 node quorum network (or an N node network) configured to use Tessera as the Transaction Manager, and IBFT as the consensus algorithm.
 
-⭕️&nbsp;&nbsp;**note**: if memory constrained, run `./quickest-start.sh 3` to create a 3 node network instead of the default 7node network.
+⭕️&nbsp;&nbsp;**note**: if you experience issues with the nodes starting up, check dockers memory and/or try running a smaller network `./quickest-start.sh 3` .
 
 ## Accessing Nodes on K8s
 e.g. The Quorum and Transaction Manager Containers
@@ -65,7 +65,7 @@ quorum-node2-deployment-5f776b479c-f7kxs   2/2     Running   2          40s
 ....
 
 # connnect to the running transaction manager on node1 (quorum-node1-deployment-57b6588b6b-5tqdr).
-# assuming tessera was deployed as the transaction manger.
+# assuming tessera was deployed as the transaction manager.
 $> ./connect.sh node1 tessera
 connecting to POD [quorum-node1-deployment-676684fddf-9gwxk]
 / >
@@ -212,15 +212,65 @@ root@4eb772b14086:/qubernetes# ls out/
 example [qubernetes.yaml](qubernetes.yaml) is the simpliest config, and has many defaults set for you, which can be overridden see [More Qubernetes Config Options](#more-qubernetes-config-options) 
 ![qubernetes-yaml-marked](docs/resources/qubernetes-yaml-marked.png)
 
-The most natural thing to modify in your [`qubernetes.yaml`](qubernetes.yaml) is the number of nodes you wish to deploy: 
+For starters, let's see how to modify [`qubernetes.yaml`](qubernetes.yaml) to change the number of nodes deployed in your network: 
 ```yaml
-# number of nodes to deploy
 nodes:
-  number: 5
+
+  - Node_UserIdent: quorum-node1
+    Key_Dir: key1
+    quorum:
+      quorum:
+        # supported: (raft | istanbul)
+        consensus: istanbul
+        Quorum_Version: 2.6.0
+      tm:
+        # (tessera|constellation)
+        Name: tessera
+        Tm_Version: 0.10.4
+
+  - Node_UserIdent: quorum-node2
+    Key_Dir: key2
+    quorum:
+      quorum:
+        # supported: (raft | istanbul)
+        consensus: istanbul
+        Quorum_Version: 2.6.0
+      tm:
+        # (tessera|constellation)
+        Name: tessera
+        Tm_Version: 0.10.4
+# add more nodes if you'd like
+#  - Node_UserIdent: quorum-node5
+#    Key_Dir: key5
+#    quorum:
+#      quorum:
+#        # supported: (raft | istanbul)
+#        consensus: istanbul
+#        Quorum_Version: 2.6.0
+#      tm:
+#        # (tessera|constellation)
+#        Name: tessera
+#        Tm_Version: 0.10.4
 ```
 
+* You can also run the `./quick-start-gen` command to generate the core config
+```bash
+$> ./quick-start-gen --help
 
-2. Run `./qube-init` to generate everything needed for the quorum deployment: quorum keys, genesis.json, istanbul-config.json, permissioned-nodes.json, etc.
+Usage: ./quick-start [options]
+        --consensus[ACTION]          The consensus to use for the network (raft or istanbul), default istanbul
+    -q, --quorum-version[ACTION]     The version of quorum to deploy, default 2.6.0
+    -t, --tm-version[ACTION]         The version of the transaction manager to deploy, default 0.10.4
+        --tm-name[ACTION]            The transaction manager (tessera|constellation) for the network, default tesera
+    -c, --chain_id[ACTION]           The chain id for the network manager deploy, default 1000
+    -n, --num-nodes[ACTION]          The number of nodes to deploy, default 4
+    -h, --help                       prints this help
+
+$> ./quick-start-gen --chain-id=10 --consensus=raft --quorum-version=2.6.0 --tm-version=0.10.5 --tm-name=tessera --num-nodes=7
+```
+
+2. Once you have your core config, e.g. qubernetes.yaml configured with your desired parameters: 
+   Run `./qube-init` to generate everything needed for the quorum deployment: quorum keys, genesis.json, istanbul-config.json, permissioned-nodes.json, etc.
   
  These resources will be written and read from the directories specified in the `qubernetes.yaml` file.
  The default [`qubernetes.yaml`](qubernetes.yaml) is configured to write theses to the `./out/config` directory.
@@ -233,7 +283,7 @@ nodes:
  ```shell
  
  ## in this case, an out directory exists, so select `1`.
- $> ./qube-init
+ $> ./qube-init qubernetes.yaml
  The 'out' directory already exist.
  Please select the action you wish to take:
 
@@ -251,7 +301,7 @@ nodes:
  INFO [01-14|17:05:13.160] Maximum peer count                       ETH=25 LES=0 total=25
 ```
 
- After the Quorum resources have been generated, the necessary K8s resources will be created in the `out` directory:
+ After the Quorum resources have been generated, the necessary K8s resources will be created from them and all generated files will be in the `out` directory:
 ```shell
 # list the  generated Quorum resources
 $> ls out/config
@@ -275,13 +325,13 @@ $> kubectl apply -f out -f out/deployments
 ```
 
 3. Once the Quorum resources have been generated, the `./qubernetes` command can be run to generate variations of the Kubernetes
-Resources, e.g. `ClusterIP` vs `NodePort`. The `./qubernetes` command can be run multiple times and is idempotent as long as the 
-underlying Quorum resources do not change.
+Resources using those resources, e.g. `ClusterIP` vs `NodePort`. The `./qubernetes` command can be run multiple times and is idempotent as long as the 
+underlying Quorum resources and your core configuration file do not change.
 
 ```shell
 # Generate the Kubernetes resources necessary to support a Quorum deployment
 # this will be written to the `out` dir.
-$> ./qubernetes
+$> ./qubernetes qubernetes.yaml
 
 ```
 4. Deploy to your kubernetes cluster

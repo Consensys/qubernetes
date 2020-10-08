@@ -1,9 +1,4 @@
 <%-
-def set_node_template_vars(values)
-    @Node_UserIdent = values["Node_UserIdent"]
-    return
-end
-
 
 @Geth_WS = false
 if @config["k8s"] and @config["k8s"]["service"]["Ingress"] then
@@ -23,7 +18,7 @@ end
 <%# in this strategy each node will get its own FQDN with the nodeId as the first part of the domain %>
 <%- if @Ingress and @IngressStrategy == "OneToOne" -%>
 <%- @nodes.each do |node| -%>
-<%= set_node_template_vars(node.values.first) -%>
+<%= set_node_template_vars(node) -%>
 
 ---
 apiVersion: extensions/v1beta1
@@ -88,7 +83,7 @@ spec:
         paths:
          <%- # create paths for each node -%>
          <%- @nodes.each do |node| -%>
-            <%- set_node_template_vars(node.values.first) -%>
+            <%- set_node_template_vars(node) -%>
           - path: /<%= @Node_UserIdent %>/quorum-rpc
             backend:
               serviceName: <%= @Node_UserIdent %>

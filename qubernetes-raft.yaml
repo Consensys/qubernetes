@@ -1,0 +1,150 @@
+# Core configuration generator, to help get started quickly.
+# Given a number of nodes, this will write out the node entries.
+k8s:
+  # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+  # test locally and on GCP
+  # The data dir is persisted here
+  storage:
+    # PVC (Persistent_Volume_Claim - tested with GCP).
+    Type: PVC
+    ## when redeploying cannot be less than previous values
+    Capacity: 200Mi
+
+genesis:
+  # supported: (raft | istanbul)
+  consensus: raft
+  Quorum_Version: 2.6.0
+  Chain_Id: 1000
+
+# Add as many nodes as you wish below
+# Note:  keys should be set locally.
+nodes:
+
+  -  Node_UserIdent: quorum-node1
+     Key_Dir: key1
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: raft
+         Quorum_Version: 2.6.0
+         Docker_Repo:
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+         Docker_Repo:
+       geth:
+         network:
+           id: 1000
+         verbosity: 9
+
+  -  Node_UserIdent: quorum-node2
+     Key_Dir: key2
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: raft
+         Quorum_Version: 2.6.0
+         Docker_Repo:
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+         Docker_Repo:
+       geth:
+         network:
+           id: 1000
+         verbosity: 9
+
+  -  Node_UserIdent: quorum-node3
+     Key_Dir: key3
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: raft
+         Quorum_Version: 2.6.0
+         Docker_Repo:
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+         Docker_Repo:
+       geth:
+         network:
+           id: 1000
+         verbosity: 9
+#  -  Node_UserIdent: quorum-node4
+#     Key_Dir: key4
+#     quorum:
+#       quorum:
+#         # supported: (raft | istanbul)
+#         consensus: raft
+#         Quorum_Version: 2.6.0
+#         Docker_Repo:
+#       tm:
+#         # (tessera|constellation)
+#         Name: tessera
+#         Tm_Version: 0.10.4
+#         Docker_Repo:
+#       geth:
+#         network:
+#           id: 1000
+#         verbosity: 9
+#         Geth_Startup_Params: --rpccorsdomain=\"*\"
+####
+#  -  Node_UserIdent: quorum-node5
+#     Key_Dir: key5
+#     quorum:
+#       quorum:
+#         # supported: (raft | istanbul)
+#         consensus: raft
+#         Quorum_Version: 2.6.0
+#         Docker_Repo:
+#       tm:
+#         # (tessera|constellation)
+#         Name: tessera
+#         Tm_Version: 0.10.4
+#         Docker_Repo:
+#       geth:
+#         network:
+#           id: 1000
+#         verbosity: 9
+#         Geth_Startup_Params: --rpccorsdomain=\"*\"
+###
+#  -  Node_UserIdent: quorum-node6
+#     Key_Dir: key6
+#     quorum:
+#       quorum:
+#         # supported: (raft | istanbul)
+#         consensus: raft
+#         Quorum_Version: 2.6.0
+#         Docker_Repo:
+#       tm:
+#         # (tessera|constellation)
+#         Name: tessera
+#         Tm_Version: 0.10.4
+#         Docker_Repo:
+#       geth:
+#         network:
+#           id: 1000
+#         verbosity: 9
+#         Geth_Startup_Params: --rpccorsdomain=\"*\"
+#
+#  - Node_UserIdent: quorum-node7
+#    Key_Dir: key7
+#    quorum:
+#      quorum:
+#        # supported: (raft | istanbul)
+#        consensus: raft
+#        Quorum_Version: 2.6.0
+#        Docker_Repo:
+#      tm:
+#        # (tessera|constellation)
+#        Name: tessera
+#        Tm_Version: 0.10.4
+#        Docker_Repo:
+#      geth:
+#        network:
+#          id: 1000
+#        verbosity: 9
+#        Geth_Startup_Params: --rpccorsdomain=\"*\"

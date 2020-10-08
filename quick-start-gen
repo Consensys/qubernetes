@@ -1,0 +1,95 @@
+#!/usr/bin/env ruby
+
+require "yaml"
+require "erb"
+require 'optparse'
+
+@base_template_path = "templates/config"
+@quick_start_out_yaml = "quick-start.yaml"
+
+# set up flag options :docker_repo :geth_verbosity :geth_startup_params
+options = {consensus: 'istanbul', quorum_version: '2.6.0', tm_version: '0.10.4', tm_name: 'tessera',
+           chain_id: '1000', num_nodes: 4, docker_repo: '', geth_verbosity: 9, geth_startup_params: '' }
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: ./quick-start [options]"
+
+  opts.on("-c", "--consensus[ACTION]", String,
+          "The consensus to use for the network (raft or istanbul), default istanbul ") do |c|
+    options[:consensus] = c
+  end
+
+  opts.on("-q", "--quorum-version[ACTION]", String,
+          "The version of quorum to deploy, default 2.6.0") do |q|
+    options[:quorum_version] = q
+  end
+
+  opts.on("-t", "--tm-version[ACTION]", String,
+          "The version of the transaction manager to deploy, default 0.10.4") do |tm|
+    options[:tm_version] = tm
+  end
+
+  opts.on("--tm-name[ACTION]", String,
+          "The transaction manager (tessera|constellation) for the network, default tessera") do |tm|
+    options[:tm_name] = tm
+  end
+
+  opts.on("-c", "--chain-id[ACTION]", String,
+          "The chain id for the network manager deploy, default 1000") do |tm|
+    options[:chain_id] = tm
+  end
+
+  opts.on("-n", "--num-nodes[ACTION]", Numeric,
+          "The number of nodes to deploy, default 4") do |num|
+    options[:num_nodes] = num
+  end
+
+  opts.on("--geth-verobsity[ACTION]", Numeric,
+          "verbosity logging level for geth [1-9], default 9") do |num|
+    options[:geth_verbosity] = num
+  end
+
+  opts.on("-n", "--geth-statrup-params[ACTION]", String,
+          "The number of nodes to deploy, default no additional params") do |params|
+    options[:geth_startup_params] = params
+  end
+
+  opts.on("-d", "--docker-repo[ACTION]", String,
+          "optional docker repo to get containers from, defaults to quorumengineering") do |num|
+    options[:docker_repo] = num
+  end
+  opts.on("-h", "--help", "prints this help.") do
+    puts
+    puts "example: ./quick-start-gen --chain-id=1000 --consensus=istanbul --quorum-version=2.6.0 --tm-version=0.10.4 --tm-name=tessera --num-nodes=4 --geth-statrup-params=--rpccorsdomain=\"*\" --docker-repo=MY-REPO --geth-verobsity=3"
+    puts
+    puts opts
+    exit
+  end
+
+end.parse!
+
+@consensus=options[:consensus]
+@Quorum_Version=options[:quorum_version]
+@Tm_Version=options[:tm_version]
+@Tm_Name=options[:tm_name]
+@Chain_Id=options[:chain_id]
+@Num_Nodes=options[:num_nodes]
+@Geth_Verbosity=options[:geth_verbosity]
+@Geth_Startup_Params=options[:geth_startup_params]
+@Docker_Repo=options[:docker_repo]
+
+puts "consensus : " + @consensus
+puts "quorum version : " + @Quorum_Version
+puts "tm version : " + @Tm_Version
+puts "tm name : " + @Tm_Name
+puts "using chain id : " + @Chain_Id
+puts "num nodes: " + @Num_Nodes.to_s
+
+puts "geth verbosity: " + @Geth_Verbosity.to_s
+puts "geth startup params: " + @Geth_Startup_Params
+puts "docker repo: " + @Docker_Repo
+
+puts("generating " + @quick_start_out_yaml)
+File.open(@quick_start_out_yaml , "w") do |f|
+  f.puts (ERB.new(File.read(@base_template_path + "/qubernetes-quickstart.yaml.erb"), nil, "-").result)
+end

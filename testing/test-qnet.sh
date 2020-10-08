@@ -160,6 +160,8 @@ then
 fi
 
 ## Test blockNumber for Public TX, should be > 1
+echo "sleeping for 5 seconds to give block time to increase."
+sleep 5
 get_block_number $NAMESPACE
 BLOCK_NUM=$?
 echo "BLOCK_NUM: [$BLOCK_NUM]"

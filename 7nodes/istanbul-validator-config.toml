@@ -1,4 +1,4 @@
-vanity = "0x00" 
+vanity = "0x00"
 validators = [
 "0xd8Dba507e85F116b1f7e231cA8525fC9008A6966",
 "0x6571D97f340c8495B661a823F2C2145cA47D63c2",

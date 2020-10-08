@@ -34,7 +34,7 @@ spec:
              mkdir -p /prometheus/myprometheus;
              cp  /etc/prometheus/prometheus.yml /prometheus/myprometheus/prometheus.yaml;
             <%- @nodes.each do |node| -%>
-             <%= set_node_template_vars(node.values.first) -%>
+             <%= set_node_template_vars(node) -%>
 sed -i \"s/<%= @Service_Prefix %>_SERVICE_HOST/$<%= @Service_Prefix %>_SERVICE_HOST/g\" /prometheus/myprometheus/prometheus.yaml;
             <%- end -%>
              /bin/prometheus --config.file=/prometheus/myprometheus/prometheus.yaml --storage.tsdb.path=/prometheus/;"

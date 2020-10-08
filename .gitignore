@@ -8,3 +8,6 @@ testing/*-out
 .DS_Store
 docs/.DS_Store
 quickest-start.yaml
+quick-start.yaml
+scratch/
+Test/

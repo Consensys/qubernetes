@@ -1,0 +1,28 @@
+<%-
+  def set_node_template_vars(values)
+    @Node_UserIdent        = values["Node_UserIdent"]
+    @Node_Key_Dir          = values["Key_Dir"]
+    return
+  end
+-%>
+vanity = "0x00"
+validators = [
+<%-
+  @nodes.each do |node|
+    set_node_template_vars(node)
+    puts(@Key_Dir_Base + "/" + @Node_Key_Dir + "/nodekey")
+    File.open(@Key_Dir_Base + "/" + @Node_Key_Dir + "/nodekey", "r") do |f|
+       f.each_line do |nodekey|
+         nodeAcct=`ethkey generate tmpkey.json --passwordfile #{@Key_Dir_Base}/#{@Node_Key_Dir}/password.txt --privatekey #{@Key_Dir_Base}/#{@Node_Key_Dir}/nodekey | sed 's/Address: //g' | sed 's/}//g'`
+         `rm tmpkey.json`
+
+          puts("node account for Istanbul is: " + nodeAcct)
+
+         nodeAcct=nodeAcct.strip -%>
+"<%=nodeAcct%>",
+<%-
+       end
+    end
+  end
+-%>
+]

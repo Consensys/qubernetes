@@ -37,8 +37,8 @@ spec:
       targetPort: 8546
     - name: quorum-listener
       protocol: TCP
-      port: 21000
-      targetPort: 21000
+      port: 30303
+      targetPort: 30303
     - name: raft
       protocol: TCP
       targetPort: 50401
@@ -82,8 +82,8 @@ spec:
       targetPort: 8546
     - name: quorum-listener
       protocol: TCP
-      port: 21000
-      targetPort: 21000
+      port: 30303
+      targetPort: 30303
     - name: raft
       protocol: TCP
       targetPort: 50401
@@ -127,8 +127,8 @@ spec:
       targetPort: 8546
     - name: quorum-listener
       protocol: TCP
-      port: 21000
-      targetPort: 21000
+      port: 30303
+      targetPort: 30303
     - name: raft
       protocol: TCP
       targetPort: 50401
@@ -172,8 +172,8 @@ spec:
       targetPort: 8546
     - name: quorum-listener
       protocol: TCP
-      port: 21000
-      targetPort: 21000
+      port: 30303
+      targetPort: 30303
     - name: raft
       protocol: TCP
       targetPort: 50401
@@ -217,8 +217,8 @@ spec:
       targetPort: 8546
     - name: quorum-listener
       protocol: TCP
-      port: 21000
-      targetPort: 21000
+      port: 30303
+      targetPort: 30303
     - name: raft
       protocol: TCP
       targetPort: 50401
@@ -262,8 +262,8 @@ spec:
       targetPort: 8546
     - name: quorum-listener
       protocol: TCP
-      port: 21000
-      targetPort: 21000
+      port: 30303
+      targetPort: 30303
     - name: raft
       protocol: TCP
       targetPort: 50401
@@ -307,8 +307,8 @@ spec:
       targetPort: 8546
     - name: quorum-listener
       protocol: TCP
-      port: 21000
-      targetPort: 21000
+      port: 30303
+      targetPort: 30303
     - name: raft
       protocol: TCP
       targetPort: 50401

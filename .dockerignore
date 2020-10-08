@@ -1,6 +1,7 @@
 gen-node-keys.sh
 out/*.yaml
 out/
+qctl/
 .idea/
 qubernetes.yaml
 nodes.yaml

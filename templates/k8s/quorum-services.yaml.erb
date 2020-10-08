@@ -1,10 +1,4 @@
 <%-
-
-def set_node_template_vars(values)
-    @Node_UserIdent = values["Node_UserIdent"]
-    return
-end
-
 # NodePort | ClusterIP | Loadbalancer
 # default to NodePort if not set
 @Service_Type = "NodePort"
@@ -14,7 +8,7 @@ end
 -%>
 
 <%- @nodes.each do |node| -%>
-<%= set_node_template_vars(node.values.first) -%>
+<%= set_node_template_vars(node) -%>
 ---
 apiVersion: v1
 kind: Service
@@ -55,7 +49,7 @@ spec:
       protocol: TCP
       port: <%= @NodeP2P_ListenAddr %>
       targetPort: <%= @NodeP2P_ListenAddr %>
-<%- if @config["quorum"]["quorum"]["consensus"] == "raft" -%>
+<%- if @Consensus == "raft" -%>
     - name: raft
       protocol: TCP
       targetPort: <%= @Raft_Port %>

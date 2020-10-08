@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# "linux/amd64 linux/386 darwin/amd64 darwin/386 windows/amd64 windows/386"
+gox -osarch="linux/amd64 darwin/amd64"   ../...
+# build for all osarch
+#gox ../...

@@ -2,8 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/urfave/cli/v2"
 	"strings"
+
+	mapset "github.com/deckarep/golang-set"
+	"github.com/urfave/cli/v2"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // commands related to networking services.
@@ -14,6 +18,12 @@ var (
 		Usage:   "list url for node(s)/pod(s)",
 		Aliases: []string{"urls"},
 		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "config, c",
+				Usage:   "Load configuration from `FULL_PATH_FILE`",
+				EnvVars: []string{"QUBE_CONFIG"},
+				//Required: true,
+			},
 			&cli.StringSliceFlag{
 				Name:  "node, n",
 				Usage: "node prefixes to retrieve service information from.`",
@@ -35,27 +45,66 @@ var (
 			nodeIp := c.String("node-ip")
 			urlType := c.String("type")
 			urlType = strings.ToLower(urlType)
-			// If no nodes were specified, look for all services containing "quorum".
-			if len(nodeNames) == 0 {
-				nodeNames = append(nodeNames, "quorum")
+
+			configFile := c.String("config")
+			configFileYaml, err := LoadYamlConfig(configFile)
+			if err != nil {
+				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
 			}
-			for _, nodeName := range nodeNames {
-				serviceNames := serviceNamesFromPrefix(nodeName, namespace, false)
-				for _, serviceName := range serviceNames {
-					nodeServiceInfo := serviceInfoForNode(serviceName, urlType, namespace)
-					if strings.Contains(serviceName, "monitor") { // monitor only support nodeport
-						fmt.Println("prometheus server - " + nodeIp + ":" + nodeServiceInfo.NodePortPrometheus)
-					} else if strings.Contains(serviceName, "cakeshop") { // cakeshop only support nodeport
-						fmt.Println("cakeshop server - " + nodeIp + ":" + nodeServiceInfo.NodePortCakeshop)
-					} else if urlType == "nodeport" {
-						fmt.Println(serviceName + " geth      - " + nodeIp + ":" + nodeServiceInfo.NodePortGeth)
-						fmt.Println(serviceName + " tessera   - " + nodeIp + ":" + nodeServiceInfo.NodePortTm)
-					} else if urlType == "clusterip" { // the internal IP:Port of the specified node(s)
-						fmt.Println(serviceName + " geth      - " + nodeServiceInfo.ClusterIPGethURL)
-						fmt.Println(serviceName + " tessera   - " + nodeServiceInfo.ClusterIPTmURL)
-					}
+
+			// if no --node flags were set, display all quorum services known from the config.
+			// if --node filter flags were set, only display the nodes that where set as a --node flag and
+			// only if they exist in the config.
+			allQuorumNodeK8sServices := mapset.NewSet()
+			allQuorumOtherK8sServices := mapset.NewSet()
+			nodeNamesFlags := mapset.NewSet()
+			for _, nodeFlag := range nodeNames {
+				nodeNamesFlags.Add(nodeFlag)
+			}
+			for i := 0; i < len(configFileYaml.Nodes); i++ {
+				if nodeNamesFlags.Contains(configFileYaml.Nodes[i].NodeUserIdent) || len(nodeNames) == 0 {
+					allQuorumNodeK8sServices.Add(configFileYaml.Nodes[i].NodeUserIdent)
 				}
 			}
+			if configFileYaml.Cakeshop.Version != "" {
+				if nodeNamesFlags.Contains("cakeshop") || len(nodeNames) == 0 {
+					allQuorumOtherK8sServices.Add("cakeshop")
+				}
+			}
+			if configFileYaml.Prometheus.Enabled == true {
+				if nodeNamesFlags.Contains("monitor") || len(nodeNames) == 0 {
+					allQuorumOtherK8sServices.Add("monitor")
+				}
+			}
+			fmt.Println()
+			// TODO: optimize this so we get all the services with one kubectl call then filter through the results.
+			// display other quorum service first.
+			for _, service := range allQuorumOtherK8sServices.ToSlice() {
+				// need a string because ToSlice returns an []interface
+				serviceName := fmt.Sprintf("%v", service)
+				nodeServiceInfo := serviceInfoByPrefix(serviceName, urlType, namespace)
+				if strings.Contains(serviceName, "monitor") { // monitor only support nodeport
+					fmt.Println("prometheus server - " + nodeIp + ":" + nodeServiceInfo.NodePortPrometheus)
+				} else if strings.Contains(serviceName, "cakeshop") { // cakeshop only support nodeport
+					fmt.Println("cakeshop server - " + nodeIp + ":" + nodeServiceInfo.NodePortCakeshop)
+				}
+			}
+			fmt.Println()
+
+			// display all quorum node services.
+			for _, service := range allQuorumNodeK8sServices.ToSlice() {
+				// need a string because ToSlice returns an []interface
+				serviceName := fmt.Sprintf("%v", service)
+				nodeServiceInfo := serviceInfoByPrefix(serviceName, urlType, namespace)
+				if urlType == "nodeport" {
+					fmt.Println(serviceName + " geth      - " + nodeIp + ":" + nodeServiceInfo.NodePortGeth)
+					fmt.Println(serviceName + " tessera   - " + nodeIp + ":" + nodeServiceInfo.NodePortTm)
+				} else if urlType == "clusterip" { // the internal IP:Port of the specified node(s)
+					fmt.Println(serviceName + " geth      - " + nodeServiceInfo.ClusterIPGethURL)
+					fmt.Println(serviceName + " tessera   - " + nodeServiceInfo.ClusterIPTmURL)
+				}
+			}
+
 			return nil
 		},
 	}
@@ -74,10 +123,10 @@ type NodeServiceInfo struct {
 	NodePortPrometheus string
 }
 
-func serviceInfoForNode(nodeName, urlType, namespace string) NodeServiceInfo {
+func serviceInfoByPrefix(prefix, urlType, namespace string) NodeServiceInfo {
 	//	fmt.Println("nodeName " + nodeName)
 	var nodeServiceInfo NodeServiceInfo
-	serviceNames := serviceNamesFromPrefix(nodeName, namespace, false)
+	serviceNames := serviceNamesFromPrefix(prefix, namespace, false)
 	for _, serviceName := range serviceNames {
 		serviceName = strings.TrimSpace(serviceName)
 		srvOut := serviceForPrefix(serviceName, namespace, false)

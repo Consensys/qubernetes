@@ -3,13 +3,14 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/fatih/color"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/fatih/color"
+	log "github.com/sirupsen/logrus"
 )
 
 var (

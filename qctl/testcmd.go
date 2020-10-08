@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
 	"io/ioutil"
 	"os/exec"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 )
 
 var (
@@ -277,7 +278,7 @@ func createAcceptanceTestConfigString(configFileYaml QConfig, k8sNodeIp string) 
 	acceptanceTestYaml := AcceptTestConfig{}
 	for _, node := range configFileYaml.Nodes {
 		// get nodes from config, and set the necessary tm public key, geth and tessera urls, using NodePort.
-		serviceNodePort := serviceInfoForNode(node.NodeUserIdent, ServiceTypeNodePort, "")
+		serviceNodePort := serviceInfoByPrefix(node.NodeUserIdent, ServiceTypeNodePort, "")
 		tmPublicKey := getTmPublicKey(node.NodeUserIdent)
 		nodeEntry := ATNodeEntry{}
 		nodeEntry.GethURL = "http://" + k8sNodeIp + ":" + serviceNodePort.NodePortGeth

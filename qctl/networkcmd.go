@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
 	"os"
 	"os/exec"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 )
 
 var (
@@ -211,7 +212,15 @@ var (
 			if qubernetesVersion == "latest" {
 				fmt.Println("trying to pull latest container")
 				pullContainerCmd := exec.Command("docker", "pull", "quorumengineering/qubernetes:latest")
-				dropIntoCmd(pullContainerCmd)
+				err = dropIntoCmd(pullContainerCmd)
+				if err != nil {
+					fmt.Println()
+					red.Println(fmt.Sprintf("Error running trying to generate network resources."))
+					red.Println(fmt.Sprintf("Command that failed: [%v]", pullContainerCmd.String()))
+					red.Println(fmt.Sprintf("Is Docker running on your machine? [%v]", err))
+					fmt.Println()
+					return cli.Exit(fmt.Sprintf("Docker must be running on host, cmd failed [%v]", pullContainerCmd.String()), 3)
+				}
 				fmt.Println()
 				fmt.Println()
 			}
@@ -224,7 +233,17 @@ var (
 			}
 
 			//fmt.Println(cmd)
-			dropIntoCmd(cmd)
+			err = dropIntoCmd(cmd)
+			if err != nil {
+				fmt.Println()
+				red.Println(fmt.Sprintf("Error running trying to generate network resources with the qubernetes container."))
+				red.Println(fmt.Sprintf("Command that failed:"))
+				red.Println(fmt.Sprintf(cmd.String()))
+				fmt.Println()
+				red.Println(fmt.Sprintf("Is Docker running on your machine? [%v]", err))
+				fmt.Println()
+				return cli.Exit(fmt.Sprintf("Docker must be running on host, cmd failed \n %v", cmd.String()), 3)
+			}
 			fmt.Println()
 
 			fmt.Println("=======================================================================================")

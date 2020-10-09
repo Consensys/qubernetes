@@ -245,7 +245,17 @@ var (
 			cmd := exec.Command("docker", "run", "--rm", "-v", k8sdir+"/config:/tmp/config", "-e", "SPRING_CONFIG_ADDITIONALLOCATION=file:/tmp/config/", "-e", "SPRING_PROFILES_ACTIVE="+acceptanceTestProfile, "quorumengineering/acctests:latest", "test", "-Dtags="+tags)
 			// e.g. docker run --rm -v /Users/libby/Workspace.Quorum/qctl-config/out/config:/tmp/config -e SPRING_CONFIG_ADDITIONALLOCATION=file:/tmp/config/ -e SPRING_PROFILES_ACTIVE=qctl-generated quorumengineering/acctests:latest test -Dtags='(basic || basic-istanbul || networks/typical::istanbul) && !extension'
 			fmt.Println(cmd)
-			dropIntoCmd(cmd)
+			err = dropIntoCmd(cmd)
+			if err != nil {
+				fmt.Println()
+				red.Println(fmt.Sprintf("Error running trying to run acceptance test via the quorumengineering/acctests container ."))
+				red.Println(fmt.Sprintf("Command that failed:"))
+				red.Println(fmt.Sprintf(cmd.String()))
+
+				red.Println(fmt.Sprintf("Is Docker running on your machine? [%v]", err))
+				fmt.Println()
+				return cli.Exit(fmt.Sprintf("Docker must be running on host, cmd failed \n %v", cmd.String()), 3)
+			}
 			return nil
 		},
 	}

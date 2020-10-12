@@ -219,12 +219,13 @@ func showPods(namespace string) {
 
 // https://www.reddit.com/r/golang/comments/2nd4pq/how_can_i_open_an_interactive_subprogram_from/
 // runs a subcommand in interactive mode.
-func dropIntoCmd(cmd *exec.Cmd) {
+func dropIntoCmd(cmd *exec.Cmd) error {
 	//log.Printf(cmd.String())
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr
-	cmd.Run()
+	err := cmd.Run()
+	return err
 }
 
 func runCmd(cmd *exec.Cmd) bytes.Buffer {

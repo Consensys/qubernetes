@@ -1,0 +1,20 @@
+<%-
+def set_node_template_vars(values)
+    @Node_UserIdent        = values["Node_UserIdent"]
+    @Service_Prefix = (@Node_UserIdent.upcase).gsub("-", "_")
+    return
+end
+-%>
+<%- # The configured key directory of each node holds a file with the enode value.
+   # The enode value is obtained from that file and set in the permissioned-nodes.json
+-%>
+[
+  <%- @nodes.each_with_index do |node, indexNode| -%>
+  <%- set_node_template_vars(node) -%>
+    {
+      "name": "<%= @Node_UserIdent%>",
+      "rpcUrl": "http://<%= @Service_Prefix %>_SERVICE_HOST:<%= @Node_RPCPort %>",
+      "transactionManagerUrl": "http://<%= @Service_Prefix %>_SERVICE_HOST:<%= @Tm_3Party_Port %>"
+    }<%- if (indexNode != @nodes.size - 1) %>,<%- end %>
+  <% end -%>
+]

@@ -1,12 +1,4 @@
 <%-
-def set_node_template_vars(values)
-    @Node_UserIdent = values["Node_UserIdent"]
-    @Service_Prefix = (@Node_UserIdent.upcase).gsub("-", "_")
-    return
-end
--%>
-
-<%-
   @Cakeshop_Version  = @config["cakeshop"]["version"]
 
   # default quorumengineering/quorum
@@ -77,9 +69,8 @@ spec:
             - "-cx"
             - "
                cp  /etc/cakeshop/cakeshop-nodes.json /cakeshop/cakeshop-nodes.json;
-              <%- @nodes.each do |node| -%>
-               <%= set_node_template_vars(node) -%>
-  sed -i \"s/<%= @Service_Prefix %>_SERVICE_HOST/$<%= @Service_Prefix %>_SERVICE_HOST/g\" /cakeshop/cakeshop-nodes.json;
+              <%- @nodes.each do |node| -%><%= set_node_template_vars(node) -%>
+               sed -i \"s/<%= @Service_Prefix -%>_SERVICE_HOST/$<%= @Service_Prefix -%>_SERVICE_HOST/g\" /cakeshop/cakeshop-nodes.json;
               <%- end -%>
               /bin/tini -- /usr/local/bin/cakeshop.sh;"
           ports:

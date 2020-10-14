@@ -21,6 +21,7 @@ puts "using config file: " + @config_file
 ## set defaults for config if not set, else use the values from the config.
 def set_node_template_vars(values)
   @Node_UserIdent        = values["Node_UserIdent"]
+  @Service_Prefix        = (@Node_UserIdent.upcase).gsub("-", "_")
   @Node_Key_Dir          = values["Key_Dir"]
   @Consensus             = values["quorum"]["quorum"]["consensus"]
   @Tm_Version            = values["quorum"]["tm"]["Tm_Version"]

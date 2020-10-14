@@ -21,6 +21,7 @@ puts "using config file: " + @config_file
 ## set defaults for config if not set, else use the values from the config.
 def set_node_template_vars(values)
   @Node_UserIdent        = values["Node_UserIdent"]
+  @Service_Prefix        = (@Node_UserIdent.upcase).gsub("-", "_")
   @Node_Key_Dir          = values["Key_Dir"]
   @Consensus             = values["quorum"]["quorum"]["consensus"]
   @Tm_Version            = values["quorum"]["tm"]["Tm_Version"]
@@ -263,6 +264,11 @@ end
 
 ## deploy cakeshop as a deployment if enabled
 if @config["cakeshop"] and @config["cakeshop"]["version"]
+  `rm -f out/config/cakeshop-nodes.json`
+  File.open("out/config/cakeshop-nodes.json", "a") do |f|
+    f.puts (ERB.new(File.read("templates/cakeshop/cakeshop-nodes.json.erb"), nil, "-").result)
+  end
+  
   File.open("out/07-cakeshop.yaml", "w") do |f|
     f.puts (ERB.new(File.read(@base_template_path + "/cakeshop.yaml.erb"), nil, "-").result)
     f.puts("---")

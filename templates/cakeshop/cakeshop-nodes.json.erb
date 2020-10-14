@@ -1,0 +1,13 @@
+<%- # Construct initial nodes file for cakeshop: 
+   # node name, quorum rpc url, tessera 3rd party url
+-%>
+[
+  <%- @nodes.each_with_index do |node, indexNode| -%>
+  <%- set_node_template_vars(node) -%>
+    {
+      "name": "<%= @Node_UserIdent%>",
+      "rpcUrl": "http://<%= @Service_Prefix %>_SERVICE_HOST:<%= @Node_RPCPort %>",
+      "transactionManagerUrl": "http://<%= @Service_Prefix %>_SERVICE_HOST:<%= @Tm_3Party_Port %>"
+    }<%- if (indexNode != @nodes.size - 1) %>,<%- end %>
+  <% end -%>
+]

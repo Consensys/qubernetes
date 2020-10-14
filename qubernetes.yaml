@@ -22,12 +22,6 @@ genesis:
   consensus: istanbul
   Quorum_Version: 2.6.0
   Chain_Id: 1000
-  
-cakeshop:
-  version: latest
-  service:
-    type: NodePort
-    nodePort: 30108
 
 nodes:
 

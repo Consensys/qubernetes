@@ -268,7 +268,6 @@ if @config["cakeshop"] and @config["cakeshop"]["version"]
     f.puts (ERB.new(File.read("templates/cakeshop/cakeshop-nodes.json.erb"), nil, "-").result)
   end
   
-  `rm -f out/07-cakeshop.yaml`
   File.open("out/07-cakeshop.yaml", "w") do |f|
     f.puts (ERB.new(File.read(@base_template_path + "/cakeshop.yaml.erb"), nil, "-").result)
     f.puts("---")

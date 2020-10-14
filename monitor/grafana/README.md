@@ -90,7 +90,9 @@ nodes:
 You should now be able to access the Grafana dashboard from [localhost:3000](http://localhost:3000) (admin:admin).
 
 ## Update The Datasource
-You will need to update the datasource for prometheus from inside grafana so that the IP points to your K8s node IP, e.g. 
+
+You will need to update the datasource for Prometheus from inside grafana so that the IP points to your K8s node IP, e.g. 
+
 if running minikube run `minikube ip` to obtain the node ip.
 
 ![grafana-update-datasource](../../docs/resources/grafana-add-datasource.png)
@@ -104,7 +106,7 @@ if running minikube run `minikube ip` to obtain the node ip.
 ```
 
 ## Demo
-[![docker-quberentes-boot-3](../../docs/resources/docker-quberentes-boot-3-play.png)](https://jpmorganchase.github.io/qubernetes/resources/grafana-demo.webm)
+[![docker-qubernetes-boot-3](../../docs/resources/docker-qubernetes-boot-3-play.png)](https://jpmorganchase.github.io/qubernetes/resources/grafana-demo.webm)
 
 ## Shoutout to chapsuk and karalabe for the sweet grafana databases. 
 * https://github.com/chapsuk/geth-prometheus

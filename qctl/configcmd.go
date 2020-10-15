@@ -68,17 +68,19 @@ var (
 			},
 			&cli.BoolFlag{
 				Name:  "monitor",
+				Aliases: []string{"monit"},
 				Usage: "enable monitoring on the geth / quorum node (prometheus).",
 				Value: false,
 			},
 			&cli.BoolFlag{
 				Name:  "cakeshop",
+				Aliases: []string{"cake"},
 				Usage: "deploy cakeshop with the Quorum network.",
 				Value: false,
 			},
 			&cli.BoolFlag{
 				Name:  "ingress",
-				Usage: "include a k8s ingress with the Quorum network.",
+				Usage: "include a K8s ingress with the Quorum network.",
 				Value: false,
 			},
 		},
@@ -273,7 +275,7 @@ var (
 			}
 			configFileYaml, err := LoadYamlConfig(configFile)
 			if err != nil {
-				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
+				log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", configFile, err)
 			}
 			//TODO: get the global or passed in k8s dir.
 			fmt.Println()

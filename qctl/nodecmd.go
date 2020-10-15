@@ -403,7 +403,7 @@ var (
 				}
 			}
 			if err != nil {
-				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
+				log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", configFile, err)
 			}
 			// set defaults from the existing config if node values were not provided
 			if quorumVersion == "" {
@@ -552,7 +552,7 @@ var (
 			}
 			configFileYaml, err := LoadYamlConfig(configFile)
 			if err != nil {
-				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
+				log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", configFile, err)
 			}
 			// find the nodes
 			var updatedNode NodeEntry
@@ -771,7 +771,7 @@ var (
 			}
 			configFileYaml, err := LoadYamlConfig(configFile)
 			if err != nil {
-				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
+				log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", configFile, err)
 			}
 			currentNum := len(configFileYaml.Nodes)
 			if !isBare {

@@ -140,7 +140,7 @@ var (
 
 			configFileYaml, err := LoadYamlConfig(configFile)
 			if err != nil {
-				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
+				log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", configFile, err)
 			}
 			acceptanceTestYaml := createAcceptanceTestConfigString(configFileYaml, k8sNodeIp)
 			fmt.Println(acceptanceTestYaml)
@@ -214,7 +214,7 @@ var (
 			// end V1
 			configFileYaml, err := LoadYamlConfig(configFile)
 			if err != nil {
-				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
+				log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", configFile, err)
 			}
 
 			// acceptance test file must be prefixed with application, e.g. `application-$MYNAME.yaml`

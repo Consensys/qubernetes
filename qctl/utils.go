@@ -227,6 +227,22 @@ func dropIntoCmd(cmd *exec.Cmd) error {
 	err := cmd.Run()
 	return err
 }
+func dropIntoCmdQuiet(cmd *exec.Cmd) error {
+	//	cmd.Stdout = os.Stdout
+	cmd.Stdin = os.Stdin
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	return err
+}
+
+// do not display the command output
+func runCmdQuiet(cmd *exec.Cmd) error {
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func runCmd(cmd *exec.Cmd) bytes.Buffer {
 	var out bytes.Buffer

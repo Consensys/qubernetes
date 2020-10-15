@@ -49,7 +49,7 @@ var (
 			configFile := c.String("config")
 			configFileYaml, err := LoadYamlConfig(configFile)
 			if err != nil {
-				log.Fatal("config file [%v] could not be loaded into the valid quebernetes yaml. err: [%v]", configFile, err)
+				log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", configFile, err)
 			}
 
 			// if no --node flags were set, display all quorum services known from the config.

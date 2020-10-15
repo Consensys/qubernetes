@@ -1,6 +1,6 @@
 ## Qubernetes
 
-[Quorum](https://github.com/jpmorganchase/quorum) on [Kubernetes](https://github.com/kubernetes/kubernetes),
+[Quorum](https://github.com/ConsenSys/quorum) on [Kubernetes](https://github.com/kubernetes/kubernetes),
 including: 
 
 * [Quickest Start](#quickest-start):    
@@ -8,24 +8,24 @@ including:
   To create and deploy an N node Quorum network run: `./quickest-start.sh $NUM`   
   To terminate the network run `./quickest-stop.sh`
 
-* [7 Node Example On K8s](docs/7nodes-on-k8s.md): &nbsp;&nbsp; runs [quorum-examples](https://github.com/jpmorganchase/quorum-examples/tree/master/examples/7nodes) on K8s.  
+* [qctl](qctl): :star2:  
+   Quberentes command line tool.  
+   Most comprehensive way to create / interact with a quorum k8s network.  
+   Quberentes command line for initializing, deploying, modifying, interacting with a quorum K8s network.  
+   ```
+   > qctl init
+   > qclt generate netwoirk --create 
+   > qctl deploy network
+   ```  
+   see [qctl](qctl) for full set of commands.
+   
+* [7 Node Example On K8s](docs/7nodes-on-k8s.md):   runs [quorum-examples](https://github.com/ConsenSys/quorum-examples/tree/master/examples/7nodes) on K8s.  
   🎬 &nbsp;&nbsp;[7nodes Demo](#-step-1-deploy-7nodes)  
   
 * [N Node Quorum Network On K8s](#generating-quorum-and-k8s-resources-from-custom-configs):
   Generates the necessary Quorum resources (keys, configs - genesis, istanbul, etc.) and Kubernetes API resource yaml 
   for a configurable N node Quorum Network based on a minimal config [`qubernetes.yaml`](qubernetes.yaml).    
    
-   
-
-## Additional Resources   
-* [Quickstart With Minikube](docs/minikube-docs.md):
-  Quickstart for running a Quorum network on minikube.
- 
-* [Running On GKE](docs/gke-hosted-kubernetes.md) 
-
-* [Quorum Network From Existing Quorum Resources](docs/qubernetes-config.md#generating-kubernetes-object-yaml-from-existing-quorum-resources):  
-Generates Kuberenetes API resources from existing Quorum resources: keys, config, etc.
-
 ## Quickest Start
 Requires docker to be running on your machine with sufficient memory ~8GB for a 7 node cluster. 
 ```bash
@@ -51,6 +51,22 @@ This:
 4. Deploys a 7 node quorum network (or an N node network) configured to use Tessera as the Transaction Manager, and IBFT as the consensus algorithm.
 
 ⭕️&nbsp;&nbsp;**note**: if you experience issues with the nodes starting up, check dockers memory and/or try running a smaller network `./quickest-start.sh 3` .
+
+## Qubernetes Command line: qctl
+```
+> qctl init
+> qclt generate netwoirk --create 
+> qctl deploy network
+``` 
+
+## Additional Resources   
+* [Quickstart With Minikube](docs/minikube-docs.md):
+  Quickstart for running a Quorum network on minikube.
+ 
+* [Running On GKE](docs/gke-hosted-kubernetes.md) 
+
+* [Quorum Network From Existing Quorum Resources](docs/qubernetes-config.md#generating-kubernetes-object-yaml-from-existing-quorum-resources):  
+Generates Kuberenetes API resources from existing Quorum resources: keys, config, etc.
 
 ## Accessing Nodes on K8s
 e.g. The Quorum and Transaction Manager Containers
@@ -120,17 +136,17 @@ qubernetes $>  ./geth-attach node1
 
 ### 🎥 Step 1 Deploy 7nodes
 Starts Kind K8s cluster (bottom screen) & deploy 7nodes (IBFT & Tessera)
-[![qubes-7nodes-kind](docs/resources/7node-kind-to-pending-play.png)](https://jpmorganchase.github.io/qubernetes/resources/7node-kind-to-pending.webm)
+[![qubes-7nodes-kind](docs/resources/7node-kind-to-pending-play.png)](https://ConsenSys.github.io/qubernetes/resources/7node-kind-to-pending.webm)
 
 ### 🎥 Step 2: Deploy a public and private transaction from node1
 continued from above
-[![qubes-7nodes-run-contract](docs/resources/7node-run-contracts-play.png)](https://jpmorganchase.github.io/qubernetes/resources/7node-run-contracts.webm)
+[![qubes-7nodes-run-contract](docs/resources/7node-run-contracts-play.png)](https://ConsenSys.github.io/qubernetes/resources/7node-run-contracts.webm)
 
 ### 🎥 Step 3: Attach to the geth console
 continued from above 
 part 1 attach to geth from inside the container
 part 2 use helper `./geth-attach node1`
-[![qubes-7nodes-attach-geth](docs/resources/7node-attach-geth-play.png)](https://jpmorganchase.github.io/qubernetes/resources/7node-attach-geth.webm)
+[![qubes-7nodes-attach-geth](docs/resources/7node-attach-geth-play.png)](https://ConsenSys.github.io/qubernetes/resources/7node-attach-geth.webm)
 
 ## Generating Quorum and K8s Resources From Custom Configs
 
@@ -156,12 +172,12 @@ The `qubernetes.yaml` file and the desired `out` directory will need to be mount
  
 1.  Use the default `qubernetes.yaml` in the base of the qubernetes repository.  You may edit this file to create your custom quorum network 
 ```bash
-$> git clone https://github.com/jpmorganchase/qubernetes.git
+$> git clone https://github.com/ConsenSys/qubernetes.git
 $> cd qubernetes
 qubernetes $> docker run --rm -it -v $(pwd)/qubernetes.yaml:/qubernetes/qubernetes.yaml -v $(pwd)/out:/qubernetes/out  quorumengineering/qubernetes ./qube-init qubernetes.yaml
 qubernetes $> ls out 
 ``` 
-[![docker-qubernetes-boot-1](docs/resources/docker-qubernetes-boot-1-play.png)](https://jpmorganchase.github.io/qubernetes/resources/docker-qubernetes-boot-1.webm)
+[![docker-qubernetes-boot-1](docs/resources/docker-qubernetes-boot-1-play.png)](https://ConsenSys.github.io/qubernetes/resources/docker-qubernetes-boot-1.webm)
 2.   Generate Quorum and Kubernetes resources files from any directory using a custom configuration file, e.g. `cool-qubernetes.yaml`,
 you do not need to clone the repo, but mount the file `cool-qubernetes.yaml` and the `out` directory on the `quorumengineering/qubernetes` container, 
 so the resources will be available after the container exits.
@@ -189,7 +205,7 @@ myDir$> ls
 cool-qubernetes.yaml out
 
 ```
-[![docker-qubernetes-boot-2](docs/resources/docker-qubernetes-boot-2-play.png)](https://jpmorganchase.github.io/qubernetes/resources/docker-qubernetes-boot-2.webm)
+[![docker-qubernetes-boot-2](docs/resources/docker-qubernetes-boot-2-play.png)](https://ConsenSys.github.io/qubernetes/resources/docker-qubernetes-boot-2.webm)
 
 3.  Exec into the `quorumengineering/qubernetes` container to run commands inside. This is useful for testing changes 
 to the local ruby generator files. 
@@ -197,7 +213,7 @@ In this example, we are running the container from inside the base qubernetes di
 so it is as if we were running on our local host: the files from the host will be used, and generated files will be continue to exist after the container exists.
 
 ```
-$> git clone https://github.com/jpmorganchase/qubernetes.git
+$> git clone https://github.com/ConsenSys/qubernetes.git
 $> cd qubernetes 
 qubernetes $> docker run --rm -it -v $(pwd):/qubernetes -ti quorumengineering/qubernetes
 root@4eb772b14086:/qubernetes# ./qube-init
@@ -205,7 +221,7 @@ root@4eb772b14086:/qubernetes# ./qube-init
 root@4eb772b14086:/qubernetes# ls out/
 00-quorum-persistent-volumes.yaml  01-quorum-genesis.yaml  02-quorum-shared-config.yaml  03-quorum-services.yaml  04-quorum-keyconfigs.yaml  config  deployments
 ```
-[![docker-qubernetes-boot-3](docs/resources/docker-qubernetes-boot-3-play.png)](https://jpmorganchase.github.io/qubernetes/resources/docker-qubernetes-boot-3.webm)
+[![docker-qubernetes-boot-3](docs/resources/docker-qubernetes-boot-3-play.png)](https://ConsenSys.github.io/qubernetes/resources/docker-qubernetes-boot-3.webm)
 
 ### Modifying The Qubernetes Config File
 

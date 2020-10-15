@@ -137,6 +137,12 @@ var (
 				Usage:   "Initialize new network, if existing out folder exists, delete it without prompting.",
 				Aliases: []string{"f"},
 			},
+			&cli.BoolFlag{
+				Name:    "verbose",
+				Aliases: []string{"v"},
+				Usage:   "show verbose output.",
+				Value:   false,
+			},
 		},
 
 		Action: func(c *cli.Context) error {
@@ -150,6 +156,7 @@ var (
 			update := c.Bool("update")
 			create := c.Bool("create")
 			k8sdir := c.String("k8sdir")
+			isVerbose := c.Bool("verbose")
 
 			// If we are running an update, the k8s directory is required, because the additional resources will be generate there.
 			if k8sdir == "" && update {
@@ -231,9 +238,15 @@ var (
 			} else if create {
 				cmd = exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", k8sdir+":/qubernetes/out", "quorumengineering/qubernetes:"+qubernetesVersion, "./qube-init", "--action=create", "qubes.yaml")
 			}
-
-			//fmt.Println(cmd)
-			err = dropIntoCmd(cmd)
+			if isVerbose {
+				fmt.Println()
+				fmt.Println(cmd)
+				fmt.Println()
+				err = dropIntoCmd(cmd)
+			} else {
+				green.Println("  Generating the Quorum and K8s resources...")
+				err = dropIntoCmdQuiet(cmd)
+			}
 			if err != nil {
 				fmt.Println()
 				red.Println(fmt.Sprintf("Error running trying to generate network resources with the qubernetes container."))

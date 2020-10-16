@@ -15,7 +15,7 @@ RUN apt-get update
 
 # set tzdata non-interactive https://serverfault.com/questions/949991/how-to-install-tzdata-on-a-ubuntu-docker-image
 # for now need musl-dev for geneating account key from the private key
-RUN DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" apt-get install -y ruby-full golang-go git make musl-dev
+RUN DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" apt-get install -y ruby-full golang-go git make musl-dev xxd
 RUN gem install colorize
 
 RUN go get github.com/getamis/istanbul-tools/cmd/istanbul

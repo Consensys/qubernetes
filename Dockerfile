@@ -7,7 +7,7 @@ ARG BUILD_DATE=""
 # Label according to  https://github.com/opencontainers/image-spec
 LABEL org.opencontainers.image.created=${BUILD_DATE}
 LABEL org.opencontainers.image.revision=${COMMIT}
-LABEL org.opencontainers.image.source="https://github.com/jpmorganchase/qubernetes.git"
+LABEL org.opencontainers.image.source="https://github.com/ConsenSys/qubernetes.git"
 LABEL org.opencontainers.image.title="qubernetes"
 LABEL org.opencontainers.image.version=${QUBES_VERSION}
 
@@ -15,7 +15,7 @@ RUN apt-get update
 
 # set tzdata non-interactive https://serverfault.com/questions/949991/how-to-install-tzdata-on-a-ubuntu-docker-image
 # for now need musl-dev for geneating account key from the private key
-RUN DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" apt-get install -y ruby-full golang-go git make musl-dev
+RUN DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" apt-get install -y ruby-full golang-go git make musl-dev xxd
 RUN gem install colorize
 
 RUN go get github.com/getamis/istanbul-tools/cmd/istanbul
@@ -28,12 +28,6 @@ RUN go get github.com/getamis/istanbul-tools/cmd/istanbul && git clone https://g
     cp /root/go/bin/* /usr/local/bin && \
     rm -r /root/go
 
-RUN apt-get --no-install-recommends install -y default-jre wget
-RUN echo 'alias tessera="java -jar /usr/bin/tessera-app-0.10.5-app.jar"' >> ~/.bashrc
-ENV TESSERA_JAR=/usr/bin/tessera-app-0.10.5-app.jar
-
-# echo | tessera keygen --keyout tm
-RUN cd /usr/bin && wget https://oss.sonatype.org/service/local/repositories/releases/content/com/jpmorgan/quorum/tessera-app/0.10.5/tessera-app-0.10.5-app.jar
 RUN apt-get remove -y git golang-go wget make
 # uninstall rake
 RUN gem uninstall --no-executables -i /usr/share/rubygems-integration/all rake && rm /usr/bin/rake

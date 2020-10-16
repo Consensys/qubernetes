@@ -293,20 +293,16 @@ var (
 	//qctl add node --id=node3 --consensus=ibft --quorum
 	//TODO: get the defaults from the config file.
 	nodeAddCommand = cli.Command{
-		Name:    "node",
-		Usage:   "add new nodes",
-		Aliases: []string{"n", "nodes"},
+		Name:      "node",
+		Usage:     "add new node",
+		Aliases:   []string{"n", "nodes"},
+		ArgsUsage: "UniqueNodeName",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "config, c",
 				Usage:   "Load configuration from `FULL_PATH_FILE`",
 				EnvVars: []string{"QUBE_CONFIG"},
 				//Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "name",
-				Usage:    "Unique name of node to create",
-				Required: true,
 			},
 			// TODO: set default to Node-name-key-dir
 			&cli.StringFlag{
@@ -337,8 +333,14 @@ var (
 			},
 		},
 		Action: func(c *cli.Context) error {
+			name := c.Args().First()
+			// node name argument is required to update a node
+			if name == "" {
+				c.App.Run([]string{"qctl", "help", "node"})
+				red.Println("  required argument: Unique NodeName of node you wish to add.")
+				return cli.Exit("  required argument: Unique NodeName of node you wish to add.", 3)
+			}
 			// defaults should be obtained from the config
-			name := c.String("name")
 			keyDir := c.String("keydir")
 			if keyDir == "" {
 				keyDir = fmt.Sprintf("key-%s", name)
@@ -443,20 +445,16 @@ var (
 	}
 	// TODO: consolidate this and add node
 	nodeUpdateCommand = cli.Command{
-		Name:    "node",
-		Usage:   "update node",
-		Aliases: []string{"n", "nodes"},
+		Name:      "node",
+		Usage:     "update node",
+		Aliases:   []string{"n", "nodes"},
+		ArgsUsage: "NodeName",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "config, c",
 				Usage:   "Load configuration from `FULL_PATH_FILE`",
 				EnvVars: []string{"QUBE_CONFIG"},
 				//Required: true,
-			},
-			&cli.StringFlag{
-				Name:     "name",
-				Usage:    "Unique name of node to create",
-				Required: true,
 			},
 			// TODO: set default to Node-name-key-dir
 			&cli.StringFlag{
@@ -495,8 +493,14 @@ var (
 			},
 		},
 		Action: func(c *cli.Context) error {
+			name := c.Args().First()
+			// node name argument is required to update a node
+			if name == "" {
+				c.App.Run([]string{"qctl", "help", "node"})
+				red.Println("  NodeName required to update a node.")
+				return cli.Exit("  NodeName required to update a node.", 3)
+			}
 			// defaults should be obtained from the config
-			name := c.String("name")
 			keyDir := c.String("keydir")
 			if keyDir == "" {
 				keyDir = fmt.Sprintf("key-%s", name)
@@ -583,7 +587,6 @@ var (
 					}
 					updatedNode = nodeEntry
 					configFileYaml.Nodes[i] = updatedNode
-					red.Println(fmt.Sprintf("updated nodes is [%v]", updatedNode))
 				}
 			}
 			// If the node name the user entered to update does not exists, error out and notify the user.
@@ -617,11 +620,11 @@ var (
 	// qctl ls node --name --consensus --quorumversion
 	// qctl ls node --name --consensus --quorumversion --tmversion --tmname
 	nodeListCommand = cli.Command{
-		Name:    "node",
-		Usage:   "list nodes info",
-		Aliases: []string{"n", "nodes"},
+		Name:      "node",
+		Usage:     "list nodes info",
+		Aliases:   []string{"n", "nodes"},
+		ArgsUsage: "NodeName",
 		Flags: []cli.Flag{
-
 			&cli.StringFlag{
 				Name:     "config, c",
 				Usage:    "Load configuration from `FULL_PATH_FILE`",

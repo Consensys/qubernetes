@@ -123,7 +123,7 @@ at block: 19 (Tue, 06 Oct 2020 00:24:05 UTC)
 To add a new node to the network run: add, generate, deploy.  
 `add` adds the node to the qubernetes config
 ```
-$> qctl add node --name=quorum-node5
+$> qctl add node quorum-node5
 $> qctl ls nodes 
 ```
 cakeshop and monitoring can also be added the same way

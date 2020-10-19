@@ -6,12 +6,16 @@ The commands intentionally try to do only one thing (Unix philosophy). They can 
 network creation / deletion, etc. 
 
 ### Install
+##### Binaries 
+[**Release v0.2.0**](https://github.com/ConsenSys/qubernetes/releases/tag/v0.2.0): [mac](https://github.com/ConsenSys/qubernetes/releases/download/v0.2.0/qctl_darwin_amd64),  [linux](https://github.com/ConsenSys/qubernetes/releases/download/v0.2.0/qctl_linux_amd64)  
 
+##### Go Get
 Requires golang version >  1.13
 ```
 > GO111MODULE=on go get github.com/ConsenSys/qubernetes/qctl 
 ```
 
+### Running
 ```
 > qctl --help
 

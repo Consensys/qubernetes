@@ -310,6 +310,15 @@ func k8sCreateDeleteCluster(c *cli.Context, action string) error {
 		cmd = exec.Command("kubectl", "--namespace="+namespace, action, "-f", k8sdir, "-f", k8sdir+"/deployments")
 	}
 	fmt.Println(cmd.String())
-	dropIntoCmd(cmd)
+	err := dropIntoCmd(cmd)
+	if err != nil {
+		fmt.Println()
+		red.Println("  Error running `kubectl apply` command.")
+		red.Println("  Ensure kubectl is set up and running on the host.")
+		red.Println("  Try checking the kubectl context on the host, e.g.")
+		fmt.Println()
+		red.Println("   > kubectl config current-context")
+		fmt.Println()
+	}
 	return nil
 }

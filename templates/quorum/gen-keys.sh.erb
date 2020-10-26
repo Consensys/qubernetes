@@ -48,6 +48,11 @@ for node_key_dir in "${array[@]}"; do
     ethkey generate $KEY_DIR/acctkeyfile.json --passwordfile password.txt
     bootnode -genkey nodekey
     bootnode  -nodekeyhex $(cat nodekey) -writeaddress > enode
+    # Only IBFT / istanbul networks need access to the nodekey address.
+<%- if @Consensus == "istanbul" -%>
+    # save nodekey address (used for istanbul-validator-config.toml)
+    ethkey generate nodekeyacct.json --passwordfile password.txt --privatekey nodekey | sed 's/Address: //g' | sed 's/}//g' > nodekeyaddress
+<%- end -%>
     popd
   else
     echo "Key Dir exists! Skipping creating new key in $KEY_DIR"

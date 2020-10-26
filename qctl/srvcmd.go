@@ -38,6 +38,19 @@ var (
 				Usage: "the IP of the K8s node, e.g. minikube ip ",
 				Value: "<K8s_NODE_IP>",
 			},
+			&cli.BoolFlag{
+				Name:  "geth",
+				Usage: "only show the geth URL ",
+			},
+			&cli.BoolFlag{
+				Name:  "tm",
+				Usage: "only show the transaction manager URL ",
+			},
+			&cli.BoolFlag{
+				Name:    "bare",
+				Aliases: []string{"b"},
+				Usage:   "display the minimum output, useful for scripts / automation",
+			},
 		},
 		Action: func(c *cli.Context) error {
 			namespace := c.String("namespace")
@@ -45,6 +58,14 @@ var (
 			nodeIp := c.String("node-ip")
 			urlType := c.String("type")
 			urlType = strings.ToLower(urlType)
+			isBare := c.Bool("bare")
+			isGeth := c.Bool("geth")
+			isTm := c.Bool("tm")
+			// if neither geth nor tm flag are set, default to setting both to true
+			if !isGeth && !isTm {
+				isGeth = true
+				isTm = true
+			}
 
 			configFile := c.String("config")
 			configFileYaml, err := LoadYamlConfig(configFile)
@@ -76,7 +97,9 @@ var (
 					allQuorumOtherK8sServices.Add("monitor")
 				}
 			}
-			fmt.Println()
+			if !isBare {
+				fmt.Println()
+			}
 			// TODO: optimize this so we get all the services with one kubectl call then filter through the results.
 			// display other quorum service first.
 			for _, service := range allQuorumOtherK8sServices.ToSlice() {
@@ -89,19 +112,47 @@ var (
 					fmt.Println("cakeshop server - " + nodeIp + ":" + nodeServiceInfo.NodePortCakeshop)
 				}
 			}
-			fmt.Println()
+			if !isBare {
+				fmt.Println()
+			}
 
 			// display all quorum node services.
 			for _, service := range allQuorumNodeK8sServices.ToSlice() {
 				// need a string because ToSlice returns an []interface
 				serviceName := fmt.Sprintf("%v", service)
 				nodeServiceInfo := serviceInfoByPrefix(serviceName, urlType, namespace)
-				if urlType == "nodeport" {
-					fmt.Println(serviceName + " geth      - " + nodeIp + ":" + nodeServiceInfo.NodePortGeth)
-					fmt.Println(serviceName + " tessera   - " + nodeIp + ":" + nodeServiceInfo.NodePortTm)
-				} else if urlType == "clusterip" { // the internal IP:Port of the specified node(s)
-					fmt.Println(serviceName + " geth      - " + nodeServiceInfo.ClusterIPGethURL)
-					fmt.Println(serviceName + " tessera   - " + nodeServiceInfo.ClusterIPTmURL)
+				if isBare {
+					if urlType == "nodeport" {
+						if isGeth {
+							fmt.Println(nodeIp + ":" + nodeServiceInfo.NodePortGeth)
+						}
+						if isTm {
+							fmt.Println(nodeIp + ":" + nodeServiceInfo.NodePortTm)
+						}
+					} else if urlType == "clusterip" { // the internal IP:Port of the specified node(s)
+						if isGeth {
+							fmt.Println(nodeServiceInfo.ClusterIPGethURL)
+						}
+						if isTm {
+							fmt.Println(nodeServiceInfo.ClusterIPTmURL)
+						}
+					}
+				} else {
+					if urlType == "nodeport" {
+						if isGeth {
+							fmt.Println(serviceName + " geth      - " + nodeIp + ":" + nodeServiceInfo.NodePortGeth)
+						}
+						if isTm {
+							fmt.Println(serviceName + " tessera   - " + nodeIp + ":" + nodeServiceInfo.NodePortTm)
+						}
+					} else if urlType == "clusterip" { // the internal IP:Port of the specified node(s)
+						if isGeth {
+							fmt.Println(serviceName + " geth      - " + nodeServiceInfo.ClusterIPGethURL)
+						}
+						if isTm {
+							fmt.Println(serviceName + " tessera   - " + nodeServiceInfo.ClusterIPTmURL)
+						}
+					}
 				}
 			}
 

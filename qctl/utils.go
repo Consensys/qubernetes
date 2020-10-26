@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -244,14 +243,11 @@ func runCmdQuiet(cmd *exec.Cmd) error {
 	return nil
 }
 
-func runCmd(cmd *exec.Cmd) bytes.Buffer {
+func runCmd(cmd *exec.Cmd) (bytes.Buffer, error) {
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return out
+	return out, err
 }
 
 func fileExists(filename string) bool {

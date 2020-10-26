@@ -149,7 +149,7 @@ var (
 			qubernetesVersion := c.String("version")
 
 			pwdCmd := exec.Command("pwd")
-			b := runCmd(pwdCmd)
+			b, _ := runCmd(pwdCmd)
 			pwd := strings.TrimSpace(b.String())
 
 			// update / create

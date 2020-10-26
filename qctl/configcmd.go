@@ -67,16 +67,16 @@ var (
 				Usage: "additional geth startup params to run on the node.",
 			},
 			&cli.BoolFlag{
-				Name:  "monitor",
+				Name:    "monitor",
 				Aliases: []string{"monit"},
-				Usage: "enable monitoring on the geth / quorum node (prometheus).",
-				Value: false,
+				Usage:   "enable monitoring on the geth / quorum node (prometheus).",
+				Value:   false,
 			},
 			&cli.BoolFlag{
-				Name:  "cakeshop",
+				Name:    "cakeshop",
 				Aliases: []string{"cake"},
-				Usage: "deploy cakeshop with the Quorum network.",
-				Value: false,
+				Usage:   "deploy cakeshop with the Quorum network.",
+				Value:   false,
 			},
 			&cli.BoolFlag{
 				Name:  "ingress",
@@ -87,7 +87,7 @@ var (
 
 		Action: func(c *cli.Context) error {
 			pwdCmd := exec.Command("pwd")
-			b := runCmd(pwdCmd)
+			b, _ := runCmd(pwdCmd)
 			pwd := strings.TrimSpace(b.String())
 			// If the QUBE_CONFIG env is set or the flag passed in, use this file path and generate the config there.
 			// this is helpful when creating, deleting, networks repeatedly so that the config dirs can be set once and
@@ -237,7 +237,7 @@ var (
 		Action: func(c *cli.Context) error {
 
 			pwdCmd := exec.Command("pwd")
-			b := runCmd(pwdCmd)
+			b, _ := runCmd(pwdCmd)
 			pwd := strings.TrimSpace(b.String())
 
 			configFile := c.String("config")

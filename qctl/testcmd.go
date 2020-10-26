@@ -105,7 +105,7 @@ var (
 			k8sdir := c.String("k8sdir")
 			// get the current directory path, we'll use this in case the config file passed in was a relative path.
 			pwdCmd := exec.Command("pwd")
-			b := runCmd(pwdCmd)
+			b, _ := runCmd(pwdCmd)
 			pwd := strings.TrimSpace(b.String())
 
 			if configFile == "" {

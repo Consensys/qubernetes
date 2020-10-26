@@ -35,7 +35,11 @@ var (
 
 			// get the current directory path, we'll use this in case the config file passed in was a relative path.
 			pwdCmd := exec.Command("pwd")
-			b := runCmd(pwdCmd)
+			b, err := runCmd(pwdCmd)
+			if err != nil {
+				red.Println(fmt.Sprintf(" Error executing command %s", pwdCmd))
+				log.Fatal(err)
+			}
 			pwd := strings.TrimSpace(b.String())
 
 			if configFile == "" {
@@ -123,7 +127,11 @@ var (
 			k8sdir := c.String("k8sdir")
 			// get the current directory path, we'll use this in case the config file passed in was a relative path.
 			pwdCmd := exec.Command("pwd")
-			b := runCmd(pwdCmd)
+			b, err := runCmd(pwdCmd)
+			if err != nil {
+				red.Println(fmt.Sprintf(" Error executing command %s", pwdCmd))
+				log.Fatal(err)
+			}
 			pwd := strings.TrimSpace(b.String())
 
 			if configFile == "" {

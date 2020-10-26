@@ -6,6 +6,7 @@ require "erb"
 def set_node_template_vars(values)
   @Node_UserIdent        = values["Node_UserIdent"]
   @Node_Key_Dir          = values["Key_Dir"]
+  @Consensus             = values["quorum"]["quorum"]["consensus"]
   return
 end
 

@@ -797,6 +797,10 @@ var (
 				fmt.Printf("config currently has %d nodes \n", currentNum)
 			}
 
+			if asExternal {
+				fmt.Println("external_nodes:")
+			}
+
 			for i := 0; i < len(configFileYaml.Nodes); i++ {
 				if nodeName == configFileYaml.Nodes[i].NodeUserIdent || nodeName == "" { // node name not set always show node
 					nodeFound = true

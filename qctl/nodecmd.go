@@ -925,10 +925,10 @@ func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, qu
 	if tmVersion {
 		green.Println(fmt.Sprintf("     [%s] tmVersion: [%s]", nodeEntry.NodeUserIdent, nodeEntry.QuorumEntry.Tm.TmVersion))
 	}
-	if isQuorumImageFull {
+	if isQuorumImageFull && nodeEntry.QuorumEntry.Quorum.DockerRepoFull != "" {
 		green.Println(fmt.Sprintf("     [%s] quorumImage: [%s]", nodeEntry.NodeUserIdent, nodeEntry.QuorumEntry.Quorum.DockerRepoFull))
 	}
-	if isTmImageFull {
+	if isTmImageFull && nodeEntry.QuorumEntry.Tm.DockerRepoFull != "" {
 		green.Println(fmt.Sprintf("     [%s] tmImage: [%s]", nodeEntry.NodeUserIdent, nodeEntry.QuorumEntry.Tm.DockerRepoFull))
 	}
 	if isEnodeUrl {
@@ -941,7 +941,7 @@ func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, qu
 			}
 		}
 	}
-	if isGethParms {
+	if isGethParms && nodeEntry.GethEntry.GetStartupParams != "" {
 		green.Println(fmt.Sprintf("     [%s] geth params: [%s]", nodeEntry.NodeUserIdent, nodeEntry.GethEntry.GetStartupParams))
 	}
 	fmt.Println()

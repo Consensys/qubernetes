@@ -11,6 +11,11 @@ if @config["genesis"] and @config["genesis"]["Chain_Id"]
 end
 ## The genesis consensus and the quorum version must be set in the config file.
 @Genesis_Consensus = @config["genesis"]["consensus"]
+# if the qibftblock is set, the network will switch over to qibft consensus
+# when the specified block number is reached.
+if @config["genesis"]["qibftBlock"]
+  @Qibft_Block = @config["genesis"]["qibftBlock"]
+end
 @Genesis_Quorum_Version = @config["genesis"]["Quorum_Version"]
 
 @Account_Allocs = ""
@@ -82,7 +87,7 @@ end
   "parenthash": "0x0000000000000000000000000000000000000000000000000000000000000000",
   "timestamp": "0x00"
 }
-<% elsif @Genesis_Consensus == "istanbul" %>
+<% elsif @Genesis_Consensus == "istanbul" ||  @Genesis_Consensus == "qibft" %>
 {
 "alloc": {
 <%- @nodes.each_with_index do |node, indexNode|
@@ -123,6 +128,9 @@ end
     "eip155Block": 0,
     "eip158Block": 0,
     "istanbul": {
+      <%- if @Qibft_Block -%>
+      "qibftBlock": <%= @Qibft_Block %>,
+      <%- end -%>
       "epoch": 30000,
       "policy": 0
     },

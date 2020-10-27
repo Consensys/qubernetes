@@ -33,16 +33,21 @@ var (
 				Value: DefaultConesensus,
 			},
 			&cli.StringFlag{
+				Name:  "qibftblock",
+				Usage: "Blocknumber at which the network will switch over from ibft to qibft.",
+				Value: "0",
+			},
+			&cli.StringFlag{
 				Name:    "qversion",
 				Aliases: []string{"qv"},
-				Value:   DefaultQuorumVersion,
 				Usage:   "Quorum Version.",
+				Value:   DefaultQuorumVersion,
 			},
 			&cli.StringFlag{
 				Name:    "tmversion",
 				Aliases: []string{"tmv"},
-				Value:   DefaultTesseraVersion,
 				Usage:   "transaction Manager Version.",
+				Value:   DefaultTesseraVersion,
 			},
 			&cli.StringFlag{
 				Name:  "tm",
@@ -105,6 +110,7 @@ var (
 			tmVersion := c.String("tmversion")
 			transactionManager := c.String("tm")
 			consensus := c.String("consensus")
+			qibftblock := c.String("qibftblock")
 			chainId := c.String("chainid")
 			qimagefull := c.String("qimagefull")
 			tmImageFull := c.String("tmimagefull")
@@ -152,6 +158,9 @@ var (
 
 			configYaml.Genesis.QuorumVersion = quorumVersion
 			configYaml.Genesis.Consensus = consensus
+			if consensus == "qibft" { // if --qibftblock=BLOCK_NUM not specified set to default block 0, else the user can specify --qibftblock=BLOCK_NUM
+				configYaml.Genesis.QibftBlock = qibftblock
+			}
 			configYaml.Genesis.Chain_Id = chainId
 
 			if isMonitoring {

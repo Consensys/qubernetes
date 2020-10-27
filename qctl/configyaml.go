@@ -13,6 +13,7 @@ var (
     genesis:
       # supported: (raft | istanbul)
       consensus: istanbul
+      qibftBlock: 0 
       Quorum_Version: 2.6.0
       Chain_Id: 1000
     nodes:
@@ -31,13 +32,13 @@ type GethEntry struct {
 type Quorum struct {
 	Consensus      string `yaml:"consensus"`
 	QuorumVersion  string `yaml:"Quorum_Version"`
-	DockerRepoFull string `yaml:"Docker_Repo_Full"` //quorum-local:latest
+	DockerRepoFull string `yaml:"Docker_Repo_Full,omitempty"` //quorum-local
 }
 
 type Tm struct {
 	Name           string `yaml:"Name"`
 	TmVersion      string `yaml:"Tm_Version"`
-	DockerRepoFull string `yaml:"Docker_Repo_Full"` //tessera-local:latest
+	DockerRepoFull string `yaml:"Docker_Repo_Full,omitempty"` //tessera-local
 }
 
 type NodeEntry struct {
@@ -78,6 +79,7 @@ type K8s struct {
 type QConfig struct {
 	Genesis struct {
 		Consensus     string `yaml:"consensus"`
+		QibftBlock    string `yaml:"qibftBlock,omitempty"`
 		QuorumVersion string `yaml:"Quorum_Version"`
 		Chain_Id      string `yaml:"Chain_Id"`
 	}

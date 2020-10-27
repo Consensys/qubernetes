@@ -14,6 +14,12 @@ end
   <%- @Enode_File = @Key_Dir_Base + "/" + @Node_Key_Dir + "/enode" -%>
   <%- File.readlines(@Enode_File).each do |line| @Enode = "#{line}".gsub(/\s+/, "") end -%>
   <%- # use the service name / kube-dns to look up the nodes -%>
-  "enode://<%= @Enode %>@<%= "#{@Node_UserIdent}"%>:<%= @NodeP2P_ListenAddr%>?discport=0&raftport=<%= @Raft_Port%>"<%- if (indexNode != @nodes.size - 1) %>,<%- end %>
+  "enode://<%= @Enode %>@<%= "#{@Node_UserIdent}"%>:<%= @NodeP2P_ListenAddr%>?discport=0&raftport=<%= @Raft_Port%>"<%- if (indexNode != @nodes.size - 1) || (@external_nodes && @external_nodes.size != 0) %>,<%- end %>
   <% end -%>
+  <%- if  @external_nodes -%>
+  <%- @external_nodes.each_with_index do |extnode, indexNode| -%>
+  "<%= extnode["Enode_Url"] %>"<%- if (indexNode != @external_nodes.size - 1) %>,<%- end %>
+  <% end -%>
+  <%- end -%>
+
 ]

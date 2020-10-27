@@ -58,7 +58,7 @@ end
 
 @config     = YAML.load_file(@config_file)
 @nodes      = @config["nodes"] #YAML.load_file("nodes.yaml")["nodes"]
-
+@external_nodes = @config["external_nodes"]
 ## set defaults for config if not set, else use the values from the config.
 
 # used by quorum-shared-config.yaml.erb and quorum-keystore.yaml.erb to load keys.

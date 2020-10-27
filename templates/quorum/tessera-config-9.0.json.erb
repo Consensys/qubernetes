@@ -71,9 +71,16 @@ end
 <%= set_node_template_vars(node) -%>
      {
            "url": "http://<%= @Node_UserIdent %>:<%= @Tm_Port %>"
-         }<%- if (indexNode != @nodes.size - 1) %>,<%- end %>
+         }<%- if (indexNode != @nodes.size - 1) || (@external_nodes && @external_nodes.size != 0) %>,<%- end %>
 
 <% end -%>
+<%- if  @external_nodes -%>
+<%- @external_nodes.each_with_index do |extnode, indexNode| %>
+     {
+      "url": "http://<%= extnode["Tm_Url"]%>"
+     }<%- if (indexNode != @external_nodes.size - 1) %>,<%- end %>
+<%- end -%>
+<%- end -%>
     ],
     "keys": {
          "passwords": [],

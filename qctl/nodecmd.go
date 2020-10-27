@@ -654,11 +654,11 @@ var (
 			},
 			&cli.StringFlag{
 				Name:  "qimagefull",
-				Usage: "The full repo + image name of the quorum image.",
+				Usage: "The full repo + image name of the quorum image",
 			},
 			&cli.StringFlag{
 				Name:  "tmimagefull",
-				Usage: "The full repo + image name of the tm image.",
+				Usage: "The full repo + image name of the tm image",
 			},
 			&cli.BoolFlag{
 				Name:  "tmname",
@@ -681,6 +681,16 @@ var (
 				Name:    "gethparams",
 				Aliases: []string{"gp"},
 				Usage:   "display the geth startup params of the node",
+			},
+			&cli.BoolFlag{
+				Name:    "asexternal",
+				Aliases: []string{"asext"},
+				Usage:   "display information necessary for sending to another cluster for setup",
+			},
+			&cli.StringFlag{
+				Name:  "node-ip",
+				Usage: "the IP of the K8s node, e.g. minikube ip (used with asexternal).",
+				Value: "<K8s_NODE_IP>",
 			},
 			&cli.BoolFlag{
 				Name:    "bare",
@@ -708,6 +718,11 @@ var (
 			isAll := c.Bool("all")
 			isBare := c.Bool("bare")
 			k8sdir := c.String("k8sdir")
+			// display node info for external cluster.
+			asExternal := c.Bool("asexternal")
+			nodeip := c.String("node-ip")
+
+			configFile := c.String("config")
 			// set all values to true
 			if isAll {
 				isName = true
@@ -722,7 +737,6 @@ var (
 				isTmImageFull = true
 				isGethParams = true
 			}
-			configFile := c.String("config")
 
 			// get the current directory path, we'll use this in case the config file passed in was a relative path.
 			pwdCmd := exec.Command("pwd")
@@ -730,7 +744,7 @@ var (
 			pwd := strings.TrimSpace(b.String())
 
 			if configFile == "" {
-				c.App.Run([]string{"qctl", "help", "init"})
+				c.App.Run([]string{"qctl", "help", "node"})
 
 				// QUBE_CONFIG or flag
 				fmt.Println()
@@ -745,6 +759,18 @@ var (
 				green.Println("   qctl generate config")
 				fmt.Println()
 				return cli.Exit("--config flag must be set to the fullpath of your config file.", 3)
+			}
+
+			// the config file must exist or this is an error.
+			if fileExists(configFile) {
+				// check if config file is full path or relative path.
+				if !strings.HasPrefix(configFile, "/") {
+					configFile = pwd + "/" + configFile
+				}
+
+			} else {
+				c.App.Run([]string{"qctl", "help", "init"})
+				return cli.Exit(fmt.Sprintf("ConfigFile must exist! Given configFile [%v]", configFile), 3)
 			}
 			if !isBare {
 				fmt.Println()
@@ -761,17 +787,7 @@ var (
 				fmt.Println("*****************************************************************************************")
 				fmt.Println()
 			}
-			// the config file must exist or this is an error.
-			if fileExists(configFile) {
-				// check if config file is full path or relative path.
-				if !strings.HasPrefix(configFile, "/") {
-					configFile = pwd + "/" + configFile
-				}
 
-			} else {
-				c.App.Run([]string{"qctl", "help", "init"})
-				return cli.Exit(fmt.Sprintf("ConfigFile must exist! Given configFile [%v]", configFile), 3)
-			}
 			configFileYaml, err := LoadYamlConfig(configFile)
 			if err != nil {
 				log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", configFile, err)
@@ -781,19 +797,54 @@ var (
 				fmt.Printf("config currently has %d nodes \n", currentNum)
 			}
 
+			if asExternal {
+				fmt.Println("external_nodes:")
+			}
+
 			for i := 0; i < len(configFileYaml.Nodes); i++ {
-				if nodeName == "" { // node name not set always show node
-					if isBare { // show the bare version, cleaner for scripts.
-						displayNodeBare(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParams)
-					} else {
-						displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParams)
-					}
-				} else if nodeName == configFileYaml.Nodes[i].NodeUserIdent {
+				if nodeName == configFileYaml.Nodes[i].NodeUserIdent || nodeName == "" { // node name not set always show node
 					nodeFound = true
-					if isBare { // show the bare version, cleaner for scripts.
-						displayNodeBare(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParams)
+					if asExternal { // qctl ls nodes --asexternal -b --node-ip=$(minikube ip)
+
+						// qctl ls urls --node quorum-node1 --tm -bare
+						tmUrlCmd := exec.Command("qctl", "ls", "urls", "--node="+configFileYaml.Nodes[i].NodeUserIdent, "--type=nodeport", "--tm", "--bare", "--node-ip="+nodeip)
+						//fmt.Println(cmd.String())
+						res, err := runCmd(tmUrlCmd)
+						if err != nil {
+							log.Fatal(err)
+						}
+						tmurl := strings.TrimSpace(res.String())
+
+						p2pCmd := exec.Command("qctl", "ls", "urls", "--node="+configFileYaml.Nodes[i].NodeUserIdent, "--type=nodeport", "--p2p", "--bare", "--node-ip="+nodeip)
+						//fmt.Println(cmd.String())
+						res, err = runCmd(p2pCmd)
+						if err != nil {
+							log.Fatal(err)
+						}
+						p2pUrl := strings.TrimSpace(res.String())
+
+						// kc get configMap quorum-node1-nodekey-address-config -o jsonpath='{.data.nodekey}'
+						// try to get the node key address (ibft)
+						nodeKeyAddrCmd := exec.Command("kubectl", "get", "configMap",
+							configFileYaml.Nodes[i].NodeUserIdent+"-nodekey-address-config", "-o=jsonpath='{.data.nodekey}'")
+						res, err = runCmd(nodeKeyAddrCmd)
+						nodekeyAddress := ""
+						if err != nil && configFileYaml.Nodes[i].QuorumEntry.Quorum.Consensus == IstanbulConsensus {
+							red.Println(fmt.Sprintf(" issue getting the nodekey-address for node %s", configFileYaml.Nodes[i].NodeUserIdent))
+							red.Println(nodeKeyAddrCmd.String())
+							log.Fatal(err)
+						} else {
+							nodekeyAddress = strings.ReplaceAll(res.String(), "'", "")
+							nodekeyAddress = strings.TrimSpace(nodekeyAddress)
+						}
+						//fmt.Println("nodekeyAddress", nodekeyAddress)
+						displayNodeAsExternal(k8sdir, tmurl, nodekeyAddress, p2pUrl, configFileYaml.Nodes[i], true, isConsensus)
 					} else {
-						displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParams)
+						if isBare { // show the bare version, cleaner for scripts.
+							displayNodeBare(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParams)
+						} else {
+							displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParams)
+						}
 					}
 				}
 			}
@@ -836,7 +887,7 @@ func createNodeEntry(nodeName, nodeKeyDir, consensus, quorumVersion, txManager, 
 
 // QUBE_K8S_DIR
 // cat $QUBE_K8S_DIR/config/permissioned-nodes.json | grep quorum-node1
-func getEnodeId(nodeName, qubeK8sDir string) string {
+func getEnodeUrl(nodeName, qubeK8sDir string) string {
 	c1 := exec.Command("cat", qubeK8sDir+"/config/permissioned-nodes.json")
 	c2 := exec.Command("grep", nodeName)
 
@@ -884,7 +935,7 @@ func displayNode(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir, qu
 		if k8sdir == "" {
 			red.Println("Set --k8sdir flag or QUBE_K8S_DIR env in order to display enodeurl")
 		} else {
-			enodeUrl := getEnodeId(nodeEntry.NodeUserIdent, k8sdir)
+			enodeUrl := getEnodeUrl(nodeEntry.NodeUserIdent, k8sdir)
 			if enodeUrl != "" {
 				green.Println(fmt.Sprintf("     [%s] enodeUrl: [%s]", nodeEntry.NodeUserIdent, enodeUrl))
 			}
@@ -925,13 +976,38 @@ func displayNodeBare(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir
 		if k8sdir == "" {
 			red.Println("Set --k8sdir flag or QUBE_K8S_DIR env in order to display enodeurl")
 		} else {
-			enodeUrl := getEnodeId(nodeEntry.NodeUserIdent, k8sdir)
+			enodeUrl := getEnodeUrl(nodeEntry.NodeUserIdent, k8sdir)
 			fmt.Println(enodeUrl)
 		}
 	}
 	if isGethParms {
 		fmt.Println(nodeEntry.GethEntry.GetStartupParams)
 	}
+}
+
+func displayNodeAsExternal(k8sdir string, tmurl string, nodekeyAddress string, p2pUrl string, nodeEntry NodeEntry, name, consensus bool) {
+	if name {
+		fmt.Println("- Node_UserIdent: ", nodeEntry.NodeUserIdent)
+	}
+	if consensus {
+		fmt.Println(nodeEntry.QuorumEntry.Quorum.Consensus)
+	}
+	fmt.Println("  Tm_Url: ", tmurl)
+	// need the tm URL that is addressable from outside the cluster (ingress or nodeport).
+	// need the enodeURL of the node, that is addressable from outside the cluster (ingress or nodeport).
+	if k8sdir == "" {
+		red.Println("Set --k8sdir flag or QUBE_K8S_DIR env in order to display enodeurl")
+	} else {
+		enodeUrl := getEnodeUrl(nodeEntry.NodeUserIdent, k8sdir)
+		// replace the internal dns addressable p2p @quorum-node1:30303? with an external p2p URL (nodeport)
+		enodeUrl = strings.ReplaceAll(enodeUrl, nodeEntry.NodeUserIdent+":"+DefaultP2PPort, p2pUrl)
+		fmt.Println("  Enode_Url:", enodeUrl)
+	}
+	// if IBFT need the Node_Acct_Addr
+	if nodekeyAddress != "" {
+		fmt.Println("  Node_Acct_Addr:", "\""+nodekeyAddress+"\"")
+	}
+	// Acct_PubKey??
 }
 
 // stop node should just remove the deployment, and not delete any resources or persistent data.

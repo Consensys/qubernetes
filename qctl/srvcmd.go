@@ -47,6 +47,10 @@ var (
 				Usage: "only show the transaction manager URL ",
 			},
 			&cli.BoolFlag{
+				Name:  "p2p",
+				Usage: "only show the p2p URL ",
+			},
+			&cli.BoolFlag{
 				Name:    "bare",
 				Aliases: []string{"b"},
 				Usage:   "display the minimum output, useful for scripts / automation",
@@ -61,10 +65,12 @@ var (
 			isBare := c.Bool("bare")
 			isGeth := c.Bool("geth")
 			isTm := c.Bool("tm")
+			isP2P := c.Bool("p2p")
 			// if neither geth nor tm flag are set, default to setting both to true
-			if !isGeth && !isTm {
+			if !isGeth && !isTm && !isP2P {
 				isGeth = true
 				isTm = true
+				isP2P = true
 			}
 
 			configFile := c.String("config")
@@ -129,6 +135,9 @@ var (
 						if isTm {
 							fmt.Println(nodeIp + ":" + nodeServiceInfo.NodePortTm)
 						}
+						if isP2P {
+							fmt.Println(nodeIp + ":" + nodeServiceInfo.NodePortP2P)
+						}
 					} else if urlType == "clusterip" { // the internal IP:Port of the specified node(s)
 						if isGeth {
 							fmt.Println(nodeServiceInfo.ClusterIPGethURL)
@@ -144,6 +153,9 @@ var (
 						}
 						if isTm {
 							fmt.Println(serviceName + " tessera   - " + nodeIp + ":" + nodeServiceInfo.NodePortTm)
+						}
+						if isP2P {
+							fmt.Println(serviceName + " p2p       - " + nodeIp + ":" + nodeServiceInfo.NodePortP2P)
 						}
 					} else if urlType == "clusterip" { // the internal IP:Port of the specified node(s)
 						if isGeth {
@@ -170,6 +182,7 @@ type NodeServiceInfo struct {
 
 	NodePortGeth       string
 	NodePortTm         string
+	NodePortP2P        string
 	NodePortCakeshop   string
 	NodePortPrometheus string
 }
@@ -197,8 +210,10 @@ func serviceInfoByPrefix(prefix, urlType, namespace string) NodeServiceInfo {
 			if strings.ToLower(urlType) == strings.ToLower(ServiceTypeNodePort) {
 				nodePortGeth := nodePortFormClusterPort(srvOut, DefaultGethPort)
 				nodePortTessera := nodePortFormClusterPort(srvOut, DefaultTesseraPort)
+				nodePortP2P := nodePortFormClusterPort(srvOut, DefaultP2PPort)
 				nodeServiceInfo.NodePortGeth = nodePortGeth
 				nodeServiceInfo.NodePortTm = nodePortTessera
+				nodeServiceInfo.NodePortP2P = nodePortP2P
 			} else if strings.ToLower(urlType) == strings.ToLower(ServiceTypeClusterIP) { // the internal IP:Port of the specified node(s)
 				clusterIp := clusterIpForService(srvOut)
 				nodeServiceInfo.ClusterIP = clusterIp

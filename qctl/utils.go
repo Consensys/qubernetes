@@ -26,6 +26,7 @@ var (
 
 	DefaultGethPort    = "8545"
 	DefaultTesseraPort = "9080"
+	DefaultP2PPort     = "30303"
 
 	DefaultPrometheusClusterPort = "9090"
 	DefaultPrometheusNodePort    = "31323"

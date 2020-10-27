@@ -25,4 +25,9 @@ validators = [
     end
   end
 -%>
+<%- if  @external_nodes -%>
+<%-  @external_nodes.each do |extnode| -%>
+"<%=extnode["Node_Acct_Addr"] %>",
+<%- end -%>
+<%- end -%>
 ]

@@ -57,6 +57,7 @@ if File.directory?("out") && (action == 'ask')
     createNew=true
   when "2"
     puts("Generating additional resources only.")
+    action = 'update'
   when "3"
     puts("OK, bye :)")
     exit(0)

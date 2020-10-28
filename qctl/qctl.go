@@ -108,6 +108,7 @@ func main() {
 			Usage: "options for adding resources",
 			Subcommands: []*cli.Command{
 				&nodeAddCommand,
+				&externalNodeAddCommand,
 				&cakeshopAddCommand,
 				&monitorAddCommand,
 			},

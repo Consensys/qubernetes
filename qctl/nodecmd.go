@@ -443,6 +443,141 @@ var (
 			return nil
 		},
 	}
+	//qctl add extnode --enode=enode://12343@1.2.3.4:7000 --tmurl=http://1.2.3.4:9000  --nodekeyaddr="0x1234334"
+	externalNodeAddCommand = cli.Command{
+		Name:      "external-node",
+		Usage:     "add new external node",
+		Aliases:   []string{"extnode", "extnodes", "external-nodes"},
+		ArgsUsage: "UniqueNodeName",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "config, c",
+				Usage:   "Load configuration from `FULL_PATH_FILE`",
+				EnvVars: []string{"QUBE_CONFIG"},
+			},
+			// TODO: set default to Node-name-key-dir
+			&cli.StringFlag{
+				Name:     "enode",
+				Aliases:  []string{"enodeurl"},
+				Usage:    "enode url of the external node to add (p2p portion must be reachable).",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     "tmurl",
+				Aliases:  []string{"tm"},
+				Usage:    "transaction manager url of the external node to add (must be reachable).",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:    "nodekeyaddr",
+				Aliases: []string{"nkaddr", "na"},
+				Usage:   "Nodekey address required for ibft only.",
+			},
+		},
+		Action: func(c *cli.Context) error {
+			name := c.Args().First()
+			// node name argument is required to update a node
+			if name == "" {
+				c.App.Run([]string{"qctl", "help", "external-node"})
+				red.Println("  required argument: Unique NodeName of the external node you wish to add.")
+				return cli.Exit("  required argument: Unique NodeName of external node you wish to add.", 3)
+			}
+
+			enode := c.String("enode")
+			tmurl := c.String("tmurl")
+			nodekeyaddr := c.String("nodekeyaddr")
+
+			configFile := c.String("config")
+			if configFile == "" {
+				c.App.Run([]string{"qctl", "help", "init"})
+
+				// QUBE_CONFIG or flag
+				fmt.Println()
+
+				fmt.Println()
+				red.Println("  --config flag must be provided.")
+				red.Println("             or ")
+				red.Println("     QUBE_CONFIG environment variable needs to be set to your config file.")
+				fmt.Println()
+				red.Println(" If you need to generate a qubernetes.yaml config use the command: ")
+				fmt.Println()
+				green.Println("   qctl generate config")
+				fmt.Println()
+				return cli.Exit("--config flag must be set to the fullpath of your config file.", 3)
+			}
+			fmt.Println()
+			green.Println("  Using config file:")
+			fmt.Println()
+			fmt.Println("  " + configFile)
+			fmt.Println()
+			fmt.Println("*****************************************************************************************")
+			fmt.Println()
+
+			// get the current directory path, we'll use this in case the config file passed in was a relative path.
+			pwdCmd := exec.Command("pwd")
+			b, _ := runCmd(pwdCmd)
+			pwd := strings.TrimSpace(b.String())
+			// the config file must exist or this is an error.
+			if fileExists(configFile) {
+				// check if config file is full path or relative path.
+				if !strings.HasPrefix(configFile, "/") {
+					configFile = pwd + "/" + configFile
+				}
+
+			} else {
+				c.App.Run([]string{"qctl", "help", "init"})
+				return cli.Exit(fmt.Sprintf("ConfigFile must exist! Given configFile [%v]", configFile), 3)
+			}
+			configFileYaml, err := LoadYamlConfig(configFile)
+			// check if the name is already taken
+			for i := 0; i < len(configFileYaml.ExternalNodes); i++ {
+				externalNode := configFileYaml.ExternalNodes[i]
+				// need to preserve the quotes " around the hex address 0x the yaml parser strips these out when it parses it.
+				// if the quotes are removed, the yaml parser then evaluates the hex number :(
+				// https://github.com/mikefarah/yq/issues/19
+				// FIXME: this will yield an entry like '"0x92392CAF837B94BC8541D0baE2db41BE2B999F39"' which will be added to the istanbul-validator.toml.
+				//        better to preserve the double quotes, and not use sed awk when adding nodes as validators.
+				configFileYaml.ExternalNodes[i].NodekeyAddress = "\"" + externalNode.NodekeyAddress + "\""
+				if name == externalNode.NodeUserIdent {
+					red.Println(fmt.Sprintf("External node name [%s] already exist!", name))
+					displayExternalNode(externalNode, true, true, true, true)
+					red.Println(fmt.Sprintf("External node name [%s] exists", name))
+					return cli.Exit(fmt.Sprintf("External node name [%s] exists, External node names must be unique", name), 3)
+				}
+			}
+			if err != nil {
+				log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", configFile, err)
+			}
+
+			fmt.Println(fmt.Sprintf("Adding external node [%s] ", name))
+			currentNumExtNodes := len(configFileYaml.ExternalNodes)
+			fmt.Println(fmt.Sprintf("config currently has %d nodes", currentNumExtNodes))
+			externalNodeEntry := ExternalNodeEntry{
+				NodeUserIdent: name,
+				EnodeUrl:      enode,
+				TmUrl:         tmurl,
+			}
+			if nodekeyaddr != "" {
+				externalNodeEntry.NodekeyAddress = nodekeyaddr
+			}
+			configFileYaml.ExternalNodes = append(configFileYaml.ExternalNodes, externalNodeEntry)
+			fmt.Println()
+			green.Println("Adding External Node: ")
+			displayExternalNode(externalNodeEntry, true, true, true, true)
+			// write file back
+			WriteYamlConfig(configFileYaml, configFile)
+			fmt.Println("The external node(s) have been added to the config file [%s]", configFile)
+			fmt.Println("Next, generate (update) the additional node resources for quorum and k8s:")
+			fmt.Println()
+			fmt.Println("**********************************************************************************************")
+			fmt.Println()
+			green.Println(fmt.Sprintf("  $> qctl generate network --update"))
+			fmt.Println()
+			fmt.Println("**********************************************************************************************")
+
+			return nil
+		},
+	}
 	// TODO: consolidate this and add node
 	nodeUpdateCommand = cli.Command{
 		Name:      "node",
@@ -814,7 +949,7 @@ var (
 						if err != nil {
 							log.Fatal(err)
 						}
-						tmurl := strings.TrimSpace(res.String())
+						tmUrl := strings.TrimSpace(res.String())
 
 						p2pCmd := exec.Command("qctl", "ls", "urls", "--node="+currentNode.NodeUserIdent, "--type=nodeport", "--p2p", "--bare", "--node-ip="+nodeip)
 						//fmt.Println(cmd.String())
@@ -839,7 +974,7 @@ var (
 							nodekeyAddress = strings.TrimSpace(nodekeyAddress)
 						}
 						//fmt.Println("nodekeyAddress", nodekeyAddress)
-						displayNodeAsExternal(k8sdir, currentNode, tmurl, nodekeyAddress, p2pUrl, true)
+						displayNodeAsExternal(k8sdir, currentNode, p2pUrl, tmUrl, nodekeyAddress, true)
 					} else {
 						if isBare { // show the bare version, cleaner for scripts.
 							displayNodeBare(k8sdir, currentNode, isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull, isTmImageFull, isGethParams)
@@ -1130,21 +1265,21 @@ func displayNodeBare(k8sdir string, nodeEntry NodeEntry, name, consensus, keydir
 	}
 }
 
-func displayNodeAsExternal(k8sdir string, nodeEntry NodeEntry, tmurl string, nodekeyAddress string, p2pUrl string, name bool) {
+func displayNodeAsExternal(k8sdir string, nodeEntry NodeEntry, p2pUrl string, tmUrl string, nodekeyAddress string, name bool) {
 	if name {
 		fmt.Println("- Node_UserIdent: ", nodeEntry.NodeUserIdent)
 	}
-	fmt.Println("  Tm_Url: ", tmurl)
 	// need the tm URL that is addressable from outside the cluster (ingress or nodeport).
 	// need the enodeURL of the node, that is addressable from outside the cluster (ingress or nodeport).
 	if k8sdir == "" {
-		red.Println("Set --k8sdir flag or QUBE_K8S_DIR env in order to display enodeurl")
+		red.Println("Set --k8sdir flag or QUBE_K8S_DIR env in order to display enodeUrl")
 	} else {
 		enodeUrl := getEnodeUrl(nodeEntry.NodeUserIdent, k8sdir)
 		// replace the internal dns addressable p2p @quorum-node1:30303? with an external p2p URL (nodeport)
 		enodeUrl = strings.ReplaceAll(enodeUrl, nodeEntry.NodeUserIdent+":"+DefaultP2PPort, p2pUrl)
 		fmt.Println("  Enode_Url:", enodeUrl)
 	}
+	fmt.Println("  Tm_Url: ", tmUrl)
 	// if IBFT need the Node_Acct_Addr
 	if nodekeyAddress != "" {
 		fmt.Println("  Node_Acct_Addr:", "\""+nodekeyAddress+"\"")

@@ -16,7 +16,7 @@ var (
 		Usage: "delete a quorum k8s network given the dir holding the k8s yaml resources.",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     "k8s-dir",
+				Name:     "k8sdir",
 				Usage:    "the path of the dir containing the K8s resource yaml.",
 				EnvVars:  []string{"QUBE_K8S_DIR"},
 				Required: true,
@@ -32,7 +32,7 @@ var (
 		Usage: "create a quorum k8s network given the dir holding the k8s yaml resources.",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     "k8s-dir",
+				Name:     "k8sdir",
 				Usage:    "the path of the dir containing the K8s resource yaml.",
 				EnvVars:  []string{"QUBE_K8S_DIR"},
 				Required: true,
@@ -74,7 +74,7 @@ var (
 		Usage: "list the status of the running network.",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     "k8s-dir",
+				Name:     "k8sdir",
 				Usage:    "the path of the dir containing the K8s resource yaml.",
 				EnvVars:  []string{"QUBE_K8S_DIR"},
 				Required: true,
@@ -294,10 +294,10 @@ var (
 )
 
 func k8sCreateDeleteCluster(c *cli.Context, action string) error {
-	k8sdir := c.String("k8s-dir")
+	k8sdir := c.String("k8sdir")
 	// if the passed in k8s dir does not exit, tell the user and do not proceed.
 	if _, err := os.Stat(k8sdir); os.IsNotExist(err) {
-		log.Error("the --k8s-dir [%v] does not exist!", k8sdir)
+		log.Error("the --k8sdir [%v] does not exist!", k8sdir)
 		return err
 	}
 	namespace := c.String("namespace")

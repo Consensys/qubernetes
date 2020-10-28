@@ -26,8 +26,21 @@ validators = [
   end
 -%>
 <%- if  @external_nodes -%>
-<%-  @external_nodes.each do |extnode| -%>
-"<%=extnode["Node_Acct_Addr"] %>",
+<%-  @external_nodes.each do |extnode|
+ # this is to get around a yaml parsing issue, qctl uses github.com/urfave/cli/v2 which does not preserve double quotes,
+ # and if a hex value is stored in yaml without it will be evaluated to a Bignum, Node_Acct_Addr must be set as hex numbers
+ # without quotes, e.g.0xDEe962299b55dA670fC70702e626ac9009AE3aC7, and then converted back to hex here.
+   nodekeyAddr = extnode["Node_Acct_Addr"]
+   # check if the nodekey address is not a hex string, if not we assume it has been converted to a BigNum
+   # and convert it back to a hex.
+   nodekeyAddrStr = nodekeyAddr.to_s
+   if nodekeyAddrStr[0..1] != "0x"
+    nodekeyAddr = nodekeyAddr.to_s(16)
+    nodekeyAddr = "0x" + nodekeyAddr
+   end
+   puts("external node account for Istanbul: " + nodekeyAddr)
+ -%>
+"<%=nodekeyAddr %>",
 <%- end -%>
 <%- end -%>
 ]

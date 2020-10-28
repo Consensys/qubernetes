@@ -54,6 +54,7 @@ func main() {
 				&networkDeleteCommand,
 				// TODO: Think this through a bit, hard delete vs soft delete, etc.
 				&nodeDeleteCommand,
+				&externalNodeDeleteCommand,
 				&cakeshopDeleteCommand,
 				&monitorDeleteCommand,
 			},
@@ -95,6 +96,7 @@ func main() {
 			Usage:   "options for listing resources",
 			Subcommands: []*cli.Command{
 				&nodeListCommand,
+				&externalNodeListCommand,
 				&allListCommand,
 				&urlGetCommand,
 				&describeConfigCommand,
@@ -107,6 +109,7 @@ func main() {
 			Usage: "options for adding resources",
 			Subcommands: []*cli.Command{
 				&nodeAddCommand,
+				&externalNodeAddCommand,
 				&cakeshopAddCommand,
 				&monitorAddCommand,
 			},

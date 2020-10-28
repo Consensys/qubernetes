@@ -54,6 +54,7 @@ func main() {
 				&networkDeleteCommand,
 				// TODO: Think this through a bit, hard delete vs soft delete, etc.
 				&nodeDeleteCommand,
+				&externalNodeDeleteCommand,
 				&cakeshopDeleteCommand,
 				&monitorDeleteCommand,
 			},

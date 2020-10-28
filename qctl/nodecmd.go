@@ -75,7 +75,7 @@ var (
 			pwd := strings.TrimSpace(b.String())
 
 			if configFile == "" {
-				c.App.Run([]string{"qctl", "help", "init"})
+				c.App.Run([]string{"qctl", "help", "node"})
 				fmt.Println()
 				fmt.Println()
 				red.Println("  --config flag must be provided.")
@@ -103,7 +103,7 @@ var (
 				}
 
 			} else {
-				c.App.Run([]string{"qctl", "help", "init"})
+				c.App.Run([]string{"qctl", "help", "node"})
 				return cli.Exit(fmt.Sprintf("ConfigFile must exist! Given configFile [%v]", configFile), 3)
 			}
 			configFileYaml, err := LoadYamlConfig(configFile)
@@ -184,7 +184,109 @@ var (
 			return nil
 		},
 	}
+	// qctl delete extnode  quorum-node5
+	externalNodeDeleteCommand = cli.Command{
+		Name:    "external-node",
+		Aliases: []string{"extnode", "extnodes"},
+		Usage:   "delete external node from config.",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "config, c",
+				Usage:    "Load configuration from `FULL_PATH_FILE`",
+				EnvVars:  []string{"QUBE_CONFIG"},
+				Required: true,
+			},
+			&cli.StringFlag{ // this is only required if the user wants to delete the generated (k8s/quorum) resources as well.
+				Name:    "k8sdir",
+				Usage:   "The k8sdir (usually out) containing the output k8s resources",
+				EnvVars: []string{"QUBE_K8S_DIR"},
+			},
+		},
+		Action: func(c *cli.Context) error {
+			if c.Args().Len() < 1 {
+				c.App.Run([]string{"qctl", "help", "delete", "node"})
+				return cli.Exit("wrong number of arguments", 2)
+			}
+			nodeName := c.Args().First()
+			fmt.Println("Delete external node " + nodeName)
+			// TODO: abstract this away as it is used in multiple places now.
+			configFile := c.String("config")
+			//k8sdir := c.String("k8sdir")
+			// get the current directory path, we'll use this in case the config file passed in was a relative path.
+			pwdCmd := exec.Command("pwd")
+			b, _ := runCmd(pwdCmd)
+			pwd := strings.TrimSpace(b.String())
 
+			if configFile == "" {
+				c.App.Run([]string{"qctl", "help", "external-node"})
+				fmt.Println()
+				fmt.Println()
+				red.Println("  --config flag must be provided.")
+				red.Println("             or ")
+				red.Println("     QUBE_CONFIG environment variable needs to be set to your config file.")
+				fmt.Println()
+				red.Println(" If you need to generate a qubernetes.yaml config use the command: ")
+				fmt.Println()
+				green.Println("   qctl generate config")
+				fmt.Println()
+				return cli.Exit("--config flag must be set to the fullpath of your config file.", 3)
+			}
+			fmt.Println()
+			green.Println("  Using config file:")
+			fmt.Println()
+			fmt.Println("  " + configFile)
+			fmt.Println()
+			fmt.Println("*****************************************************************************************")
+			fmt.Println()
+			// the config file must exist or this is an error.
+			if fileExists(configFile) {
+				// check if config file is full path or relative path.
+				if !strings.HasPrefix(configFile, "/") {
+					configFile = pwd + "/" + configFile
+				}
+
+			} else {
+				c.App.Run([]string{"qctl", "help", "external-node"})
+				return cli.Exit(fmt.Sprintf("ConfigFile must exist! Given configFile [%v]", configFile), 3)
+			}
+			configFileYaml, err := LoadYamlConfig(configFile)
+			if err != nil {
+				log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", configFile, err)
+			}
+			currentNum := len(configFileYaml.ExternalNodes)
+			fmt.Printf("config currently has %d external nodes \n", currentNum)
+			fmt.Println()
+			var nodeToDelete ExternalNodeEntry
+			for i := 0; i <= len(configFileYaml.ExternalNodes); i++ {
+				//displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull)
+				if configFileYaml.ExternalNodes[i].NodeUserIdent == nodeName {
+					nodeToDelete = configFileYaml.ExternalNodes[i]
+					// remove the external node from the qubernetes config.
+					configFileYaml.ExternalNodes = append(configFileYaml.ExternalNodes[:i], configFileYaml.ExternalNodes[i+1:]...)
+					// do we want to remove the external node from the network here? or have the user run the steps separately?
+					// regenerate the resource without the node
+					//    > qctl generate network --k8sdir=k8sdir --update
+					// deploy the new resources without the external node
+					//    > qctl deploy network --k8sdir=k8sdir --wait
+				}
+			}
+			// write file back
+			WriteYamlConfig(configFileYaml, configFile)
+			green.Println(fmt.Sprintf("  Deleted external node [%s] from the config", nodeToDelete.NodeUserIdent))
+			green.Println("  Next Steps : ")
+			green.Println("      1. regenerate the resources without the external nodes.")
+			green.Println("      2. Deploy the resources to the network.")
+			fmt.Print()
+			green.Println("  Run the next steps by entering the commands below")
+			fmt.Println("**********************************************************************************************")
+			fmt.Println()
+			green.Println(fmt.Sprintf("  $> qctl generate network --update"))
+			green.Println(fmt.Sprintf("  $> qctl deploy network --wait"))
+			fmt.Println()
+			fmt.Println("**********************************************************************************************")
+			return nil
+		},
+	}
 	/*
 	 * stops the give node, stopping will only remove the deployment from the K8s cluster, it will not remove any other
 	 * associated resources, such as the PVC (persistent volume claim) therefore maintaining the state of the node. The
@@ -219,7 +321,7 @@ var (
 			pwd := strings.TrimSpace(b.String())
 
 			if configFile == "" {
-				c.App.Run([]string{"qctl", "help", "init"})
+				c.App.Run([]string{"qctl", "help", "node"})
 				fmt.Println()
 				fmt.Println()
 				red.Println("  --config flag must be provided.")
@@ -247,7 +349,7 @@ var (
 				}
 
 			} else {
-				c.App.Run([]string{"qctl", "help", "init"})
+				c.App.Run([]string{"qctl", "help", "node"})
 				return cli.Exit(fmt.Sprintf("ConfigFile must exist! Given configFile [%v]", configFile), 3)
 			}
 			configFileYaml, err := LoadYamlConfig(configFile)
@@ -359,7 +461,7 @@ var (
 			pwd := strings.TrimSpace(b.String())
 
 			if configFile == "" {
-				c.App.Run([]string{"qctl", "help", "init"})
+				c.App.Run([]string{"qctl", "help", "node"})
 
 				// QUBE_CONFIG or flag
 				fmt.Println()
@@ -388,9 +490,8 @@ var (
 				if !strings.HasPrefix(configFile, "/") {
 					configFile = pwd + "/" + configFile
 				}
-
 			} else {
-				c.App.Run([]string{"qctl", "help", "init"})
+				c.App.Run([]string{"qctl", "help", "node"})
 				return cli.Exit(fmt.Sprintf("ConfigFile must exist! Given configFile [%v]", configFile), 3)
 			}
 			configFileYaml, err := LoadYamlConfig(configFile)
@@ -443,7 +544,7 @@ var (
 			return nil
 		},
 	}
-	//qctl add extnode --enode=enode://12343@1.2.3.4:7000 --tmurl=http://1.2.3.4:9000  --nodekeyaddr="0x1234334"
+	//qctl add extnode --enode="enode://12343@1.2.3.4:7000" --tmurl=http://1.2.3.4:9000  --nodekeyaddr=0x1234334
 	externalNodeAddCommand = cli.Command{
 		Name:      "external-node",
 		Usage:     "add new external node",
@@ -489,7 +590,7 @@ var (
 
 			configFile := c.String("config")
 			if configFile == "" {
-				c.App.Run([]string{"qctl", "help", "init"})
+				c.App.Run([]string{"qctl", "help", "external-node"})
 
 				// QUBE_CONFIG or flag
 				fmt.Println()
@@ -525,19 +626,13 @@ var (
 				}
 
 			} else {
-				c.App.Run([]string{"qctl", "help", "init"})
+				c.App.Run([]string{"qctl", "help", "external-node"})
 				return cli.Exit(fmt.Sprintf("ConfigFile must exist! Given configFile [%v]", configFile), 3)
 			}
 			configFileYaml, err := LoadYamlConfig(configFile)
 			// check if the name is already taken
 			for i := 0; i < len(configFileYaml.ExternalNodes); i++ {
 				externalNode := configFileYaml.ExternalNodes[i]
-				// need to preserve the quotes " around the hex address 0x the yaml parser strips these out when it parses it.
-				// if the quotes are removed, the yaml parser then evaluates the hex number :(
-				// https://github.com/mikefarah/yq/issues/19
-				// FIXME: this will yield an entry like '"0x92392CAF837B94BC8541D0baE2db41BE2B999F39"' which will be added to the istanbul-validator.toml.
-				//        better to preserve the double quotes, and not use sed awk when adding nodes as validators.
-				configFileYaml.ExternalNodes[i].NodekeyAddress = "\"" + externalNode.NodekeyAddress + "\""
 				if name == externalNode.NodeUserIdent {
 					red.Println(fmt.Sprintf("External node name [%s] already exist!", name))
 					displayExternalNode(externalNode, true, true, true, true)
@@ -655,7 +750,7 @@ var (
 			pwd := strings.TrimSpace(b.String())
 
 			if configFile == "" {
-				c.App.Run([]string{"qctl", "help", "init"})
+				c.App.Run([]string{"qctl", "help", "node"})
 
 				// QUBE_CONFIG or flag
 				fmt.Println()
@@ -686,7 +781,7 @@ var (
 				}
 
 			} else {
-				c.App.Run([]string{"qctl", "help", "init"})
+				c.App.Run([]string{"qctl", "help", "node"})
 				return cli.Exit(fmt.Sprintf("ConfigFile must exist! Given configFile [%v]", configFile), 3)
 			}
 			configFileYaml, err := LoadYamlConfig(configFile)
@@ -754,6 +849,7 @@ var (
 	}
 	// qctl ls node --name --consensus --quorumversion
 	// qctl ls node --name --consensus --quorumversion --tmversion --tmname
+	// qctl ls nodes --asexternal -b --node-ip=$(minikube ip)
 	nodeListCommand = cli.Command{
 		Name:      "node",
 		Usage:     "list nodes info",
@@ -1282,7 +1378,7 @@ func displayNodeAsExternal(k8sdir string, nodeEntry NodeEntry, p2pUrl string, tm
 	fmt.Println("  Tm_Url: ", tmUrl)
 	// if IBFT need the Node_Acct_Addr
 	if nodekeyAddress != "" {
-		fmt.Println("  Node_Acct_Addr:", "\""+nodekeyAddress+"\"")
+		fmt.Println("  Node_Acct_Addr:", nodekeyAddress)
 	}
 	// Acct_PubKey??
 }

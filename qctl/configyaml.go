@@ -5,7 +5,7 @@ import (
 	"os"
 
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 var (
@@ -49,9 +49,13 @@ type NodeEntry struct {
 }
 
 type ExternalNodeEntry struct {
-	NodeUserIdent  string `yaml:"Node_UserIdent"`
-	EnodeUrl       string `yaml:"Enode_Url"`
-	TmUrl          string `yaml:"Tm_Url"`
+	NodeUserIdent string `yaml:"Node_UserIdent"`
+	EnodeUrl      string `yaml:"Enode_Url"`
+	TmUrl         string `yaml:"Tm_Url"`
+	// must be set in the yaml without quotes.
+	// The hex number will be evaluted to a BigNum and
+	// template/istanbul-validator.toml.erb will convert back to hex
+	// https://github.com/mikefarah/yq/issues/19
 	NodekeyAddress string `yaml:"Node_Acct_Addr,omitempty"`
 }
 

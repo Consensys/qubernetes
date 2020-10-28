@@ -89,7 +89,7 @@ data:
     <% end -%>
 <%- end -%>
 ## include ibft helpers as we don't know which nodes will be running which consensus.
-<%- if @config["genesis"]["consensus"] == "istanbul" -%>
+<%- if @config["genesis"]["consensus"] == "istanbul" || @config["genesis"]["consensus"] == "qibft" -%>
 
 ---
 apiVersion: v1

@@ -35,7 +35,9 @@ validators = [
    # and convert it back to a hex.
    nodekeyAddrStr = nodekeyAddr.to_s
    if nodekeyAddrStr[0..1] != "0x"
-    nodekeyAddr = nodekeyAddr.to_s(16)
+    # need a hexicdemical of length 40 (pad with leading 0s)
+    # 0x078426792F49BF76A94CFD2A1A35EBE8832DE3F1 vs 0x78426792F49BF76A94CFD2A1A35EBE8832DE3F1
+    nodekeyAddr = "%040X" % nodekeyAddr
     nodekeyAddr = "0x" + nodekeyAddr
    end
    puts("external node account for Istanbul: " + nodekeyAddr)

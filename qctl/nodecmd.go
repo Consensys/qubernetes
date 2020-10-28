@@ -257,7 +257,7 @@ var (
 			fmt.Printf("config currently has %d external nodes \n", currentNum)
 			fmt.Println()
 			var nodeToDelete ExternalNodeEntry
-			for i := 0; i <= len(configFileYaml.ExternalNodes); i++ {
+			for i := 0; i < len(configFileYaml.ExternalNodes); i++ {
 				//displayNode(k8sdir, configFileYaml.Nodes[i], isName, isKeyDir, isConsensus, isQuorumVersion, isTmName, isTmVersion, isEnodeUrl, isQuorumImageFull)
 				if configFileYaml.ExternalNodes[i].NodeUserIdent == nodeName {
 					nodeToDelete = configFileYaml.ExternalNodes[i]

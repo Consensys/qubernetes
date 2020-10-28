@@ -259,7 +259,7 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-func waitForPodsReadyState(qconfigYaml QConfig) {
+func waitForPodsReadyState(qconfigYaml QConfig, namespace string) {
 	nodeNames := getNodeNames(qconfigYaml)
 	allContainersReady := false
 	nodeNotDeployed := false
@@ -281,12 +281,11 @@ func waitForPodsReadyState(qconfigYaml QConfig) {
 		// loop through this till 2/2 RUNNING is true for all nodes in the config file.
 		// if any pod doesn't have both containers running break, set to false, wait and loop again.
 		for i := 0; i < len(nodeNames); i++ {
-			podName := podNameFromPrefix(nodeNames[i], "")
-
+			podName := podNameFromPrefix(nodeNames[i], namespace)
 			// get the full pod status for the current pod, e.g.:
 			// NAME                                READY   STATUS    RESTARTS   AGE
 			// node5-deployment-54d7d99575-ztgbv   2/2     Running   0          9h
-			c1 := exec.Command("kubectl", "get", "pod", podName)
+			c1 := exec.Command("kubectl", "--namespace="+namespace, "get", "pod", podName)
 			// get the pod status part only ignoring the header, e.g.:
 			// node5-deployment-54d7d99575-ztgbv   2/2     Running   0          9h
 			c2 := exec.Command("grep", podName)

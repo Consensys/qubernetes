@@ -40,7 +40,7 @@ var (
 				return cli.Exit("wrong number of arguments", 2)
 			}
 			nodeName := c.Args().First()
-			namespace := ""
+			namespace := c.String("namespace")
 			podName := podNameFromPrefix(nodeName, namespace)
 			fmt.Println(fmt.Sprintf("running test contract(s) on node [%s] pod [%s]", nodeName, podName))
 

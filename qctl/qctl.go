@@ -95,6 +95,7 @@ func main() {
 			Usage:   "options for listing resources",
 			Subcommands: []*cli.Command{
 				&nodeListCommand,
+				&externalNodeListCommand,
 				&allListCommand,
 				&urlGetCommand,
 				&describeConfigCommand,

@@ -50,6 +50,7 @@ var (
 		},
 		Action: func(c *cli.Context) error {
 			wait := c.Bool("wait")
+			namespace := c.String("namespace")
 			var configFileYaml QConfig
 			if wait { // if the wait flag is set, the qubernetes flag / env var is required, to check the status of the network.
 				config := c.String("config")
@@ -64,7 +65,7 @@ var (
 				return cli.Exit(fmt.Sprintf("Error while trying to create k8s cluster [%v]", err), 3)
 			}
 			if wait {
-				waitForPodsReadyState(configFileYaml)
+				waitForPodsReadyState(configFileYaml, namespace)
 			}
 			return nil
 		},
@@ -88,11 +89,12 @@ var (
 		},
 		Action: func(c *cli.Context) error {
 			config := c.String("config")
+			namespace := c.String("namespace")
 			configFileYaml, err := LoadYamlConfig(config)
 			if err != nil {
 				log.Fatal("config file [%v] could not be loaded into the valid qubernetes yaml. err: [%v]", config, err)
 			}
-			waitForPodsReadyState(configFileYaml)
+			waitForPodsReadyState(configFileYaml, namespace)
 			return nil
 		},
 	}

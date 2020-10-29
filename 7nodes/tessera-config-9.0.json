@@ -101,5 +101,6 @@
             }
           ]
      },
-    "alwaysSendTo": []
+    "alwaysSendTo": [],
+    "enablePrivacyEnhancements": true
 }

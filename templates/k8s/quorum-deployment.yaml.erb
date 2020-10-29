@@ -127,13 +127,8 @@ spec:
            echo \"Tessera version - suffix ${TESSERA_VERSION}\";
            TESSERA_CONFIG_TYPE=;
 
-           if [ \"${Tess_Ver_First}\" -ge \"1\" ] || [ \"${Tess_Ver_Second}\" -ge \"9\" ]
-           then
-           	TESSERA_CONFIG_TYPE=\"-9.0\"
-           elif [ \"${Tess_Ver_Second}\" -ge \"8\" ]
-           then
-           	TESSERA_CONFIG_TYPE=\"-enhanced\"
-           fi
+           if [ \"${Tess_Ver_First}\" -lt \"1\" ] && [ \"${Tess_Ver_Second}\" -eq \"8\" ]; then TESSERA_CONFIG_TYPE=\"-enhanced\";  fi;
+           if [ \"${Tess_Ver_First}\" -ge \"1\" ] || [ \"${Tess_Ver_Second}\" -ge \"9\" ]; then TESSERA_CONFIG_TYPE=\"-9.0\"; fi;
 
            echo Config type [${TESSERA_CONFIG_TYPE}];
 

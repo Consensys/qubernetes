@@ -127,8 +127,8 @@ spec:
            echo \"Tessera version - suffix ${TESSERA_VERSION}\";
            TESSERA_CONFIG_TYPE=;
 
-           if [ \"${Tess_Ver_Second}\" -ge \"8\" ]; then TESSERA_CONFIG_TYPE=\"-enhanced\"; fi;
-           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then TESSERA_CONFIG_TYPE=\"-9.0\"; fi;
+           if [ \"${Tess_Ver_First}\" -lt \"1\" ] && [ \"${Tess_Ver_Second}\" -eq \"8\" ]; then TESSERA_CONFIG_TYPE=\"-enhanced\";  fi;
+           if [ \"${Tess_Ver_First}\" -ge \"1\" ] || [ \"${Tess_Ver_Second}\" -ge \"9\" ]; then TESSERA_CONFIG_TYPE=\"-9.0\"; fi;
 
            echo Config type [${TESSERA_CONFIG_TYPE}];
 
@@ -140,7 +140,7 @@ spec:
            CONFIG_FINAL=$(echo $CONFIG_WITH_THIS_HOST | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
            CONFIG_FINAL_9_0=$(echo $CONFIG_WITH_THIS_HOST | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
 
-           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
+           if [ \"${Tess_Ver_First}\" -ge \"1\" ] || [ \"${Tess_Ver_Second}\" -ge \"9\" ]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
            echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
            cat  ${DDIR}/tessera-config-with-hosts.json;
            java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json | tee -a ${QHOME}/logs/tessera.log;

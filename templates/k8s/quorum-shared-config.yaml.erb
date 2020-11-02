@@ -52,15 +52,15 @@ data:
 <%- File.readlines("contracts/runscript.sh").each do |line| -%>
     <%= line -%>
 <% end -%>
-# set the tm.pub for node2 in the privateFor field.
-# assumes that at least 2 nodes are being deployed.
+# set the tm.pub for node1 in the privateFor field.
+# supports single node deployment.
   private_contract.js: |-
-<%-  tm_key2 = "NOT_SET" -%>
-<%- File.readlines("#{@Key_Dir_Base}/key2/tm.pub").each do |line| -%>
-<% tm_key2 = line %>
+<%-  tm_key1 = "NOT_SET" -%>
+<%- File.readlines("#{@Key_Dir_Base}/key1/tm.pub").each do |line| -%>
+<% tm_key1 = line %>
 <% end -%>
 <%- File.readlines("contracts/private_contract.js").each do |line| -%>
-    <%- with_valid_key = line.gsub(/"%PRIVATE_FOR_NODE%"/, '"' + tm_key2 + '"') -%>
+    <%- with_valid_key = line.gsub(/"%PRIVATE_FOR_NODE%"/, '"' + tm_key1 + '"') -%>
     <%= with_valid_key -%>
 <% end -%>
   public_contract.js: |-

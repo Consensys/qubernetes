@@ -932,6 +932,7 @@ var (
 		Action: func(c *cli.Context) error {
 			// potentially show only this node
 			nodeName := c.Args().First()
+			namespace := c.String("namespace")
 			nodeFound := true
 			if nodeName != "" { // if the user request a specific node, we want to make sure we let them know it was found or not.
 				nodeFound = false
@@ -1047,8 +1048,8 @@ var (
 						}
 						tmUrl := strings.TrimSpace(res.String())
 
-						p2pCmd := exec.Command("qctl", "ls", "urls", "--node="+currentNode.NodeUserIdent, "--type=nodeport", "--p2p", "--bare", "--node-ip="+nodeip)
-						//fmt.Println(cmd.String())
+						p2pCmd := exec.Command("qctl", "--namespace="+namespace, "ls", "urls", "--node="+currentNode.NodeUserIdent, "--type=nodeport", "--p2p", "--bare", "--node-ip="+nodeip)
+						//fmt.Println(p2pCmd.String())
 						res, err = runCmd(p2pCmd)
 						if err != nil {
 							log.Fatal(err)
@@ -1058,10 +1059,11 @@ var (
 						// kc get configMap quorum-node1-nodekey-address-config -o jsonpath='{.data.nodekey}'
 						// try to get the node key address (ibft)
 						nodeKeyAddrCmd := exec.Command("kubectl", "get", "configMap",
-							currentNode.NodeUserIdent+"-nodekey-address-config", "-o=jsonpath='{.data.nodekey}'")
+							currentNode.NodeUserIdent+"-nodekey-address-config", "-o=jsonpath='{.data.nodekey}'", "--namespace="+namespace)
 						res, err = runCmd(nodeKeyAddrCmd)
 						nodekeyAddress := ""
 						if err != nil && currentNode.QuorumEntry.Quorum.Consensus == IstanbulConsensus {
+							fmt.Println("namespace", namespace)
 							red.Println(fmt.Sprintf(" issue getting the nodekey-address for node %s", configFileYaml.Nodes[i].NodeUserIdent))
 							red.Println(nodeKeyAddrCmd.String())
 							log.Fatal(err)

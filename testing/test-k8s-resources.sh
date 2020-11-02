@@ -153,7 +153,7 @@ done
 
 printf "${GREEN}Total Successful networks: ${SUCCESS}${NC}\n"
 printf "${RED}Total Failed networks: ${FAILURES}${NC}\n"
-printf "${RED}Failed runds: ${FAILED_RUNS}${NC}\n"
+printf "${RED}Failed runs: ${FAILED_RUNS}${NC}\n"
 if [[ $FAILURES -ne 0 ]]; then
   exit 1
 fi

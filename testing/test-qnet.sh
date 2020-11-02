@@ -34,6 +34,9 @@ elif [[ "$#" -eq 1 ]]; then
   echo "setting namespace to $1"
   NAMESPACE="--namespace=$1"
   NAMESPACE_NAME=$1
+  RAFT_CONSTELLATION_NS=$(echo $NAMESPACE | grep -i raft | grep -i constellation)
+  echo "RAFT_CONSTELLATION_NS IS:: $RAFT_CONSTELLATION_NS"
+  sleep 5
 else
   usage
   exit 1
@@ -147,6 +150,11 @@ sleep 5
 # All PODS should now be RUNNING, and geth process is started and able to return the blockNumber.
 # test a public and private transaction on a designated Node ${NODE_TO_TEST}.
 NODE_TO_TEST=node1
+# if we are testing raft and constellation, we require at least two nodes,
+# becauase constellation does not send private tx to self.
+if [[ ! -z $RAFT_CONSTELLATION_NS ]]; then
+  NODE_TO_TEST=node2
+fi
 echo "Testing a public transaction"
 echo helpers/run_contracts.sh $NODE_TO_TEST pub $NAMESPACE_NAME
 EXIT_CODE=1
@@ -196,6 +204,14 @@ do
   get_block_number $NAMESPACE
   BLOCK_NUM=$?
   echo "BLOCK_NUM: [$BLOCK_NUM]"
+  # block did not increase and consensus was raft with tm constellation.
+  # potentially see err creating contract Error: Non-200 status code: &{Status:500 Internal Server Error StatusCode:500 Proto:HTTP/1.1 ProtoMajor:1 ProtoMinor:1 Header:map[Date:[Mon, 02 Nov 2020 21:38:11 GMT] Server:[Warp/3.2.13]] Body:0xc00068f080 ContentLength:-1 TransferEncoding:[chunked] Close:false Uncompressed:false Trailer:map[] Request:0xc02bda4800 TLS:<nil>}
+  # so continue looping (if Raft NS is set)
+  if [[ $BLOCK_NUM -lt 2 && -z $RAFT_CONSTELLATION_NS ]]; then
+    echo "Raft constellation namespace set and block < 2"
+    echo "RAFT_CONSTELLATION_NS $RAFT_CONSTELLATION_NS"
+    EXIT_CODE=1
+  fi
   if [[ $EXIT_CODE -eq 0 ]]; then
     break;
   fi

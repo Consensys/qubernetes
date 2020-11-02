@@ -25,7 +25,7 @@ var (
 	DefaultChainId              = "1000"
 
 	DefaultGethPort    = "8545"
-	DefaultTesseraPort = "9080"
+	DefaultTesseraPort = "9001"
 	DefaultP2PPort     = "30303"
 
 	DefaultPrometheusClusterPort = "9090"

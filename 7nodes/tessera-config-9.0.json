@@ -102,5 +102,7 @@
           ]
      },
     "alwaysSendTo": [],
-    "enablePrivacyEnhancements": true
+    "features": {
+        "enablePrivacyEnhancements": true
+    }
 }

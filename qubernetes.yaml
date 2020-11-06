@@ -21,6 +21,7 @@ genesis:
   # supported: (raft | istanbul)
   consensus: istanbul
   Quorum_Version: 2.6.0
+  Tessera_Version: 0.11.0
   Chain_Id: 1000
 
 nodes:

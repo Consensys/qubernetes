@@ -17,6 +17,7 @@ if @config["genesis"]["qibftBlock"]
   @Qibft_Block = @config["genesis"]["qibftBlock"]
 end
 @Genesis_Quorum_Version = @config["genesis"]["Quorum_Version"]
+@Genesis_Tessera_Version = @config["genesis"]["Tessera_Version"]
 
 @Account_Allocs = ""
 @Node_Index = 0
@@ -60,7 +61,9 @@ end
     "constantinopleBlock": 0,
     "petersburgBlock": 0,
     "istanbulBlock": 0,
+    <%- if @Genesis_Tessera_Version >= "1.0.0" -%>
     "privacyEnhancementsBlock": 0,
+    <%- end -%>
     "eip150block": 0,
     "eip150hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "eip155block": 0,
@@ -124,7 +127,9 @@ end
     "constantinopleBlock": 0,
     "petersburgBlock": 0,
     "istanbulBlock": 0,
+    <%- if @Genesis_Tessera_Version >= "1.0.0" -%>
     "privacyEnhancementsBlock": 0,
+    <%- end -%>
     "eip150Block": 0,
     "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "eip155Block": 0,

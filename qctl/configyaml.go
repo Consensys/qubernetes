@@ -93,6 +93,7 @@ type QConfig struct {
 		Consensus     string `yaml:"consensus"`
 		QibftBlock    string `yaml:"qibftBlock,omitempty"`
 		QuorumVersion string `yaml:"Quorum_Version"`
+		TmVersion     string `yaml:"Tm_Version"`
 		Chain_Id      string `yaml:"Chain_Id"`
 	}
 	Prometheus Prometheus `yaml:"prometheus,omitempty"`

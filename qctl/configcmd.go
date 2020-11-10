@@ -157,6 +157,7 @@ var (
 			}
 
 			configYaml.Genesis.QuorumVersion = quorumVersion
+			configYaml.Genesis.TmVersion = tmVersion
 			configYaml.Genesis.Consensus = consensus
 			if consensus == "qibft" { // if --qibftblock=BLOCK_NUM not specified set to default block 0, else the user can specify --qibftblock=BLOCK_NUM
 				configYaml.Genesis.QibftBlock = qibftblock

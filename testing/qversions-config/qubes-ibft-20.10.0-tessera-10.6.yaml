@@ -1,9 +1,9 @@
-# ./quick-start-gen --chain-id=1000   --tm-name=tessera --num-nodes=3 --geth-statrup-params=--rpccorsdomain="*" --consensus=istanbul --quorum-version=2.4.0  --tm-version=0.10.2
+# ./quick-start-gen --chain-id=1000   --tm-name=tessera --num-nodes=3 --geth-statrup-params=--rpccorsdomain="*" --consensus=istanbul --quorum-version=2.6.0  --tm-version=0.10.2
 genesis:
   # supported: (raft | istanbul)
   consensus: istanbul
-  Quorum_Version: 2.4.0
-  Tm_Version: 0.10.2
+  Quorum_Version: 20.10.0
+  Tm_Version: 0.10.6
   Chain_Id: 1000
 
 # Add as many nodes as you wish below
@@ -16,12 +16,11 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 2.4.0
-         Docker_Repo:
+         Quorum_Version: 20.10.0
        tm:
          # (tessera|constellation)
          Name: tessera
-         Tm_Version: 0.10.2
+         Tm_Version: 0.10.6
        geth:
          network:
            id: 1000
@@ -34,11 +33,11 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 2.4.0
+         Quorum_Version: 20.10.0
        tm:
          # (tessera|constellation)
          Name: tessera
-         Tm_Version: 0.10.2
+         Tm_Version: 0.10.6
        geth:
          network:
            id: 1000
@@ -51,14 +50,14 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 2.4.0
+         Quorum_Version: 20.10.0
        tm:
          # (tessera|constellation)
          Name: tessera
-         Tm_Version: 0.10.2
-         Docker_Repo:
+         Tm_Version: 0.10.6
        geth:
          network:
            id: 1000
          verbosity: 9
          Geth_Startup_Params: --rpccorsdomain=*
+

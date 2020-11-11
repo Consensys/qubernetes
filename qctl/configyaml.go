@@ -13,8 +13,9 @@ var (
     genesis:
       # supported: (raft | istanbul)
       consensus: istanbul
-      qibftBlock: 0 
+      qibftBlock: 0
       Quorum_Version: 2.6.0
+      Tm_Version: 0.10.4
       Chain_Id: 1000
     nodes:
     `
@@ -92,6 +93,7 @@ type QConfig struct {
 		Consensus     string `yaml:"consensus"`
 		QibftBlock    string `yaml:"qibftBlock,omitempty"`
 		QuorumVersion string `yaml:"Quorum_Version"`
+		TmVersion     string `yaml:"Tm_Version"`
 		Chain_Id      string `yaml:"Chain_Id"`
 	}
 	Prometheus Prometheus `yaml:"prometheus,omitempty"`

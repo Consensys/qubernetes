@@ -2,6 +2,7 @@ genesis:
   # supported: (raft | istanbul)
   consensus: istanbul
   Quorum_Version: 2.5.0
+  Tm_Version: 0.10.4
   Chain_Id: 10
 
 config:

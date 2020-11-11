@@ -3,6 +3,7 @@ genesis:
   # supported: (raft | istanbul)
   consensus: istanbul
   Quorum_Version: 2.5.0
+  Tm_Version: 0.10.2
   Chain_Id: 1000
 
 # Add as many nodes as you wish below
@@ -21,7 +22,6 @@ nodes:
          # (tessera|constellation)
          Name: tessera
          Tm_Version: 0.10.2
-         Docker_Repo:
        geth:
          network:
            id: 1000
@@ -35,12 +35,10 @@ nodes:
          # supported: (raft | istanbul)
          consensus: istanbul
          Quorum_Version: 2.5.0
-         Docker_Repo:
        tm:
          # (tessera|constellation)
          Name: tessera
          Tm_Version: 0.10.2
-         Docker_Repo:
        geth:
          network:
            id: 1000
@@ -54,7 +52,6 @@ nodes:
          # supported: (raft | istanbul)
          consensus: istanbul
          Quorum_Version: 2.5.0
-         Docker_Repo:
        tm:
          # (tessera|constellation)
          Name: tessera

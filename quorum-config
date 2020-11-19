@@ -59,8 +59,9 @@ end
 @config     = YAML.load_file(@config_file)
 @nodes      = @config["nodes"] #YAML.load_file("nodes.yaml")["nodes"]
 @external_nodes = @config["external_nodes"]
-## set defaults for config if not set, else use the values from the config.
 
+## set defaults for config if not set, else use the values from the config.
+@Genesis_Consensus = @config["genesis"]["consensus"]
 # used by quorum-shared-config.yaml.erb and quorum-keystore.yaml.erb to load keys.
 @Key_Dir_Base = "out/config"
 if @config.dig("config","Key_Dir_Base")
@@ -125,7 +126,9 @@ end
 @base_template_path = "templates/quorum"
 `mkdir -p out/config`
 
-if @Consensus == "istanbul" ||  @Consensus  == "qibft"
+# if the consensus is an ibft variant, set up the istanbul-validator-config.toml
+# this is used by the genesis template to initial extra data with necessary validator data.
+if @Genesis_Consensus == "istanbul" ||  @Genesis_Consensus  == "qibft"
   @Istanbul_Validator_Config = @Key_Dir_Base + "/istanbul-validator-config.toml"
   puts(@Istanbul_Validator_Config)
   File.open(@Istanbul_Validator_Config , "w") do |f|

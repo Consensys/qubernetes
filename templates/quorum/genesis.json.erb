@@ -22,6 +22,8 @@ end
 @Account_Allocs = ""
 @Node_Index = 0
 
+# only used for clique extradata
+@All_Account_Concat=""
 -%>
 
 <%-
@@ -45,6 +47,9 @@ end
         acct=`#{pkCmd}`
         acct=acct.strip
         puts(acct)
+        if @Genesis_Consensus == "clique"
+        @All_Account_Concat=@All_Account_Concat+acct[2..-1]
+        end
     -%>    "<%= acct%>": {
       "balance": "1000000000000000000000000000"
     }<%- if (indexNode == @nodes.size - 1) and (indexKey == @Keystores.size - 1)
@@ -130,6 +135,38 @@ end
    extraData=extraData.strip
    puts("Generated istanbul \"extraData\"=\"" + extraData + "\"")
    -%>
+  "difficulty": "0x1",
+  "extraData": "<%= extraData%>",
+  "gasLimit": "0xE0000000",
+  "mixHash": "0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365",
+  "nonce": "0x0",
+  "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "timestamp": "0x00"
+}
+<%- elsif @Genesis_Consensus == "clique" -%>
+    "isQuorum": true,
+    "clique": {
+      "period": 0,
+      "epoch": 30000
+    }
+   },
+<%-
+  # https://geth.ethereum.org/docs/interface/private-network
+  # extradata for clique is:
+  # To create the initial extradata for your network, collect the signer addresses and encode extradata as the
+  # concatenation of 32 zero bytes, all signer addresses, and 65 further zero bytes. In the example below,
+  # extradata contains a single initial signer (account) address, 0x7df9a875a174b3bc565e6424a0050ebc1b2d1d82.
+  # "extradata": "0x00000000000000000000000000000000000000000000000000000000000000007df9a875a174b3bc565e6424a0050ebc1b2d1d820000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+-%>
+<%-
+    # 32 zero bytes
+    initial32ZeroBytes="0x0000000000000000000000000000000000000000000000000000000000000000"
+    end65ZeroBytes="0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    accounts=
+    extraData=initial32ZeroBytes + @All_Account_Concat  + end65ZeroBytes
+    extraData=extraData.strip
+    puts("Generated clique \"extraData\"=\"" + extraData + "\"")
+-%>
   "difficulty": "0x1",
   "extraData": "<%= extraData%>",
   "gasLimit": "0xE0000000",

@@ -79,7 +79,7 @@ if @config.dig("config","Genesis_File")
   @Genesis_File = @config["config"]["Genesis_File"]
 end
 
-@Istanbul_Validator_Config = @Key_Dir_Base + "/istanbul-validator-config.toml"
+
 
 @Chain_Id=1101
 if @config.dig("config","Chain_Id")
@@ -125,10 +125,12 @@ end
 @base_template_path = "templates/quorum"
 `mkdir -p out/config`
 
-
-puts(@Istanbul_Validator_Config)
-File.open(@Istanbul_Validator_Config , "w") do |f|
-  f.puts (ERB.new(File.read(@base_template_path + "/istanbul-validator.toml.erb"), nil, "-").result)
+if @Consensus == "istanbul" ||  @Consensus  == "qibft"
+  @Istanbul_Validator_Config = @Key_Dir_Base + "/istanbul-validator-config.toml"
+  puts(@Istanbul_Validator_Config)
+  File.open(@Istanbul_Validator_Config , "w") do |f|
+    f.puts (ERB.new(File.read(@base_template_path + "/istanbul-validator.toml.erb"), nil, "-").result)
+  end
 end
 
 # create genesis files with all discovered keystore accounts pre alloc with funds.

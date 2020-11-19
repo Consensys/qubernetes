@@ -36,6 +36,8 @@ var (
 
 	RaftConsensus     = "raft"
 	IstanbulConsensus = "istanbul"
+
+	QubernetesContainer = "quorumengineering/qubernetes" // "username/qubernetes-local"
 )
 
 func podNameFromPrefix(prefix string, namespace string) string {

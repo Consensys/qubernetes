@@ -1,0 +1,439 @@
+# kubectl create configmap game-config --from-file=configure-pod-container/dd1/key
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-permissioned-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-permissioned-config
+data:
+  permissioned-nodes.json: |
+
+    [
+      "enode://ac6b1096ca56b9f6d004b779ae3728bf83f8e22453404cc3cef16a3d9b96608bc67c4b30db88e0a5a6c6390213f7acbe1153ff6d23ce57380104288ae19373ef@quorum-node1:30303?discport=0&raftport=50401",
+        "enode://0ba6b9f606a43a95edc6247cdb1c1e105145817be7bcafd6b2c0ba15d58145f0dc1a194f70ba73cd6f4cdd6864edc7687f311254c7555cc32e4d45aeb1b80416@quorum-node2:30303?discport=0&raftport=50401",
+        "enode://579f786d4e2830bbcc02815a27e8a9bacccc9605df4dc6f20bcc1a6eb391e7225fff7cb83e5b4ecd1f3a94d8b733803f2f66b7e871961e7b029e22c155c3a778@quorum-node3:30303?discport=0&raftport=50401",
+        "enode://3d9ca5956b38557aba991e31cf510d4df641dce9cc26bfeb7de082f0c07abb6ede3a58410c8f249dabeecee4ad3979929ac4c7c496ad20b8cfdd061b7401b4f5@quorum-node4:30303?discport=0&raftport=50401",
+        "enode://3701f007bfa4cb26512d7df18e6bbd202e8484a6e11d387af6e482b525fa25542d46ff9c99db87bd419b980c24a086117a397f6d8f88e74351b41693880ea0cb@quorum-node5:30303?discport=0&raftport=50401",
+        "enode://eacaa74c4b0e7a9e12d2fe5fee6595eda841d6d992c35dbbcc50fcee4aa86dfbbdeff7dc7e72c2305d5a62257f82737a8cffc80474c15c611c037f52db1a3a7b@quorum-node6:30303?discport=0&raftport=50401",
+        "enode://239c1f044a2b03b6c4713109af036b775c5418fe4ca63b04b1ce00124af00ddab7cc088fc46020cdc783b6207efe624551be4c06a994993d8d70f684688fb7cf@quorum-node7:30303?discport=0&raftport=50401"
+      
+    ]
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tessera-config
+  
+  labels:
+    app: qubernetes
+    name: tessera-config
+data:
+  tessera-config.json.tmpl: |-
+    
+    
+    
+    
+    {
+        "useWhiteList": false,
+        "jdbc": {
+            "username": "sa",
+            "password": "",
+            "url": "jdbc:h2:/etc/quorum/qdata/tm/db;MODE=Oracle;TRACE_LEVEL_SYSTEM_OUT=0",
+            "autoCreateTables": true
+        },
+        "server": {
+            "port": 9001,
+            "hostName": "http://%THIS_SERVICE_HOST%",
+            "bindingAddress": "http://0.0.0.0:9001",
+            "sslConfig": {
+                "tls": "OFF",
+                "generateKeyStoreIfNotExisted": true,
+                "serverKeyStore": "/etc/quorum/qdata/tm/server-keystore",
+                "serverKeyStorePassword": "quorum",
+                "serverTrustStore": "/etc/quorum/qdata/tm/server-truststore",
+                "serverTrustStorePassword": "quorum",
+                "serverTrustMode": "TOFU",
+                "knownClientsFile": "/etc/quorum/qdata/tm/knownClients",
+                "clientKeyStore": "/etc/quorum/qdata/tm/client-keystore",
+                "clientKeyStorePassword": "quorum",
+                "clientTrustStore": "/etc/quorum/qdata/tm/client-truststore",
+                "clientTrustStorePassword": "quorum",
+                "clientTrustMode": "TOFU",
+                "knownServersFile": "/etc/quorum/qdata/tm/knownServers"
+            }
+        },
+        "peer": [
+    
+             {
+               "url": "http://quorum-node1:9001"
+             },
+    
+    
+             {
+               "url": "http://quorum-node2:9001"
+             },
+    
+    
+             {
+               "url": "http://quorum-node3:9001"
+             },
+    
+    
+             {
+               "url": "http://quorum-node4:9001"
+             },
+    
+    
+             {
+               "url": "http://quorum-node5:9001"
+             },
+    
+    
+             {
+               "url": "http://quorum-node6:9001"
+             },
+    
+    
+             {
+               "url": "http://quorum-node7:9001"
+             }
+    
+        ],
+        "keys": {
+            "passwords": [],
+            "keyData": [
+                {
+                    "privateKeyPath": "/etc/quorum/qdata/tm/tm.key",
+                    "publicKeyPath": "/etc/quorum/qdata/tm/tm.pub"
+                }
+            ]
+        },
+        "alwaysSendTo": [],
+        "unixSocketFile": "/etc/quorum/qdata/tm/tm.ipc"
+    }
+    
+
+  tessera-config-enhanced.json.tmpl: |-
+    
+    
+    
+    {
+      "useWhiteList": false,
+      "jdbc": {
+        "username": "sa",
+        "password": "",
+        "url": "jdbc:h2:/etc/quorum/qdata/tm/db;MODE=Oracle;TRACE_LEVEL_SYSTEM_OUT=0",
+        "autoCreateTables": true
+      },
+      "serverConfigs":[
+      {
+        "app":"ThirdParty",
+        "enabled": true,
+        "serverSocket":{
+          "type":"INET",
+          "port": 9080,
+          "hostName": "http://%THIS_SERVICE_HOST%"
+        },
+        "communicationType" : "REST"
+      },
+      {
+        "app":"Q2T",
+        "enabled": true,
+        "serverSocket":{
+          "type":"UNIX",
+          "path":"/etc/quorum/qdata/tm/tm.ipc"
+        },
+        "communicationType" : "UNIX_SOCKET"
+      },
+      {
+        "app":"P2P",
+        "enabled": true,
+        "serverSocket":{
+          "type":"INET",
+          "port": 9001,
+          "hostName": "http://%THIS_SERVICE_HOST%",
+          "bindingAddress": "http://0.0.0.0:9001"
+        },
+        "sslConfig": {
+          "tls": "OFF",
+          "generateKeyStoreIfNotExisted": true,
+          "serverKeyStore": "/etc/quorum/qdata/tm/server-keystore",
+          "serverKeyStorePassword": "quorum",
+          "serverTrustStore": "/etc/quorum/qdata/tm/server-truststore",
+          "serverTrustStorePassword": "quorum",
+          "serverTrustMode": "TOFU",
+          "knownClientsFile": "/etc/quorum/qdata/tm/knownClients",
+          "clientKeyStore": "/etc/quorum/qdata/tm/client-keystore",
+          "clientKeyStorePassword": "quorum",
+          "clientTrustStore": "/etc/quorum/qdata/tm/client-truststore",
+          "clientTrustStorePassword": "quorum",
+          "clientTrustMode": "TOFU",
+          "knownServersFile": "/etc/quorum/qdata/tm/knownServers"
+        },
+        "communicationType" : "REST"
+      }
+      ],
+    
+        "peer": [
+    
+         {
+               "url": "http://quorum-node1:9001"
+             },
+    
+    
+         {
+               "url": "http://quorum-node2:9001"
+             },
+    
+    
+         {
+               "url": "http://quorum-node3:9001"
+             },
+    
+    
+         {
+               "url": "http://quorum-node4:9001"
+             },
+    
+    
+         {
+               "url": "http://quorum-node5:9001"
+             },
+    
+    
+         {
+               "url": "http://quorum-node6:9001"
+             },
+    
+    
+         {
+               "url": "http://quorum-node7:9001"
+             }
+    
+        ],
+        "keys": {
+             "passwords": [],
+             "keyData": [
+                {
+                    "config": %THIS_PRIV_KEY%,
+                    "publicKey": "%THIS_PUB_KEY%"
+                }
+              ]
+         },
+        "alwaysSendTo": []
+    }
+  tessera-config-9.0.json.tmpl: |-
+    
+    
+    
+    {
+      "useWhiteList": false,
+      "jdbc": {
+        "username": "sa",
+        "password": "",
+        "url": "jdbc:h2:/etc/quorum/qdata/tm/db;MODE=Oracle;TRACE_LEVEL_SYSTEM_OUT=0",
+        "autoCreateTables": true
+      },
+      "serverConfigs":[
+      {
+        "app":"ThirdParty",
+        "enabled": true,
+        "serverAddress": "http://%THIS_SERVICE_HOST%:9080",
+        "cors": {
+            "allowedMethods": [
+                "GET",
+                "OPTIONS"
+            ],
+            "allowedOrigins": [
+                "*"
+            ]
+        },
+        "communicationType" : "REST"
+      },
+      {
+        "app":"Q2T",
+        "enabled": true,
+        "serverAddress":"unix:/etc/quorum/qdata/tm/tm.ipc",
+        "communicationType" : "REST"
+      },
+      {
+        "app":"P2P",
+        "enabled": true,
+        "serverAddress":"http://%THIS_SERVICE_HOST%:9001",
+        "sslConfig": {
+          "tls": "OFF",
+          "generateKeyStoreIfNotExisted": true,
+          "serverKeyStore": "/etc/quorum/qdata/tm/server-keystore",
+          "serverKeyStorePassword": "quorum",
+          "serverTrustStore": "/etc/quorum/qdata/tm/server-truststore",
+          "serverTrustStorePassword": "quorum",
+          "serverTrustMode": "TOFU",
+          "knownClientsFile": "/etc/quorum/qdata/tm/knownClients",
+          "clientKeyStore": "/etc/quorum/qdata/tm/client-keystore",
+          "clientKeyStorePassword": "quorum",
+          "clientTrustStore": "/etc/quorum/qdata/tm/client-truststore",
+          "clientTrustStorePassword": "quorum",
+          "clientTrustMode": "TOFU",
+          "knownServersFile": "/etc/quorum/qdata/tm/knownServers"
+        },
+        "communicationType" : "REST"
+      }
+      ],
+    
+        "peer": [
+    
+         {
+               "url": "http://quorum-node1:9001"
+             },
+    
+    
+         {
+               "url": "http://quorum-node2:9001"
+             },
+    
+    
+         {
+               "url": "http://quorum-node3:9001"
+             },
+    
+    
+         {
+               "url": "http://quorum-node4:9001"
+             },
+    
+    
+         {
+               "url": "http://quorum-node5:9001"
+             },
+    
+    
+         {
+               "url": "http://quorum-node6:9001"
+             },
+    
+    
+         {
+               "url": "http://quorum-node7:9001"
+             }
+    
+        ],
+        "keys": {
+             "passwords": [],
+             "keyData": [
+                {
+                    "privateKeyPath": "%THIS_PRIV_KEY%",
+                    "publicKeyPath": "%THIS_PUB_KEY%"
+                }
+              ]
+         },
+        "alwaysSendTo": [],
+        "features": {
+            "enablePrivacyEnhancements": true
+        }
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: contracts-config
+  
+  labels:
+    app: qubernetes
+    name: contracts-config
+data:
+  runscript.sh: |-
+    #!/bin/ash
+    PRIVATE_CONFIG=$TM_HOME/tm.ipc geth --exec "loadScript(\"$1\")" attach --datadir $QUORUM_DATA_DIR ipc:$QUORUM_DATA_DIR/geth.ipc
+# set the tm.pub for node1 in the privateFor field.
+# supports single node deployment.
+  private_contract.js: |-
+
+    a = eth.accounts[0]
+    web3.eth.defaultAccount = a;
+    
+    // abi and bytecode generated from simplestorage.sol:
+    // > solcjs --bin --abi simplestorage.sol
+    var abi = [{"constant":true,"inputs":[],"name":"storedData","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"x","type":"uint256"}],"name":"set","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"get","outputs":[{"name":"retVal","type":"uint256"}],"payable":false,"type":"function"},{"inputs":[{"name":"initVal","type":"uint256"}],"payable":false,"type":"constructor"}];
+    
+    var bytecode = "0x6060604052341561000f57600080fd5b604051602080610149833981016040528080519060200190919050505b806000819055505b505b610104806100456000396000f30060606040526000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680632a1afcd914605157806360fe47b11460775780636d4ce63c146097575b600080fd5b3415605b57600080fd5b606160bd565b6040518082815260200191505060405180910390f35b3415608157600080fd5b6095600480803590602001909190505060c3565b005b341560a157600080fd5b60a760ce565b6040518082815260200191505060405180910390f35b60005481565b806000819055505b50565b6000805490505b905600a165627a7a72305820d5851baab720bba574474de3d09dbeaabc674a15f4dd93b974908476542c23f00029";
+    
+    var simpleContract = web3.eth.contract(abi);
+    var simple = simpleContract.new(42, {from:web3.eth.accounts[0], data: bytecode, gas: 0x47b760, privateFor: ["BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo="]}, function(e, contract) {
+    	if (e) {
+    		console.log("err creating contract", e);
+    	} else {
+    		if (!contract.address) {
+    			console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
+    		} else {
+    			console.log("Contract mined! Address: " + contract.address);
+    			console.log(contract);
+    		}
+    	}
+    });
+  public_contract.js: |-
+    a = eth.accounts[0]
+    web3.eth.defaultAccount = a;
+    
+    // abi and bytecode generated from simplestorage.sol:
+    // > solcjs --bin --abi simplestorage.sol
+    var abi = [{"constant":true,"inputs":[],"name":"storedData","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"x","type":"uint256"}],"name":"set","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"get","outputs":[{"name":"retVal","type":"uint256"}],"payable":false,"type":"function"},{"inputs":[{"name":"initVal","type":"uint256"}],"payable":false,"type":"constructor"}];
+    
+    var bytecode = "0x6060604052341561000f57600080fd5b604051602080610149833981016040528080519060200190919050505b806000819055505b505b610104806100456000396000f30060606040526000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680632a1afcd914605157806360fe47b11460775780636d4ce63c146097575b600080fd5b3415605b57600080fd5b606160bd565b6040518082815260200191505060405180910390f35b3415608157600080fd5b6095600480803590602001909190505060c3565b005b341560a157600080fd5b60a760ce565b6040518082815260200191505060405180910390f35b60005481565b806000819055505b50565b6000805490505b905600a165627a7a72305820d5851baab720bba574474de3d09dbeaabc674a15f4dd93b974908476542c23f00029";
+    
+    var simpleContract = web3.eth.contract(abi);
+    var simple = simpleContract.new(42, {from:web3.eth.accounts[0], data: bytecode, gas: 0x47b760}, function(e, contract) {
+            if (e) {
+                    console.log("err creating contract", e);
+            } else {
+                    if (!contract.address) {
+                            console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
+                    } else {
+                            console.log("Contract mined! Address: " + contract.address);
+                            console.log(contract);
+                    }
+            }
+    });
+
+
+
+## Addition config used to manage the nodes lifecycle, e.g. add /remove nodes.
+## include ibft helpers as we don't know which nodes will be running which consensus.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: geth-helpers
+  
+  labels:
+    app: qubernetes
+    name: geth-helpers
+data:
+  geth-attach.sh: |-
+    #!/bin/sh
+    
+    # helper for connecting to geth from
+    # outside the container
+    # kubectl exec -it $POD -c quorum -- /geth-helpers/geth-attach.sh
+    echo "connecting to geth $QHOME"
+    geth attach --datadir $QUORUM_DATA_DIR $QUORUM_DATA_DIR/geth.ipc
+  geth-exec.sh: |-
+    #!/bin/sh
+    
+    # helper for connecting to geth from
+    # outside the container
+    # kubectl exec -it $POD -c quorum -- /geth-helpers/geth-exec.sh "admin.peers.length"
+    
+    GETH_CMD="eth.blockNumber"
+    if [ "$#" -gt 0 ]; then
+      GETH_CMD=$1
+    fi
+    # see: https://github.com/ethereum/go-ethereum/pull/17281
+    # https://github.com/ethereum/go-ethereum/issues/16905
+    # to avoid warning being returned
+    # "WARN [02-20|00:21:04.382] Sanitizing cache to Go's GC limits  provided=1024 updated=663"
+    geth --exec $GETH_CMD  --cache=16 attach --datadir $QUORUM_DATA_DIR $QUORUM_DATA_DIR/geth.ipc
+

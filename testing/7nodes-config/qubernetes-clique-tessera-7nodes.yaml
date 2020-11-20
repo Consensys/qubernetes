@@ -1,0 +1,105 @@
+genesis:
+  consensus: clique
+  Quorum_Version: 2.5.0
+  Tm_Version: 0.10.4
+  Chain_Id: 10
+
+config:
+  Tessera_Config_Dir: 7nodes
+  Genesis_File: 7nodes/istanbul-genesis.json
+  Permissioned_Nodes_File: 7nodes/permissioned-nodes.json
+  # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
+  # Either full or relative paths on the machine generating the config
+  Key_Dir_Base: 7nodes
+
+k8s:
+  service:
+    # NodePort | ClusterIP
+    type: ClusterIP
+  # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+  # test locally and on GCP.
+  storage:
+    # PVC (Persistent_Volume_Claim - tested with GCP).
+    Type: PVC
+    ## when redeploying cannot be less than previous values
+    Capacity: 200Mi
+
+nodes:
+
+  -  Node_UserIdent: quorum-node1
+     Key_Dir: key1
+     quorum:
+       quorum:
+         consensus: clique
+         Quorum_Version: 2.5.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+
+  -  Node_UserIdent: quorum-node2
+     Key_Dir: key2
+     quorum:
+       quorum:
+         consensus: clique
+         Quorum_Version: 2.5.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+
+  -  Node_UserIdent: quorum-node3
+     Key_Dir: key3
+     quorum:
+       quorum:
+         consensus: clique
+         Quorum_Version: 2.5.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+
+  -  Node_UserIdent: quorum-node4
+     Key_Dir: key4
+     quorum:
+       quorum:
+         consensus: clique
+         Quorum_Version: 2.5.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+
+  -  Node_UserIdent: quorum-node5
+     Key_Dir: key5
+     quorum:
+       quorum:
+         consensus: clique
+         Quorum_Version: 2.5.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+
+  -  Node_UserIdent: quorum-node6
+     Key_Dir: key6
+     quorum:
+       quorum:
+         consensus: clique
+         Quorum_Version: 2.5.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+
+  -  Node_UserIdent: quorum-node7
+     Key_Dir: key7
+     quorum:
+       quorum:
+         consensus: clique
+         Quorum_Version: 2.5.0
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 0.10.4
+

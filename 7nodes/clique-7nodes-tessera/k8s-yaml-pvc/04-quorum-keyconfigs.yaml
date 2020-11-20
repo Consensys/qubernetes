@@ -1,0 +1,437 @@
+
+
+
+# quorum transaction manager keys transaction manager key: used for private transactions.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node1-tm-key-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node1-tm-key-config
+data:
+  tm.key: |-
+    {"data":{"bytes":"Wl+xSyXVuuqzpvznOS7dOobhcn4C5auxkFRi7yLtgtA="},"type":"unlocked"}
+  tm.pub: |-
+    BULeR8JyUWhiuuCMU/HLA0Q5pzkYT+cHII3ZKBey3Bo=
+---
+# nodekey private to the node, used to verify identity.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node1-nodekey-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node1-nodekey-config
+data:
+  nodekey: |
+    1be3b50b31734be48452c29d714941ba165ef0cbf3ccea8ca16c45e3d8d45fb0
+
+# Only IBFT / istanbul networks need access to the nodekey address.
+
+---
+# enode Id
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node1-enode-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node1-enode-config
+data:
+  enode: |
+    ac6b1096ca56b9f6d004b779ae3728bf83f8e22453404cc3cef16a3d9b96608bc67c4b30db88e0a5a6c6390213f7acbe1153ff6d23ce57380104288ae19373ef
+
+---
+# ethereum / geth account keys (keystore)
+# @Keystore_File=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/UTC*"][0]
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node1-account-key-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node1-account-key-config
+data:
+  key: |-
+
+    {"address":"ed9d02e382b34818e88b88a309c7fe71e65f419d","crypto":{"cipher":"aes-128-ctr","ciphertext":"4e77046ba3f699e744acb4a89c36a3ea1158a1bd90a076d36675f4c883864377","cipherparams":{"iv":"a8932af2a3c0225ee8e872bc0e462c11"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"8ca49552b3e92f79c51f2cd3d38dfc723412c212e702bd337a3724e8937aff0f"},"mac":"6d1354fef5aa0418389b1a5d1f5ee0050d7273292a1171c51fd02f9ecff55264"},"id":"a65d1ac3-db7e-445d-a1cc-b6c5eeaa05e0","version":3}
+# end node
+
+# quorum transaction manager keys transaction manager key: used for private transactions.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node2-tm-key-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node2-tm-key-config
+data:
+  tm.key: |-
+    {"data":{"bytes":"nDFwJNHSiT1gNzKBy9WJvMhmYRkW3TzFUmPsNzR6oFk="},"type":"unlocked"}
+  tm.pub: |-
+    QfeDAys9MPDs2XHExtc84jKGHxZg/aj52DTh0vtA3Xc=
+---
+# nodekey private to the node, used to verify identity.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node2-nodekey-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node2-nodekey-config
+data:
+  nodekey: |
+    9bdd6a2e7cc1ca4a4019029df3834d2633ea6e14034d6dcc3b944396fe13a08b
+
+# Only IBFT / istanbul networks need access to the nodekey address.
+
+---
+# enode Id
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node2-enode-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node2-enode-config
+data:
+  enode: |
+    0ba6b9f606a43a95edc6247cdb1c1e105145817be7bcafd6b2c0ba15d58145f0dc1a194f70ba73cd6f4cdd6864edc7687f311254c7555cc32e4d45aeb1b80416
+
+---
+# ethereum / geth account keys (keystore)
+# @Keystore_File=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/UTC*"][0]
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node2-account-key-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node2-account-key-config
+data:
+  key: |-
+
+    {"address":"ca843569e3427144cead5e4d5999a3d0ccf92b8e","crypto":{"cipher":"aes-128-ctr","ciphertext":"01d409941ce57b83a18597058033657182ffb10ae15d7d0906b8a8c04c8d1e3a","cipherparams":{"iv":"0bfb6eadbe0ab7ffaac7e1be285fb4e5"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"7b90f455a95942c7c682e0ef080afc2b494ef71e749ba5b384700ecbe6f4a1bf"},"mac":"4cc851f9349972f851d03d75a96383a37557f7c0055763c673e922de55e9e307"},"id":"354e3b35-1fed-407d-a358-889a29111211","version":3}
+# end node
+
+# quorum transaction manager keys transaction manager key: used for private transactions.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node3-tm-key-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node3-tm-key-config
+data:
+  tm.key: |-
+    {"data":{"bytes":"tMxUVR8bX7aq/TbpVHc2QV3SN2iUuExBwefAuFsO0Lg="},"type":"unlocked"}
+  tm.pub: |-
+    1iTZde/ndBHvzhcl7V68x44Vx7pl8nwx9LqnM/AfJUg=
+---
+# nodekey private to the node, used to verify identity.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node3-nodekey-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node3-nodekey-config
+data:
+  nodekey: |
+    722f11686b2277dcbd72713d8a3c81c666b585c337d47f503c3c1f3c17cf001d
+
+# Only IBFT / istanbul networks need access to the nodekey address.
+
+---
+# enode Id
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node3-enode-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node3-enode-config
+data:
+  enode: |
+    579f786d4e2830bbcc02815a27e8a9bacccc9605df4dc6f20bcc1a6eb391e7225fff7cb83e5b4ecd1f3a94d8b733803f2f66b7e871961e7b029e22c155c3a778
+
+---
+# ethereum / geth account keys (keystore)
+# @Keystore_File=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/UTC*"][0]
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node3-account-key-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node3-account-key-config
+data:
+  key: |-
+
+    {"address":"0fbdc686b912d7722dc86510934589e0aaf3b55a","crypto":{"cipher":"aes-128-ctr","ciphertext":"6b2c72c6793f3da8185e36536e02f574805e41c18f551f24b58346ef4ecf3640","cipherparams":{"iv":"582f27a739f39580410faa108d5cc59f"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"1a79b0db3f8cb5c2ae4fa6ccb2b5917ce446bd5e42c8d61faeee512b97b4ad4a"},"mac":"cecb44d2797d6946805d5d744ff803805477195fab1d2209eddc3d1158f2e403"},"id":"f7292e90-af71-49af-a5b3-40e8493f4681","version":3}
+# end node
+
+# quorum transaction manager keys transaction manager key: used for private transactions.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node4-tm-key-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node4-tm-key-config
+data:
+  tm.key: |-
+    {"data":{"bytes":"grQjd3dBp4qFs8/5Jdq7xjz++aUx/LXAqISFyPWaCRw="},"type":"unlocked"}
+  tm.pub: |-
+    oNspPPgszVUFw0qmGFfWwh1uxVUXgvBxleXORHj07g8=
+---
+# nodekey private to the node, used to verify identity.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node4-nodekey-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node4-nodekey-config
+data:
+  nodekey: |
+    6af685c4de99d44c620ccd9464d19bdeb62a750b9ae49b1740fb28d68a0e5c7d
+
+# Only IBFT / istanbul networks need access to the nodekey address.
+
+---
+# enode Id
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node4-enode-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node4-enode-config
+data:
+  enode: |
+    3d9ca5956b38557aba991e31cf510d4df641dce9cc26bfeb7de082f0c07abb6ede3a58410c8f249dabeecee4ad3979929ac4c7c496ad20b8cfdd061b7401b4f5
+
+---
+# ethereum / geth account keys (keystore)
+# @Keystore_File=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/UTC*"][0]
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node4-account-key-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node4-account-key-config
+data:
+  key: |-
+
+    {"address":"9186eb3d20cbd1f5f992a950d808c4495153abd5","crypto":{"cipher":"aes-128-ctr","ciphertext":"d160a630a39be3ff35556055406d8ff2a635f0535fe298d62ccc812d8f7b3bd5","cipherparams":{"iv":"82fce06bc6e1658a5e81ccef3b753329"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"8d0c486db4c942721f4f5e96d48e9344805d101dad8159962b8a2008ac718548"},"mac":"4a92bda949068968d470320260ae1a825aa22f6a40fb8567c9f91d700c3f7e91"},"id":"bdb3b4f6-d8d0-4b00-8473-e223ef371b5c","version":3}
+# end node
+
+# quorum transaction manager keys transaction manager key: used for private transactions.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node5-tm-key-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node5-tm-key-config
+data:
+  tm.key: |-
+    {"data":{"bytes":"W8XcdJfOuxCrLcspSceNg9vh7Cwe8tXiIx5xPJ88OtQ="},"type":"unlocked"}
+  tm.pub: |-
+    R56gy4dn24YOjwyesTczYa8m5xhP6hF2uTMCju/1xkY=
+---
+# nodekey private to the node, used to verify identity.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node5-nodekey-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node5-nodekey-config
+data:
+  nodekey: |
+    103bb5d20384b9af9f693d4287822fef6da7d79cb2317ed815f0081c7ea8d17d
+
+# Only IBFT / istanbul networks need access to the nodekey address.
+
+---
+# enode Id
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node5-enode-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node5-enode-config
+data:
+  enode: |
+    3701f007bfa4cb26512d7df18e6bbd202e8484a6e11d387af6e482b525fa25542d46ff9c99db87bd419b980c24a086117a397f6d8f88e74351b41693880ea0cb
+
+---
+# ethereum / geth account keys (keystore)
+# @Keystore_File=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/UTC*"][0]
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node5-account-key-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node5-account-key-config
+data:
+  key: |-
+
+    {"address":"0638e1574728b6d862dd5d3a3e0942c3be47d996","crypto":{"cipher":"aes-128-ctr","ciphertext":"d8119d67cb134bc65c53506577cfd633bbbf5acca976cea12dd507de3eb7fd6f","cipherparams":{"iv":"76e88f3f246d4bf9544448d1a27b06f4"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"6d05ade3ee96191ed73ea019f30c02cceb6fc0502c99f706b7b627158bfc2b0a"},"mac":"b39c2c56b35958c712225970b49238fb230d7981ef47d7c33c730c363b658d06"},"id":"00307b43-53a3-4e03-9d0c-4fcbb3da29df","version":3}
+# end node
+
+# quorum transaction manager keys transaction manager key: used for private transactions.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node6-tm-key-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node6-tm-key-config
+data:
+  tm.key: |-
+    {"data":{"bytes":"N9wH6bG0lWOCJtSnosatAskvzkrDApdrjaWkqjDyDzE="},"type":"unlocked"}
+  tm.pub: |-
+    UfNSeSGySeKg11DVNEnqrUtxYRVor4+CvluI8tVv62Y=
+---
+# nodekey private to the node, used to verify identity.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node6-nodekey-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node6-nodekey-config
+data:
+  nodekey: |
+    79999aef8d5197446b6051df47f01fd4d6dd1997aec3f5282e77ea27b6727346
+
+# Only IBFT / istanbul networks need access to the nodekey address.
+
+---
+# enode Id
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node6-enode-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node6-enode-config
+data:
+  enode: |
+    eacaa74c4b0e7a9e12d2fe5fee6595eda841d6d992c35dbbcc50fcee4aa86dfbbdeff7dc7e72c2305d5a62257f82737a8cffc80474c15c611c037f52db1a3a7b
+
+---
+# ethereum / geth account keys (keystore)
+# @Keystore_File=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/UTC*"][0]
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node6-account-key-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node6-account-key-config
+data:
+  key: |-
+
+    {"address":"ae9bc6cd5145e67fbd1887a5145271fd182f0ee7","crypto":{"cipher":"aes-128-ctr","ciphertext":"013ed4c928bf7ae50dba7c9d8396f2d89d1fccc16a2067fdad56e125a0f5d96c","cipherparams":{"iv":"9fce4f1ab5c9cdaee9432dbc43d28ed8"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"5301d6b0c7bc8ba4ca60256ba524bae57cb078679e0de7d5322ebdc2393849a0"},"mac":"55aabdbc4853a188e8b63a1cec93e5d233a8b5b529ed00c610d1b4a9b27990da"},"id":"025f7cf0-f35b-4988-8a22-2443a08e5d69","version":3}
+# end node
+
+# quorum transaction manager keys transaction manager key: used for private transactions.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node7-tm-key-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node7-tm-key-config
+data:
+  tm.key: |-
+    {"data":{"bytes":"lesaO6EWbmL1rie1biy851BnN1QsRRDK4kWUimlK0EA="},"type":"unlocked"}
+  tm.pub: |-
+    ROAZBWtSacxXQrOe3FGAqJDyJjFePR5ce4TSIzmJ0Bc=
+---
+# nodekey private to the node, used to verify identity.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node7-nodekey-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node7-nodekey-config
+data:
+  nodekey: |
+    e85dae073b504871ffd7946bf5f45e6fa8dc09eb1536a48c4b6822332008973d
+
+# Only IBFT / istanbul networks need access to the nodekey address.
+
+---
+# enode Id
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node7-enode-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node7-enode-config
+data:
+  enode: |
+    239c1f044a2b03b6c4713109af036b775c5418fe4ca63b04b1ce00124af00ddab7cc088fc46020cdc783b6207efe624551be4c06a994993d8d70f684688fb7cf
+
+---
+# ethereum / geth account keys (keystore)
+# @Keystore_File=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/UTC*"][0]
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quorum-node7-account-key-config
+  
+  labels:
+    app: qubernetes
+    name: quorum-node7-account-key-config
+data:
+  key: |-
+
+    {"address":"cc71c7546429a13796cf1bf9228bff213e7ae9cc","crypto":{"cipher":"aes-128-ctr","ciphertext":"a522d53d5a86405435f6288d4e34b0c038de25f46fa935b0be78fd24d4aa65da","cipherparams":{"iv":"10511f1422825b699718559dcaaa0ff2"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"471dfeff2dc7524d27970e54d8224320cb13f7e580431473a362fe8850ebc120"},"mac":"25ee0b623467350a4245a041a89a6797560ade8a1bd1c8d4d1b67ca5e37c56c0"},"id":"477df10a-9591-4fae-9c30-3aa0bc0ec57b","version":3}
+# end node
+

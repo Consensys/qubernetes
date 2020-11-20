@@ -1,0 +1,113 @@
+
+    
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  
+  name: quorum-node1-pvc
+  annotations:
+spec:
+  
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+
+    
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  
+  name: quorum-node2-pvc
+  annotations:
+spec:
+  
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+
+    
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  
+  name: quorum-node3-pvc
+  annotations:
+spec:
+  
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+
+    
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  
+  name: quorum-node4-pvc
+  annotations:
+spec:
+  
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+
+    
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  
+  name: quorum-node5-pvc
+  annotations:
+spec:
+  
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+
+    
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  
+  name: quorum-node6-pvc
+  annotations:
+spec:
+  
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+
+    
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  
+  name: quorum-node7-pvc
+  annotations:
+spec:
+  
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi
+

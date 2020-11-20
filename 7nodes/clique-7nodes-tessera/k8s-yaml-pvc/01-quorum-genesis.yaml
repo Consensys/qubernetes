@@ -1,0 +1,67 @@
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: genesis-config
+  
+  labels:
+    app: qubernetes
+    name: genesis-config
+data:
+  genesis-geth.json: |-
+      
+      {
+      "alloc": {
+          "0xed9d02e382b34818e88B88a309c7fe71E65f419d": {
+            "balance": "1000000000000000000000000000"
+          }, 
+          "0xcA843569e3427144cEad5e4d5999a3D0cCF92B8e": {
+            "balance": "1000000000000000000000000000"
+          }, 
+          "0x0fBDc686b912d7722dc86510934589E0AAf3b55A": {
+            "balance": "1000000000000000000000000000"
+          }, 
+          "0x9186eb3d20Cbd1F5f992a950d808C4495153ABd5": {
+            "balance": "1000000000000000000000000000"
+          }, 
+          "0x0638E1574728b6D862dd5d3A3E0942c3be47D996": {
+            "balance": "1000000000000000000000000000"
+          }, 
+          "0xAE9bc6cD5145e67FbD1887A5145271fd182F0eE7": {
+            "balance": "1000000000000000000000000000"
+          }, 
+          "0xCC71C7546429a13796cf1BF9228bFf213e7Ae9cc": {
+            "balance": "1000000000000000000000000000"
+          }
+      
+        },
+        "coinbase": "0x0000000000000000000000000000000000000000",
+        "config": {
+          "homesteadBlock": 0,
+          "byzantiumBlock": 0,
+          "constantinopleBlock": 0,
+          "petersburgBlock": 0,
+          "istanbulBlock": 0,
+          "eip150Block": 0,
+          "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "eip155Block": 0,
+          "eip158Block": 0,
+          "maxCodeSize": 35,
+          "maxCodeSizeChangeBlock": 0,
+          "chainId": 10,
+          "isQuorum": true,
+          "clique": {
+            "period": 0,
+            "epoch": 30000
+          }
+         },
+        "difficulty": "0x1",
+        "extraData": "0x0000000000000000000000000000000000000000000000000000000000000000ed9d02e382b34818e88B88a309c7fe71E65f419dcA843569e3427144cEad5e4d5999a3D0cCF92B8e0fBDc686b912d7722dc86510934589E0AAf3b55A9186eb3d20Cbd1F5f992a950d808C4495153ABd50638E1574728b6D862dd5d3A3E0942c3be47D996AE9bc6cD5145e67FbD1887A5145271fd182F0eE7CC71C7546429a13796cf1BF9228bFf213e7Ae9cc0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "gasLimit": "0xE0000000",
+        "mixHash": "0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365",
+        "nonce": "0x0",
+        "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "timestamp": "0x00"
+      }
+      
+

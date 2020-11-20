@@ -234,6 +234,9 @@ spec:
          <%- elsif @Consensus == "istanbul" || @Consensus == "qibft" -%>
            args=\" --gcmode archive --istanbul.blockperiod 3 --syncmode full --mine --minerthreads 1 \";
            RPC_APIS=\"$RPC_APIS,istanbul\";
+         <%- elsif @Consensus == "clique" -%>
+           args=\" --gcmode archive --syncmode full --mine --minerthreads 1 \";
+           RPC_APIS=\"$RPC_APIS,clique\";
          <%- end -%>
          <%- if @Quorum_Version >= "2.6.0" -%>
            args=\"$args --allow-insecure-unlock \";

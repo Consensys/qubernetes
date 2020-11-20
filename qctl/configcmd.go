@@ -29,7 +29,7 @@ var (
 			},
 			&cli.StringFlag{
 				Name:  "consensus",
-				Usage: "Consensus to use raft | istanbul.",
+				Usage: "Consensus to use raft | istanbul | clique.",
 				Value: DefaultConesensus,
 			},
 			&cli.StringFlag{

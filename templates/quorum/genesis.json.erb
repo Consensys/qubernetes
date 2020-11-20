@@ -22,76 +22,14 @@ end
 @Account_Allocs = ""
 @Node_Index = 0
 
+# only used for clique extradata
+@All_Account_Concat=""
 -%>
 
-<% if @Genesis_Consensus == "raft" %>
-{
-"alloc": {
-<%- @nodes.each_with_index do |node, indexNode|
-
-    set_node_template_vars(node)
-    puts(@Node_Key_Dir)
-    @Keystores=Dir[@Key_Dir_Base + "/" + @Node_Key_Dir + "/acctkey*"]
-    puts(@Keystores)
-    # Need to keep track of when the last account in the last node
-    # is being writen, so as not to have a trailing ',' in the
-    # genesis alloc json.
-    # The keystore is assumed to be the generated keystore and will
-    # start with UTC- and end with the account public key.
-    @Keystores.each_with_index do |keystore, indexKey|
-        pkCmd = "ethkey inspect --passwordfile #{@Key_Dir_Base}/#{@Node_Key_Dir}/password.txt " + keystore + " | grep Address | awk '{print $2}'"
-        puts(pkCmd)
-        acct=`#{pkCmd}`
-        acct=acct.strip
-        puts(acct)
-    -%>    "<%= acct%>": {
-       "balance": "1000000000000000000000000000"
-    }<%- if (indexNode == @nodes.size - 1) and (indexKey == @Keystores.size - 1)
-     else %>, <%- end %>
-    <%-
-        puts(acct)
-    end
-     -%>
-<% end %>
-  },
-  "coinbase": "0x0000000000000000000000000000000000000000",
-  "config": {
-    "homesteadBlock": 0,
-    "byzantiumBlock": 0,
-    "constantinopleBlock": 0,
-    "petersburgBlock": 0,
-    "istanbulBlock": 0,
-    <%- if @Genesis_Tm_Version >= "1.0.0" -%>
-    "privacyEnhancementsBlock": 0,
-    <%- end -%>
-    "eip150block": 0,
-    "eip150hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-    "eip155block": 0,
-    "eip158block": 0,
-    <%-# for 2.6 maxCodeSize config has changed. -%>
-    <%- if @Genesis_Quorum_Version >= "2.6.0" -%>
-    "maxCodeSizeConfig" : [
-      {
-        "block" : 0,
-        "size" : 32
-      }
-    ],
-    <%- else -%> <%# for v2.4 and 2.5 support maxCodeSize config has changed. %>
-    "maxCodeSize": 35,
-    "maxCodeSizeChangeBlock" : 0,
-    <%- end -%>
-    "chainId": <%= @Chain_Id %>,
-    "isQuorum":true
-  },
-  "difficulty": "0x0",
-  "extradata": "0x0000000000000000000000000000000000000000000000000000000000000000",
-  "gaslimit": "0xE0000000",
-  "mixhash": "0x00000000000000000000000000000000000000647572616c65787365646c6578",
-  "nonce": "0x0",
-  "parenthash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-  "timestamp": "0x00"
-}
-<% elsif @Genesis_Consensus == "istanbul" ||  @Genesis_Consensus == "qibft" %>
+<%-
+   # allocate account with intial funds, and set initial config values that are shared across consensus impls.
+   # this is the same across consensus variations.
+ -%>
 {
 "alloc": {
 <%- @nodes.each_with_index do |node, indexNode|
@@ -109,8 +47,11 @@ end
         acct=`#{pkCmd}`
         acct=acct.strip
         puts(acct)
+        if @Genesis_Consensus == "clique"
+        @All_Account_Concat=@All_Account_Concat+acct[2..-1]
+        end
     -%>    "<%= acct%>": {
-       "balance": "1000000000000000000000000000"
+      "balance": "1000000000000000000000000000"
     }<%- if (indexNode == @nodes.size - 1) and (indexKey == @Keystores.size - 1)
      else %>, <%- end %>
     <%-
@@ -118,7 +59,6 @@ end
     end
      -%>
 <% end %>
-
   },
   "coinbase": "0x0000000000000000000000000000000000000000",
   "config": {
@@ -134,27 +74,46 @@ end
     "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "eip155Block": 0,
     "eip158Block": 0,
+    <%-# for 2.6 maxCodeSize config has changed. -%>
+    <%- if @Genesis_Quorum_Version >= "2.6.0" -%>
+    "maxCodeSizeConfig": [
+      {
+        "block": 0,
+        "size": 32
+      }
+    ],
+    <%- else -%>
+    <%-# for v2.4 and 2.5 support maxCodeSize config has changed. -%>
+    "maxCodeSize": 35,
+    "maxCodeSizeChangeBlock": 0,
+    <%- end -%>
+    "chainId": <%= @Chain_Id %>,
+<%-
+
+ # END similar config and account alloc setup of genesis config
+
+-%>
+  <%- if @Genesis_Consensus == "raft" -%>
+  <%- # raft requires no additional config, so close the json genesis config block -%>
+    "isQuorum": true
+  },
+  "difficulty": "0x0",
+  "extradata": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "gaslimit": "0xE0000000",
+  "mixhash": "0x00000000000000000000000000000000000000647572616c65787365646c6578",
+  "nonce": "0x0",
+  "parenthash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "timestamp": "0x00"
+}
+<%- elsif @Genesis_Consensus == "istanbul" ||  @Genesis_Consensus == "qibft" -%>
+    "isQuorum": true,
     "istanbul": {
       <%- if @Qibft_Block -%>
       "qibftBlock": <%= @Qibft_Block %>,
       <%- end -%>
       "epoch": 30000,
       "policy": 0
-    },
-    <%-# for 2.6 maxCodeSize config has changed. -%>
-    <%- if @Genesis_Quorum_Version >= "2.6.0" -%>
-    "maxCodeSizeConfig" : [
-      {
-        "block" : 0,
-        "size" : 32
-      }
-    ],
-    <%- else -%> <%# for v2.4 and 2.5 support maxCodeSize config has changed. %>
-    "maxCodeSize": 35,
-    "maxCodeSizeChangeBlock" : 0,
-    <%- end -%>
-    "chainId": <%= @Chain_Id %>,
-    "isQuorum": true
+    }
   },
 
   <%-
@@ -176,6 +135,38 @@ end
    extraData=extraData.strip
    puts("Generated istanbul \"extraData\"=\"" + extraData + "\"")
    -%>
+  "difficulty": "0x1",
+  "extraData": "<%= extraData%>",
+  "gasLimit": "0xE0000000",
+  "mixHash": "0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365",
+  "nonce": "0x0",
+  "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "timestamp": "0x00"
+}
+<%- elsif @Genesis_Consensus == "clique" -%>
+    "isQuorum": true,
+    "clique": {
+      "period": 0,
+      "epoch": 30000
+    }
+   },
+<%-
+  # https://geth.ethereum.org/docs/interface/private-network
+  # extradata for clique is:
+  # To create the initial extradata for your network, collect the signer addresses and encode extradata as the
+  # concatenation of 32 zero bytes, all signer addresses, and 65 further zero bytes. In the example below,
+  # extradata contains a single initial signer (account) address, 0x7df9a875a174b3bc565e6424a0050ebc1b2d1d82.
+  # "extradata": "0x00000000000000000000000000000000000000000000000000000000000000007df9a875a174b3bc565e6424a0050ebc1b2d1d820000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+-%>
+<%-
+    # 32 zero bytes
+    initial32ZeroBytes="0x0000000000000000000000000000000000000000000000000000000000000000"
+    end65ZeroBytes="0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    accounts=
+    extraData=initial32ZeroBytes + @All_Account_Concat  + end65ZeroBytes
+    extraData=extraData.strip
+    puts("Generated clique \"extraData\"=\"" + extraData + "\"")
+-%>
   "difficulty": "0x1",
   "extraData": "<%= extraData%>",
   "gasLimit": "0xE0000000",

@@ -134,6 +134,14 @@ var (
 				Usage: "Which version of qubernetes to use.",
 				Value: "latest",
 			},
+			// override QubernetesContainer default quorumengineering/qubernetes
+			// this is useful for using a local qubernetes container, e.g. for local dev / testing.
+			&cli.StringFlag{
+				Name:    "qubecontainer",
+				Usage:   "use a differnt qubernetes build container, default quorumengineering/qubernetes.",
+				Aliases: []string{"qcontainer", "container"},
+				Value:   QubernetesContainer,
+			},
 			&cli.BoolFlag{
 				Name:    "force",
 				Usage:   "Initialize new network, if existing out folder exists, delete it without prompting.",
@@ -149,7 +157,7 @@ var (
 
 		Action: func(c *cli.Context) error {
 			qubernetesVersion := c.String("version")
-
+			qubernetesBuildContainer := c.String("qubecontainer")
 			pwdCmd := exec.Command("pwd")
 			b, _ := runCmd(pwdCmd)
 			pwd := strings.TrimSpace(b.String())
@@ -218,8 +226,9 @@ var (
 			}
 
 			// if the quberentes version is set to latest, try to pull it from the remote, as it may have changed upstream.
-			if qubernetesVersion == "latest" {
-				fmt.Println("trying to pull latest container")
+			// only pull if using the upstream container, else use the potentially local container
+			if qubernetesVersion == "latest" && qubernetesBuildContainer == "quorumengineering/qubernetes" {
+				fmt.Println("trying to pull latest container" + qubernetesBuildContainer)
 				pullContainerCmd := exec.Command("docker", "pull", "quorumengineering/qubernetes:latest")
 				err = dropIntoCmd(pullContainerCmd)
 				if err != nil {
@@ -234,11 +243,11 @@ var (
 				fmt.Println()
 			}
 
-			cmd := exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", k8sdir+":/qubernetes/out", "quorumengineering/qubernetes:"+qubernetesVersion, "./qube-init", "qubes.yaml")
+			cmd := exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", k8sdir+":/qubernetes/out", qubernetesBuildContainer+":"+qubernetesVersion, "./qube-init", "qubes.yaml")
 			if update {
-				cmd = exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", k8sdir+":/qubernetes/out", "quorumengineering/qubernetes:"+qubernetesVersion, "./qube-init", "--action=update", "qubes.yaml")
+				cmd = exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", k8sdir+":/qubernetes/out", qubernetesBuildContainer+":"+qubernetesVersion, "./qube-init", "--action=update", "qubes.yaml")
 			} else if create {
-				cmd = exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", k8sdir+":/qubernetes/out", "quorumengineering/qubernetes:"+qubernetesVersion, "./qube-init", "--action=create", "qubes.yaml")
+				cmd = exec.Command("docker", "run", "--rm", "-it", "-v", configFile+":/qubernetes/qubes.yaml", "-v", k8sdir+":/qubernetes/out", qubernetesBuildContainer+":"+qubernetesVersion, "./qube-init", "--action=create", "qubes.yaml")
 			}
 			if isVerbose {
 				fmt.Println()

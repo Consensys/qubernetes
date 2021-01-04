@@ -31,12 +31,17 @@
     "constantinopleBlock": 0,
     "petersburgBlock": 0,
     "istanbulBlock": 0,
+    "privacyEnhancementsBlock": 0,
     "eip150Block": 0,
     "eip150Hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "eip155Block": 0,
     "eip158Block": 0,
-    "maxCodeSize": 35,
-    "maxCodeSizeChangeBlock": 0,
+    "maxCodeSizeConfig": [
+      {
+        "block": 0,
+        "size": 32
+      }
+    ],
     "chainId": 10,
     "isQuorum": true
   },

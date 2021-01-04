@@ -1,7 +1,7 @@
 genesis:
   # supported: (raft | istanbul)
   consensus: istanbul
-  Quorum_Version: 2.5.0
+  Quorum_Version: 20.10.0
   Tm_Version: 0.3.2
   Chain_Id: 10
 
@@ -33,7 +33,7 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 2.5.0
+         Quorum_Version: 20.10.0
        tm:
          # (tessera|constellation)
          Name: constellation
@@ -45,7 +45,7 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 2.5.0
+         Quorum_Version: 20.10.0
        tm:
          # (tessera|constellation)
          Name: constellation
@@ -57,7 +57,7 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 2.5.0
+         Quorum_Version: 20.10.0
        tm:
          # (tessera|constellation)
          Name: constellation
@@ -69,7 +69,7 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 2.5.0
+         Quorum_Version: 20.10.0
        tm:
          # (tessera|constellation)
          Name: constellation
@@ -81,7 +81,7 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 2.5.0
+         Quorum_Version: 20.10.0
        tm:
          # (tessera|constellation)
          Name: constellation
@@ -93,7 +93,7 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 2.5.0
+         Quorum_Version: 20.10.0
        tm:
          # (tessera|constellation)
          Name: constellation
@@ -105,7 +105,7 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 2.5.0
+         Quorum_Version: 20.10.0
        tm:
          # (tessera|constellation)
          Name: constellation

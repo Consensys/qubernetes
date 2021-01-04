@@ -34,8 +34,19 @@ elif [[ "$#" -eq 1 ]]; then
   echo "setting namespace to $1"
   NAMESPACE="--namespace=$1"
   NAMESPACE_NAME=$1
-  RAFT_CONSTELLATION_NS=$(echo $NAMESPACE | grep -i raft | grep -i constellation)
-  echo "RAFT_CONSTELLATION_NS IS:: $RAFT_CONSTELLATION_NS"
+  RAFT_NS=$(echo $NAMESPACE | grep -i raft)
+  CONSTELLATION_NS=$(echo $NAMESPACE | grep -i constellation)
+
+  # leave IS_CONSTELLATION, IS_RAFT unset unless they are true, as checking with if [[ $IS_CONSTELLATION ]] returns true if set.
+  if [[ ! -z $CONSTELLATION_NS ]];
+  then
+    IS_CONSTELLATION=true
+  fi
+  if [[ ! -z $RAFT_NS ]]; then
+    IS_RAFT=true
+  fi
+  echo "set IS_RAFT: $IS_RAFT"
+  echo "set IS_CONSTELLATION: $IS_CONSTELLATION"
   sleep 5
 else
   usage
@@ -141,20 +152,22 @@ if [[ ! -z $ISTANBUL ]]; then
   done
 fi
 
-# raft sleep 5 just to make sure nodes sync up.
+# raft sleep 10 just to make sure nodes sync up.
 ## TODO: fails qubernetes-raft-tessera, because 1. raft doesn't sync up right away, and 2. tessera fails without
 ## returning an error. err creating contract Error: Non-200 status code
-sleep 5
+sleep 10
 
 # Run some transactions:
 # All PODS should now be RUNNING, and geth process is started and able to return the blockNumber.
 # test a public and private transaction on a designated Node ${NODE_TO_TEST}.
 NODE_TO_TEST=node1
-# if we are testing raft and constellation, we require at least two nodes,
-# becauase constellation does not send private tx to self.
-if [[ ! -z $RAFT_CONSTELLATION_NS ]]; then
+# if we are testing constellation, we require at least two nodes,
+# because constellation does not send private tx to self.
+echo "IS_CONSTELLATION: $IS_CONSTELLATION"
+if [[ $IS_CONSTELLATION ]]; then
   NODE_TO_TEST=node2
 fi
+echo "NODE_TO_TEST: $NODE_TO_TEST"
 echo "Testing a public transaction"
 echo helpers/run_contracts.sh $NODE_TO_TEST pub $NAMESPACE_NAME
 EXIT_CODE=1
@@ -183,7 +196,7 @@ else
    exit 1
 fi
 
-# The private transaction may take longer than the public transacion due to the transaction manager starting up and syncing
+# The private transaction may take longer than the public transaction due to the transaction manager starting up and syncing
 # up, especially when using tessera which takes a while to boot up and synchronize.
 # try and wait for the private contract to execute without an error, e.g. in the case where
 # it hasn't started up completely.
@@ -207,9 +220,10 @@ do
   # block did not increase and consensus was raft with tm constellation.
   # potentially see err creating contract Error: Non-200 status code: &{Status:500 Internal Server Error StatusCode:500 Proto:HTTP/1.1 ProtoMajor:1 ProtoMinor:1 Header:map[Date:[Mon, 02 Nov 2020 21:38:11 GMT] Server:[Warp/3.2.13]] Body:0xc00068f080 ContentLength:-1 TransferEncoding:[chunked] Close:false Uncompressed:false Trailer:map[] Request:0xc02bda4800 TLS:<nil>}
   # so continue looping (if Raft NS is set)
-  if [[ $BLOCK_NUM -lt 2 && -z $RAFT_CONSTELLATION_NS ]]; then
+  if [[ $BLOCK_NUM -lt 2 && $IS_CONSTELLATION && $IS_RAFT ]]; then
     echo "Raft constellation namespace set and block < 2"
-    echo "RAFT_CONSTELLATION_NS $RAFT_CONSTELLATION_NS"
+    echo "IS_RAFT $IS_RAFT"
+    echo "IS_CONSTELLATION $IS_CONSTELLATION"
     EXIT_CODE=1
   fi
   if [[ $EXIT_CODE -eq 0 ]]; then

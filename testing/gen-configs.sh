@@ -27,7 +27,11 @@ fi
 CONFIG_DIR=testing/${CONFIG_PREFIX}-config/
 OUT_DIR=testing/${CONFIG_PREFIX}-out
 
-echo "CONFIG $CONFIG_DIR"
+echo "  Config dir: $CONFIG_DIR"
+if [[ ! -d $CONFIG_DIR ]]; then
+  echo "  The config dir does not exist: $CONFIG_DIR "
+  exit 1
+fi
 # remove out dir if it exist
 rm -rf out
 rm -rf $OUT_DIR

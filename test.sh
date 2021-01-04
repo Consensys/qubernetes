@@ -25,4 +25,10 @@ else
 fi
 
 docker run --rm -it -v $(pwd):/qubernetes quorumengineering/qubernetes testing/gen-configs.sh ${CONFIG_PREFIX}
+#testing/gen-configs.sh ${CONFIG_PREFIX}
+EXIT_CODE=$?
+if [[ $EXIT_CODE -ne 0 ]]; then
+  echo "  Error: could not generate configs."
+  exit 1
+fi
 testing/test-k8s-resources.sh ${CONFIG_PREFIX}

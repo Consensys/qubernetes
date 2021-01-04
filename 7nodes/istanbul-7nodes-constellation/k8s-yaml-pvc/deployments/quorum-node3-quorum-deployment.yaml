@@ -1,4 +1,4 @@
-#eacaa74c4b0e7a9e12d2fe5fee6595eda841d6d992c35dbbcc50fcee4aa86dfbbdeff7dc7e72c2305d5a62257f82737a8cffc80474c15c611c037f52db1a3a7b
+#579f786d4e2830bbcc02815a27e8a9bacccc9605df4dc6f20bcc1a6eb391e7225fff7cb83e5b4ecd1f3a94d8b733803f2f66b7e871961e7b029e22c155c3a778
 
 
 
@@ -10,7 +10,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: quorum-node6-deployment
+  name: quorum-node3-deployment
   
 spec:
   strategy:
@@ -18,19 +18,19 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      name: quorum-node6-deployment
+      name: quorum-node3-deployment
   template:
     metadata:
-      name:  quorum-node6-deployment
+      name:  quorum-node3-deployment
       labels:
         app: qubernetes
         tier: backend
-        name: quorum-node6-deployment
+        name: quorum-node3-deployment
     spec:
       securityContext:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.5.0
+        image: quorumengineering/quorum:20.10.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -40,8 +40,6 @@ spec:
            fi;
            cp -r /etc/quorum/qdata/contracts-tmp /etc/quorum/qdata/contracts;
            chmod 755  /etc/quorum/qdata/contracts/runscript.sh;
-           chmod 755  /etc/quorum/qdata/contracts/raft_add_all_permissioned.sh;
-           chmod 755  /etc/quorum/qdata/contracts/raft_add_node.sh;
           "
         env:
           - name: QUORUM_DATA_DIR
@@ -51,7 +49,7 @@ spec:
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
-          subPath: quorum-node6
+          subPath: quorum-node3
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
@@ -59,43 +57,23 @@ spec:
           mountPath: /etc/quorum/qdata/contracts-tmp
           readOnly: false
       containers:
-      - name: tessera
-        image: quorumengineering/tessera:0.10.4
+      - name: constellation
+        image:  quorumengineering/constellation:0.3.2
         command: ["sh"]
         args:
         - "-cx"
         - "chmod 600 $QUORUM_HOME/tm/tm.key;
-           echo DDIR is $DDIR;
+           DDIR=$QUORUM_HOME/tm;
            printenv;
-
-           TESSERA_VERSION=$(unzip -p /tessera/tessera-app.jar META-INF/MANIFEST.MF | grep Tessera-Version | cut -d\" \" -f2);
-           echo \"Tessera version (extracted from manifest file): ${TESSERA_VERSION}\";
-
-           TESSERA_VERSION=\"${TESSERA_VERSION}-suffix\";
-           Tess_Ver_First=$(echo ${TESSERA_VERSION} | awk -F. '{print $1}');
-           Tess_Ver_Second=$(echo ${TESSERA_VERSION} | awk -F. '{print $2}');
-           Tess_Ver_Third=$(echo ${TESSERA_VERSION} | awk -F. '{print $3}');
-           echo \"version: first [$Tess_Ver_First], second [$Tess_Ver_Second], third [$Tess_Ver_Third]\";
-           echo \"Tessera version - suffix ${TESSERA_VERSION}\";
-           TESSERA_CONFIG_TYPE=;
-
-           if [ \"${Tess_Ver_Second}\" -ge \"8\" ]; then TESSERA_CONFIG_TYPE=\"-enhanced\"; fi;
-           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then TESSERA_CONFIG_TYPE=\"-9.0\"; fi;
-
-           echo Config type [${TESSERA_CONFIG_TYPE}];
-
-           CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json.tmpl);
-
-
-           PRIV_KEY=$(cat $DDIR/tm.key)
-           PUB_KEY=$(cat $DDIR/tm.pub)
-           CONFIG_FINAL=$(echo $CONFIG_TMPL | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
-           CONFIG_FINAL_9_0=$(echo $CONFIG_TMPL | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
-           if [[ \"${Tess_Ver_Second}\" -ge \"9\" ]]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
-           echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
-           cat  ${DDIR}/tessera-config-with-hosts.json;
-           java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json | tee -a ${QHOME}/logs/tessera.log;
-        "
+           args=\" --url=https://$QUORUM_NODE3_SERVICE_HOST:9001/  \
+           --port=9001 \
+           --workdir=$DDIR \
+           --socket=$DDIR/tm.ipc \
+           --publickeys=$QUORUM_HOME/tm/tm.pub \
+           --privatekeys=$QUORUM_HOME/tm/tm.key \
+           --verbosity=9 \
+           --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:9001/ \";
+           /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
         ports:
           - containerPort: 9001
         env:
@@ -108,30 +86,21 @@ spec:
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-          subPath: quorum-node6
+          subPath: quorum-node3
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata/tm
-          subPath: quorum-node6-tm
+          subPath: quorum-node3-tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata/logs
-          subPath: quorum-node6-logs
+          subPath: quorum-node3-logs
         - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
         - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
-        - name: tessera-config
-          mountPath: /etc/quorum/qdata/tm/tessera-config.json.tmpl
-          subPath: tessera-config.json.tmpl
-        - name: tessera-config
-          mountPath: /etc/quorum/qdata/tm/tessera-config-enhanced.json.tmpl
-          subPath: tessera-config-enhanced.json.tmpl
-        - name: tessera-config
-          mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
-          subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.5.0
+        image: quorumengineering/quorum:20.10.0
         readinessProbe:
           exec:
             command:
@@ -150,14 +119,11 @@ spec:
            ln -s $QUORUM_HOME/permission-nodes/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
 
            rm -r /etc/quorum/qdata/contracts-tmp;
-           echo what in this dir;
-           ls  $QUORUM_DATA_DIR;
            cat /etc/quorum/genesis/genesis-geth.json;
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
-  
-           until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:9001/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
-           echo transaction manager is up;
+           sleep 5;
+           echo slept for 5 to give TM time to start up;
 
 
            touch $QUORUM_DATA_DIR/password.txt;
@@ -165,6 +131,7 @@ spec:
            RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
            args=\" --gcmode archive --istanbul.blockperiod 3 --syncmode full --mine --minerthreads 1 \";
            RPC_APIS=\"$RPC_APIS,istanbul\";
+           args=\"$args --allow-insecure-unlock \";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -202,19 +169,19 @@ spec:
         - name: TM_HOME
           value: /etc/quorum/qdata/tm/
         - name: THIS_NODE_ID
-          value: quorum-node6
+          value: quorum-node3
         - name: THIS_ENODE
-          value: eacaa74c4b0e7a9e12d2fe5fee6595eda841d6d992c35dbbcc50fcee4aa86dfbbdeff7dc7e72c2305d5a62257f82737a8cffc80474c15c611c037f52db1a3a7b
+          value: 579f786d4e2830bbcc02815a27e8a9bacccc9605df4dc6f20bcc1a6eb391e7225fff7cb83e5b4ecd1f3a94d8b733803f2f66b7e871961e7b029e22c155c3a778
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-          subPath: quorum-node6
+          subPath: quorum-node3
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata/tm
-          subPath: quorum-node6-tm
+          subPath: quorum-node3-tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata/logs
-          subPath: quorum-node6-logs
+          subPath: quorum-node3-logs
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
@@ -267,7 +234,7 @@ spec:
           name: contracts-config
       - name: keystore-tm
         configMap:
-          name: quorum-node6-tm-key-config
+          name: quorum-node3-tm-key-config
           items:
           - key: tm.pub
             path: tm.pub
@@ -275,19 +242,19 @@ spec:
             path: tm.key
       - name: quorum-key-config-persistent-storage
         configMap:
-          name: quorum-node6-account-key-config
+          name: quorum-node3-account-key-config
           items:
           - key: key
             path: key
       - name: quorum-nodekey
         configMap:
-          name: quorum-node6-nodekey-config
+          name: quorum-node3-nodekey-config
           items:
           - key: nodekey
             path: nodekey
       - name: quorum-enode
         configMap:
-          name: quorum-node6-enode-config
+          name: quorum-node3-enode-config
           items:
             - key: enode
               path: enode
@@ -300,7 +267,6 @@ spec:
             - key: geth-exec.sh
               path: geth-exec.sh
           defaultMode: 0777
-      
       - name: istanbul-validator-config
         configMap:
           name: istanbul-validator-config.toml
@@ -313,8 +279,7 @@ spec:
            - key: ibft_propose_all.sh
              path: ibft_propose_all.sh
            defaultMode: 0777
-      
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
       - name: quorum-persistent-storage
         persistentVolumeClaim:
-          claimName: quorum-node6-pvc
+          claimName: quorum-node3-pvc

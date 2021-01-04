@@ -1,4 +1,4 @@
-#579f786d4e2830bbcc02815a27e8a9bacccc9605df4dc6f20bcc1a6eb391e7225fff7cb83e5b4ecd1f3a94d8b733803f2f66b7e871961e7b029e22c155c3a778
+#3701f007bfa4cb26512d7df18e6bbd202e8484a6e11d387af6e482b525fa25542d46ff9c99db87bd419b980c24a086117a397f6d8f88e74351b41693880ea0cb
 
 
 
@@ -10,7 +10,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: quorum-node3-deployment
+  name: quorum-node5-deployment
   
 spec:
   strategy:
@@ -18,19 +18,19 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      name: quorum-node3-deployment
+      name: quorum-node5-deployment
   template:
     metadata:
-      name:  quorum-node3-deployment
+      name:  quorum-node5-deployment
       labels:
         app: qubernetes
         tier: backend
-        name: quorum-node3-deployment
+        name: quorum-node5-deployment
     spec:
       securityContext:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.5.0
+        image: quorumengineering/quorum:20.10.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -40,8 +40,6 @@ spec:
            fi;
            cp -r /etc/quorum/qdata/contracts-tmp /etc/quorum/qdata/contracts;
            chmod 755  /etc/quorum/qdata/contracts/runscript.sh;
-           chmod 755  /etc/quorum/qdata/contracts/raft_add_all_permissioned.sh;
-           chmod 755  /etc/quorum/qdata/contracts/raft_add_node.sh;
           "
         env:
           - name: QUORUM_DATA_DIR
@@ -51,7 +49,7 @@ spec:
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath:  /etc/quorum/qdata
-          subPath: quorum-node3
+          subPath: quorum-node5
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
@@ -67,7 +65,7 @@ spec:
         - "chmod 600 $QUORUM_HOME/tm/tm.key;
            DDIR=$QUORUM_HOME/tm;
            printenv;
-           args=\" --url=https://$QUORUM_NODE3_SERVICE_HOST:9001/  \
+           args=\" --url=https://$QUORUM_NODE5_SERVICE_HOST:9001/  \
            --port=9001 \
            --workdir=$DDIR \
            --socket=$DDIR/tm.ipc \
@@ -88,13 +86,13 @@ spec:
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-          subPath: quorum-node3
+          subPath: quorum-node5
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata/tm
-          subPath: quorum-node3-tm
+          subPath: quorum-node5-tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata/logs
-          subPath: quorum-node3-logs
+          subPath: quorum-node5-logs
         - name: keystore-tm
           mountPath: /etc/quorum/qdata/tm/tm.pub
           subPath: tm.pub
@@ -102,7 +100,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tm.key
           subPath: tm.key
       - name: quorum
-        image: quorumengineering/quorum:2.5.0
+        image: quorumengineering/quorum:20.10.0
         readinessProbe:
           exec:
             command:
@@ -121,8 +119,6 @@ spec:
            ln -s $QUORUM_HOME/permission-nodes/permissioned-nodes.json $QUORUM_DATA_DIR/static-nodes.json;
 
            rm -r /etc/quorum/qdata/contracts-tmp;
-           echo what in this dir;
-           ls  $QUORUM_DATA_DIR;
            cat /etc/quorum/genesis/genesis-geth.json;
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
@@ -135,6 +131,7 @@ spec:
            RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
            args=\" --gcmode archive --istanbul.blockperiod 3 --syncmode full --mine --minerthreads 1 \";
            RPC_APIS=\"$RPC_APIS,istanbul\";
+           args=\"$args --allow-insecure-unlock \";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \
@@ -172,19 +169,19 @@ spec:
         - name: TM_HOME
           value: /etc/quorum/qdata/tm/
         - name: THIS_NODE_ID
-          value: quorum-node3
+          value: quorum-node5
         - name: THIS_ENODE
-          value: 579f786d4e2830bbcc02815a27e8a9bacccc9605df4dc6f20bcc1a6eb391e7225fff7cb83e5b4ecd1f3a94d8b733803f2f66b7e871961e7b029e22c155c3a778
+          value: 3701f007bfa4cb26512d7df18e6bbd202e8484a6e11d387af6e482b525fa25542d46ff9c99db87bd419b980c24a086117a397f6d8f88e74351b41693880ea0cb
         volumeMounts:
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata
-          subPath: quorum-node3
+          subPath: quorum-node5
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata/tm
-          subPath: quorum-node3-tm
+          subPath: quorum-node5-tm
         - name: quorum-persistent-storage
           mountPath: /etc/quorum/qdata/logs
-          subPath: quorum-node3-logs
+          subPath: quorum-node5-logs
         - name: genesis-config-persistent-storage
           mountPath: /etc/quorum/genesis/genesis-geth.json
           subPath: genesis-geth.json
@@ -237,7 +234,7 @@ spec:
           name: contracts-config
       - name: keystore-tm
         configMap:
-          name: quorum-node3-tm-key-config
+          name: quorum-node5-tm-key-config
           items:
           - key: tm.pub
             path: tm.pub
@@ -245,19 +242,19 @@ spec:
             path: tm.key
       - name: quorum-key-config-persistent-storage
         configMap:
-          name: quorum-node3-account-key-config
+          name: quorum-node5-account-key-config
           items:
           - key: key
             path: key
       - name: quorum-nodekey
         configMap:
-          name: quorum-node3-nodekey-config
+          name: quorum-node5-nodekey-config
           items:
           - key: nodekey
             path: nodekey
       - name: quorum-enode
         configMap:
-          name: quorum-node3-enode-config
+          name: quorum-node5-enode-config
           items:
             - key: enode
               path: enode
@@ -270,7 +267,6 @@ spec:
             - key: geth-exec.sh
               path: geth-exec.sh
           defaultMode: 0777
-      
       - name: istanbul-validator-config
         configMap:
           name: istanbul-validator-config.toml
@@ -283,8 +279,7 @@ spec:
            - key: ibft_propose_all.sh
              path: ibft_propose_all.sh
            defaultMode: 0777
-      
       # PVC (configurable) https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes
       - name: quorum-persistent-storage
         persistentVolumeClaim:
-          claimName: quorum-node3-pvc
+          claimName: quorum-node5-pvc

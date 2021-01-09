@@ -1,0 +1,59 @@
+# number of nodes to deploy
+genesis:
+  # supported: (raft | istanbul)
+  consensus: raft
+  Quorum_Version: 20.10.0
+  Chain_Id: 10
+
+config:
+  Genesis_File: 7nodes/raft-genesis.json
+  Permissioned_Nodes_File: 7nodes/permissioned-nodes.json
+  # This is where all the keys are store, and/or where they are generated, as in the case of quorum-keygen.
+  # Either full or relative paths on the machine generating the config
+  Key_Dir_Base: 7nodes
+
+k8s:
+  service:
+    # NodePort | ClusterIP
+    type: ClusterIP
+  # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+  # test locally and on GCP.
+  storage:
+    # PVC (Persistent_Volume_Claim - tested with GCP).
+    Type: PVC
+    ## when redeploying cannot be less than previous values
+    Capacity: 200Mi
+
+nodes:
+
+  -  Node_UserIdent: quorum-node1
+     Key_Dir: key1
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: raft
+         Quorum_Version: 20.10.0
+
+  -  Node_UserIdent: quorum-node2
+     Key_Dir: key2
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: raft
+         Quorum_Version: 20.10.0
+
+  -  Node_UserIdent: quorum-node3
+     Key_Dir: key3
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: raft
+         Quorum_Version: 20.10.0
+
+  -  Node_UserIdent: quorum-node4
+     Key_Dir: key4
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: raft
+         Quorum_Version: 20.10.0

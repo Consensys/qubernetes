@@ -1,3 +1,5 @@
+# 4 Nodes sample without tessera or constellation and privacy features disabled
+# -permissioned command line parameter removed
 # number of nodes to deploy
 genesis:
   # supported: (raft | istanbul)

@@ -30,7 +30,7 @@ spec:
       securityContext:
       initContainers:
       - name: quorum-genesis-init-container
-        image: quorumengineering/quorum:2.5.0
+        image: quorumengineering/quorum:20.10.0
         command: [ "sh" ]
         args:
         - "-cx"
@@ -58,7 +58,7 @@ spec:
           readOnly: false
       containers:
       - name: tessera
-        image: quorumengineering/tessera:0.10.4
+        image: quorumengineering/tessera:20.10.0
         command: ["sh"]
         args:
         - "-cx"
@@ -130,7 +130,7 @@ spec:
           mountPath: /etc/quorum/qdata/tm/tessera-config-9.0.json.tmpl
           subPath: tessera-config-9.0.json.tmpl
       - name: quorum
-        image: quorumengineering/quorum:2.5.0
+        image: quorumengineering/quorum:20.10.0
         readinessProbe:
           exec:
             command:
@@ -142,7 +142,6 @@ spec:
         args:
         - "-cx"
         - "
-           apk add curl;
            apk add jq;
 
            ln -s $QUORUM_HOME/permission-nodes/permissioned-nodes.json $QUORUM_DATA_DIR/permissioned-nodes.json;
@@ -153,7 +152,7 @@ spec:
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
   
-           until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:9001/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
+           until $(wget --quiet --tries=1 --spider http://127.0.0.1:9001/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
            echo transaction manager is up;
 
 
@@ -162,6 +161,7 @@ spec:
            RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
            args=\" --gcmode archive --syncmode full --mine --minerthreads 1 \";
            RPC_APIS=\"$RPC_APIS,clique\";
+           args=\"$args --allow-insecure-unlock \";
            /usr/local/bin/geth \
            --datadir $QUORUM_DATA_DIR \
            $args \

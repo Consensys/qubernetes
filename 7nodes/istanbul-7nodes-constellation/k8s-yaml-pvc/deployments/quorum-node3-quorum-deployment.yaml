@@ -112,7 +112,6 @@ spec:
         args:
         - "-cx"
         - "
-           apk add curl;
            apk add jq;
 
            ln -s $QUORUM_HOME/permission-nodes/permissioned-nodes.json $QUORUM_DATA_DIR/permissioned-nodes.json;

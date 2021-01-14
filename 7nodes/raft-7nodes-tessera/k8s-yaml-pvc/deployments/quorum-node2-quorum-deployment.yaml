@@ -142,7 +142,6 @@ spec:
         args:
         - "-cx"
         - "
-           apk add curl;
            apk add jq;
 
            ln -s $QUORUM_HOME/permission-nodes/permissioned-nodes.json $QUORUM_DATA_DIR/permissioned-nodes.json;
@@ -152,8 +151,7 @@ spec:
            cat /etc/quorum/genesis/genesis-geth.json;
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
-  
-           until $(curl --output /dev/null --silent --head --fail http://127.0.0.1:9001/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
+           until $(wget --quiet --tries=1 --spider http://127.0.0.1:9001/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
            echo transaction manager is up;
 
 

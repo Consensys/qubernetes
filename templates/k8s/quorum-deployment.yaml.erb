@@ -210,12 +210,7 @@ spec:
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
  <%- if @Tm_Name == "tessera" -%>
-   <%- if @Security_Context != [] -%> <%# if a security context is set, assume we cannot install packages, e.g. curl, so sleep for 60 to give the TM time to startup. %>
-           echo sleeping for 60 seconds to wait for the transaction manager to startup.
-           sleep 60;
-   <%- else -%>  <%# if a security context not set, assume we can install packages, e.g. curl, we can do a check to see when the TM comes up. %>
            until $(wget --quiet --tries=1 --spider http://127.0.0.1:<%= @Tm_Port %>/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
-   <%- end -%>
            echo transaction manager is up;
  <%- else -%>
            sleep 5;

@@ -14,7 +14,7 @@ including:
    Quberentes command line for initializing, deploying, modifying, interacting with a quorum K8s network.  
    ```
    > qctl init
-   > qclt generate netwoirk --create 
+   > qclt generate network --create 
    > qctl deploy network
    ```  
    see [qctl](qctl) for full set of commands.
@@ -55,7 +55,7 @@ This:
 ## Qubernetes Command line: qctl
 ```
 > qctl init
-> qclt generate netwoirk --create 
+> qclt generate network --create 
 > qctl deploy network
 ``` 
 

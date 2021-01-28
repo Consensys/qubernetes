@@ -1,0 +1,10 @@
+# docker build -t quorum-local -f Dockerfile.quorum .
+FROM quorum-base-local:latest
+
+ADD . /go-ethereum
+RUN cd /go-ethereum && make geth
+
+RUN cp /go-ethereum/build/bin/geth /usr/local/bin/
+RUN rm -r /go-ethereum
+EXPOSE 8545 8546 8547 30303 30303/udp
+ENTRYPOINT ["geth"]

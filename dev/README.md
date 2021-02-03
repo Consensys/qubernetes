@@ -45,7 +45,7 @@ build the containers locally the script will set the docker env to the minikube 
 
 from the `qubernetes/dev` dir 
 ```
-$> cd qubernetes/dev
+$> cd qubernetes/dev/quorum
 ```
 
 run the build script
@@ -106,11 +106,11 @@ $> qctl geth exec quorum-node1 'eth.blockNumber'
 ```
 
 #### Look inside the generated minimal config `qubernetes.generate.yaml`
-The configuration we generate above (`qubernetes/dev/istanbul-loca/qubernetes.generate.yaml`) should have the 
+The configuration we generate above (`qubernetes/dev/istanbul-local/qubernetes.generate.yaml`) should have the 
 `Docker_Repo_Full` field set. 
 When `Docker_Repo_Full` is set, the `Quorum_Version` field is ignored and the local container (`quorum-local`) is used instead.
 
-**example** `qubernetes/dev/istanbul-loca/qubernetes.generate.yaml`:
+**example** `qubernetes/dev/istanbul-local/qubernetes.generate.yaml`:
 ```
 genesis:
   consensus: istanbul
@@ -161,7 +161,7 @@ nodes:
 We can modify the above `qubernetes.generate.yaml` to test a mixed net where `quorum-node1` runs 2.7.0 and 
 `quorum-node2` and `quorum-node3` run our local container, by removing `Docker_Repo_Full` from `- Node_UserIdent: quorum-node1`
 
-**example mixed net** `qubernetes/dev/istanbul-loca/qubernetes.generate.yaml`:
+**example mixed net** `qubernetes/dev/istanbul-local/qubernetes.generate.yaml`:
 ```
 genesis:
   consensus: istanbul
@@ -207,6 +207,12 @@ nodes:
 ```
 
 After modifying the configuration, the network will have to be generate and deployed again
+
+delete the previous network if it is still running
+```
+$> qctl destroy network
+```
+generate and deploy the mixed network
 ```
 $> qctl generate network --create
 $> qctl deploy network --wait

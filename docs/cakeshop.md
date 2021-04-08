@@ -17,7 +17,7 @@ quorum:
     Name: tessera
     Tm_Version: 0.10.4
 cakeshop:
-  version: latest
+  version: 0.12.1
   service:
     type: NodePort
     nodePort: 30108

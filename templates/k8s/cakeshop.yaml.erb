@@ -72,17 +72,14 @@ spec:
               <%- @nodes.each do |node| -%><%= set_node_template_vars(node) -%>
                sed -i \"s/<%= @Service_Prefix -%>_SERVICE_HOST/$<%= @Service_Prefix -%>_SERVICE_HOST/g\" /cakeshop/cakeshop-nodes.json;
               <%- end -%>
-              /bin/tini -- /usr/local/bin/cakeshop.sh;"
+              java -Dcakeshop.initialnodes=/cakeshop/cakeshop-nodes.json -Dcakeshop.config.dir=/cakeshop/data -jar /cakeshop/cakeshop.war;"
           ports:
             - containerPort: 8999
-          env:
-            - name: JAVA_OPTS
-              value: "-Dgeth.auto.start=false -Dgeth.auto.stop=false -Dcakeshop.initialnodes=/cakeshop/cakeshop-nodes.json"
           volumeMounts:
             - name: cakeshop-config-volume
               mountPath: /etc/cakeshop
             - name: cakeshop-storage-volume
-              mountPath: /cakeshop/
+              mountPath: /cakeshop/data/
       volumes:
           - name: cakeshop-config-volume
             configMap:
@@ -136,7 +133,7 @@ spec:
 <%- end -%>
 
 ---
-  
+
 apiVersion: v1
 kind: ConfigMap
 metadata:

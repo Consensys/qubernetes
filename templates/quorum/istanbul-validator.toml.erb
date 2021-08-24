@@ -19,7 +19,9 @@ validators = [
           puts("node account for Istanbul is: " + nodeAcct)
 
          nodeAcct=nodeAcct.strip -%>
+<%- if node["type"] == "validator" -%>
 "<%=nodeAcct%>",
+<%- end -%>
 <%-
        end
     end

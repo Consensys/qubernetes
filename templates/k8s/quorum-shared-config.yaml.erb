@@ -56,7 +56,7 @@ data:
 # supports single node deployment.
   private_contract.js: |-
 <%-  tm_key1 = "NOT_SET" -%>
-<%- File.readlines("#{@Key_Dir_Base}/key1/tm.pub").each do |line| -%>
+<%- File.readlines("#{@Key_Dir_Base}/org1/validator/node1/key1/tm.pub").each do |line| -%>
 <% tm_key1 = line %>
 <% end -%>
 <%- File.readlines("contracts/private_contract.js").each do |line| -%>

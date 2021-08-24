@@ -9,7 +9,7 @@ require 'optparse'
 
 # set up flag options :docker_repo :geth_verbosity :geth_startup_params
 options = {consensus: 'istanbul', quorum_version: '2.6.0', tm_version: '0.10.4', tm_name: 'tessera',
-           chain_id: '1000', num_nodes: 4, docker_repo: '', geth_verbosity: 9, geth_startup_params: '' }
+           chain_id: '1000', num_nodes: 2, docker_repo: '', geth_verbosity: 9, geth_startup_params: '', transaction_node_count: 1, validator_node_count:2 }
 
 OptionParser.new do |opts|
   opts.banner = "Usage: ./quick-start [options]"
@@ -74,6 +74,8 @@ end.parse!
 @Tm_Name=options[:tm_name]
 @Chain_Id=options[:chain_id]
 @Num_Nodes=options[:num_nodes]
+@Validator_Node_Count=options[:validator_node_count]
+@Transaction_Node_Count=options[:transaction_node_count]
 @Geth_Verbosity=options[:geth_verbosity]
 @Geth_Startup_Params=options[:geth_startup_params]
 @Docker_Repo=options[:docker_repo]
@@ -84,6 +86,8 @@ puts "tm version : " + @Tm_Version
 puts "tm name : " + @Tm_Name
 puts "using chain id : " + @Chain_Id
 puts "num nodes: " + @Num_Nodes.to_s
+puts "num transaction nodes: " + @Transaction_Node_Count.to_s
+puts "num validator nodes: " + @Validator_Node_Count.to_s
 
 puts "geth verbosity: " + @Geth_Verbosity.to_s
 puts "geth startup params: " + @Geth_Startup_Params

@@ -27,6 +27,7 @@ def set_node_template_vars(values)
   @Tm_Version            = values["quorum"]["tm"]["Tm_Version"]
   @Tm_Name               = values["quorum"]["tm"]["Name"]
   @Quorum_Version        = values["quorum"]["quorum"]["Quorum_Version"]
+  @Node_Type             = values["type"]
 
   @Geth_Verbosity = 9
   if values["geth"] and values["geth"]["verbosity"]
@@ -227,8 +228,9 @@ if @sep_deployment_files
   @nodes.each do |node|
     set_node_template_vars(node)
     # create each deployment in a separate file.
+    @template_file = (@Node_Type == "validator") ? "quorum-validator-deployment.yaml.erb" : "quorum-deployment.yaml.erb"
     File.open("out/deployments/" + @Node_UserIdent + "-quorum-deployment.yaml", "w") do |f|
-      f.puts (ERB.new(File.read(@base_template_path + "/quorum-deployment.yaml.erb"), nil, "-").result)
+      f.puts (ERB.new(File.read(@base_template_path + "/" + @template_file), nil, "-").result)
     end
   end
   @Kubectl_Cmd="  $> kubectl apply -f out -f out/deployments"
@@ -238,9 +240,10 @@ else
   end
   @nodes.each do |node|
     set_node_template_vars(node)
+    @template_file = (@Node_Type == "validator") ? "quorum-validator-deployment.yaml.erb" : "quorum-deployment.yaml.erb"
     # create each deployment in a same file.
     File.open("out/05-quorum-deployments.yaml", "a") do |f|
-      f.puts (ERB.new(File.read(@base_template_path + "/quorum-deployment.yaml.erb"), nil, "-").result)
+      f.puts (ERB.new(File.read(@base_template_path + "/" + @template_file), nil, "-").result)
       f.puts("---")
     end
   end

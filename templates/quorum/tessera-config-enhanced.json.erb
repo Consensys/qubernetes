@@ -5,6 +5,8 @@ def set_node_template_vars(values)
     @Node_Type             = values["type"]
     return
 end
+# initialise the validator node list as empty
+@Validator_Nodes = []
 -%>
 
 <% 
@@ -69,15 +71,18 @@ end
     "communicationType" : "REST"
   }
   ],
-
-    "peer": [
 <%- @nodes.each_with_index do |node, indexNode| %>
 <%= set_node_template_vars(node) -%>
 <%- if  @Node_Type != "validator" -%>
+<%- @Validator_Nodes.append(node) -%>
+<% end -%>
+<% end -%>
+    "peer": [
+<%- @Validator_Nodes.each_with_index do |node, indexNode| %>
+<%= set_node_template_vars(node) -%>
      {
            "url": "http://<%= @Node_UserIdent %>:<%= @Tm_Port %>"
-         }<%- if (indexNode != @nodes.size - 1) || (@external_nodes && @external_nodes.size != 0) %>,<%- end %>
-<% end -%>
+         }<%- if (indexNode != @Validator_Nodes.size - 1) || (@external_nodes && @external_nodes.size != 0) %>,<%- end %>
 <% end -%>
 <%- if  @external_nodes -%>
 <%- @external_nodes.each_with_index do |extnode, indexNode| %>

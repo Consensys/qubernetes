@@ -2,6 +2,7 @@
 def set_node_template_vars(values)
     @Node_UserIdent        = values["Node_UserIdent"]
     @Node_Key_Dir          = values["Key_Dir"]
+    @Node_Type             = values["type"]
     return
 end
 -%>
@@ -72,10 +73,11 @@ end
     "peer": [
 <%- @nodes.each_with_index do |node, indexNode| %>
 <%= set_node_template_vars(node) -%>
+<%- if  @Node_Type != "validator" -%>
      {
            "url": "http://<%= @Node_UserIdent %>:<%= @Tm_Port %>"
          }<%- if (indexNode != @nodes.size - 1) || (@external_nodes && @external_nodes.size != 0) %>,<%- end %>
-
+<% end -%>
 <% end -%>
 <%- if  @external_nodes -%>
 <%- @external_nodes.each_with_index do |extnode, indexNode| %>

@@ -78,110 +78,6 @@ spec:
           mountPath: <%= @Node_DataDir%>/contracts-tmp
           readOnly: false
       containers:
-    <%- if @Tm_Name == "constellation"  -%>
-      - name: constellation
-        <%- if @TM_Docker_Repo_Full != "" -%>
-        image: <%= @TM_Docker_Repo_Full %>
-        imagePullPolicy: Never
-        <%- else -%>
-        image:  <%= @Tm_Docker_Repo %>/constellation:<%= @Tm_Version %>
-        <%- end -%>
-        command: ["sh"]
-        args:
-        - "-cx"
-        - "chmod 600 $QUORUM_HOME/tm/tm.key;
-           DDIR=$QUORUM_HOME/tm;
-           printenv;
-           args=\" --url=https://$<%= @Service_Prefix %>_SERVICE_HOST:<%= @Tm_Port %>/  \
-           --port=<%= @Tm_Port %> \
-           --workdir=$DDIR \
-           --socket=$DDIR/tm.ipc \
-           --publickeys=$QUORUM_HOME/tm/tm.pub \
-           --privatekeys=$QUORUM_HOME/tm/tm.key \
-           --verbosity=<%= @Geth_Verbosity%> \
-           --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:<%= @Tm_Port %>/ \";
-           /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
-     <%- else -%>
-      - name: tessera
-        <%- if @TM_Docker_Repo_Full != "" -%>
-        image: <%= @TM_Docker_Repo_Full %>
-        imagePullPolicy: Never
-        <%- else -%>
-        image: <%= @Tm_Docker_Repo %>/tessera:<%= @Tm_Version %>
-        <%- end -%>
-        command: ["sh"]
-        args:
-        - "-cx"
-        - "chmod 600 $QUORUM_HOME/tm/tm.key;
-           echo DDIR is $DDIR;
-           printenv;
-
-           TESSERA_VERSION=$(unzip -p /tessera/tessera-app.jar META-INF/MANIFEST.MF | grep Tessera-Version | cut -d\" \" -f2);
-           echo \"Tessera version (extracted from manifest file): ${TESSERA_VERSION}\";
-
-           TESSERA_VERSION=\"${TESSERA_VERSION}-suffix\";
-           Tess_Ver_First=$(echo ${TESSERA_VERSION} | awk -F. '{print $1}');
-           Tess_Ver_Second=$(echo ${TESSERA_VERSION} | awk -F. '{print $2}');
-           Tess_Ver_Third=$(echo ${TESSERA_VERSION} | awk -F. '{print $3}');
-           echo \"version: first [$Tess_Ver_First], second [$Tess_Ver_Second], third [$Tess_Ver_Third]\";
-           echo \"Tessera version - suffix ${TESSERA_VERSION}\";
-           TESSERA_CONFIG_TYPE=;
-
-           if [ \"${Tess_Ver_First}\" -lt \"1\" ] && [ \"${Tess_Ver_Second}\" -eq \"8\" ]; then TESSERA_CONFIG_TYPE=\"-enhanced\";  fi;
-           if [ \"${Tess_Ver_First}\" -ge \"1\" ] || [ \"${Tess_Ver_Second}\" -ge \"9\" ]; then TESSERA_CONFIG_TYPE=\"-9.0\"; fi;
-
-           echo Config type [${TESSERA_CONFIG_TYPE}];
-
-           CONFIG_TMPL=$(cat ${DDIR}/tessera-config${TESSERA_CONFIG_TYPE}.json.tmpl);
-           CONFIG_WITH_THIS_HOST=$(echo $CONFIG_TMPL | sed \"s/%THIS_SERVICE_HOST%/<%= @Node_UserIdent %>/g\");
-
-           PRIV_KEY=$(cat $DDIR/tm.key)
-           PUB_KEY=$(cat $DDIR/tm.pub)
-           CONFIG_FINAL=$(echo $CONFIG_WITH_THIS_HOST | sed \"s-%THIS_PRIV_KEY%-${PRIV_KEY}-g\" |  sed \"s-%THIS_PUB_KEY%-${PUB_KEY}-g\");
-           CONFIG_FINAL_9_0=$(echo $CONFIG_WITH_THIS_HOST | sed \"s-%THIS_PRIV_KEY%-${DDIR}/tm.key-g\" |  sed \"s-%THIS_PUB_KEY%-${DDIR}/tm.pub-g\");
-
-           if [ \"${Tess_Ver_First}\" -ge \"1\" ] || [ \"${Tess_Ver_Second}\" -ge \"9\" ]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
-           echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
-           cat  ${DDIR}/tessera-config-with-hosts.json;
-           java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json | tee -a ${QHOME}/logs/tessera.log;
-        "
-     <%- end -%>
-        ports:
-          - containerPort: <%= @Tm_Port %>
-        env:
-          - name: QHOME
-            value: <%= @Node_DataDir %>
-          - name: QUORUM_HOME
-            value: <%= @Node_DataDir %>
-          - name: DDIR
-            value: <%= @Node_DataDir %>/tm
-        volumeMounts:
-        - name: quorum-persistent-storage
-          mountPath: <%= @Node_DataDir %>
-          subPath: <%= @Node_UserIdent %>
-        - name: quorum-persistent-storage
-          mountPath: <%= @Node_DataDir %>/tm
-          subPath: <%= @Node_UserIdent %>-tm
-        - name: quorum-persistent-storage
-          mountPath: <%= @Node_DataDir %>/logs
-          subPath: <%= @Node_UserIdent %>-logs
-        - name: keystore-tm
-          mountPath: <%= @Node_DataDir %>/tm/tm.pub
-          subPath: tm.pub
-        - name: keystore-tm
-          mountPath: <%= @Node_DataDir %>/tm/tm.key
-          subPath: tm.key
-        <%- if @Tm_Name == "tessera" -%>
-        - name: tessera-config
-          mountPath: <%= @Node_DataDir %>/tm/tessera-config.json.tmpl
-          subPath: tessera-config.json.tmpl
-        - name: tessera-config
-          mountPath: <%= @Node_DataDir %>/tm/tessera-config-enhanced.json.tmpl
-          subPath: tessera-config-enhanced.json.tmpl
-        - name: tessera-config
-          mountPath: <%= @Node_DataDir %>/tm/tessera-config-9.0.json.tmpl
-          subPath: tessera-config-9.0.json.tmpl
-        <%- end -%>
       - name: quorum
         <%- if @Quorum_Docker_Repo_Full != "" -%>
         image: <%= @Quorum_Docker_Repo_Full %>
@@ -209,15 +105,7 @@ spec:
            cat /etc/quorum/genesis/genesis-geth.json;
 
            chmod 644 $QUORUM_DATA_DIR/keystore/key;
- <%- if @Tm_Name == "tessera" -%>
-           until $(wget --quiet --tries=1 --spider http://127.0.0.1:<%= @Tm_Port %>/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
-           echo transaction manager is up;
- <%- else -%>
-           sleep 5;
-           echo slept for 5 to give TM time to start up;
- <%- end -%>
-
-
+           
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=<%= @Geth_Network_Id %>
            RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
@@ -226,7 +114,7 @@ spec:
            args=\" --gcmode archive --raft  --raftport <%= @Raft_Port %> --raftdnsenable \";
            RPC_APIS=\"$RPC_APIS,raft\";
          <%- elsif @Consensus == "istanbul" || @Consensus == "qibft" -%>
-           args=\" --gcmode archive --istanbul.blockperiod 3 --syncmode full \";
+           args=\" --gcmode archive --istanbul.blockperiod 3 --syncmode full --mine --minerthreads 1 \";
            RPC_APIS=\"$RPC_APIS,istanbul\";
          <%- elsif @Consensus == "clique" -%>
            args=\" --gcmode archive --syncmode full --mine --minerthreads 1 \";
@@ -271,15 +159,13 @@ spec:
         <% end %>
         env:
         - name: PRIVATE_CONFIG
-          value: <%= @Node_DataDir %>/tm/tm.ipc
+          value: ignore
         - name: QUORUM_DATA_DIR
           value: <%= @Node_DataDir %>/dd
         - name: QUORUM_HOME
           value: <%= @Node_DataDir %>
         - name: QHOME
           value: <%= @Node_DataDir %>
-        - name: TM_HOME
-          value: <%= @Node_DataDir %>/tm/
         - name: THIS_NODE_ID
           value: <%= @Node_UserIdent%>
         - name: THIS_ENODE
@@ -338,27 +224,9 @@ spec:
           items:
           - key: genesis-geth.json
             path: genesis-geth.json
-      - name: tessera-config
-        configMap:
-          name: tessera-config
-          items:
-          - key: tessera-config.json.tmpl
-            path: tessera-config.json.tmpl
-          - key: tessera-config-enhanced.json.tmpl
-            path: tessera-config-enhanced.json.tmpl
-          - key: tessera-config-9.0.json.tmpl
-            path: tessera-config-9.0.json.tmpl
       - name: contracts-config
         configMap:
           name: contracts-config
-      - name: keystore-tm
-        configMap:
-          name: <%= @Node_UserIdent %>-tm-key-config
-          items:
-          - key: tm.pub
-            path: tm.pub
-          - key: tm.key
-            path: tm.key
       - name: quorum-key-config-persistent-storage
         configMap:
           name: <%= @Node_UserIdent %>-account-key-config

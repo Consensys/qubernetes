@@ -72,7 +72,7 @@ echo "Response from raft.addPeer: $RAFT_ADD_TO_CLUSTER_OUT"
 NEW_RAFT_ID=$(echo $RAFT_ADD_TO_CLUSTER_OUT | grep "[0-9]*" | sed 's/^"[0-9]*"//g' | sed 's/^.*pods//g' | sed 's/ //g' | sed $'s/[^[:print:]\t]//g' | sed 's/\[32m//g' | sed 's/\[0m//g' | sed 's/\[31m//g' | sed 's/"//g')
 echo "NEW_RAFT_ID: $NEW_RAFT_ID"
 
-if [[ "$QUORUM_IMAGE" == "2.7" ||  "$QUORUM_IMAGE" == "2.7.0" || "$QUORUM_IMAGE" == "2.6.0" ||
+if [[ "$QUORUM_IMAGE" == "21.7.1" || "$QUORUM_IMAGE" == "2.7" ||  "$QUORUM_IMAGE" == "2.7.0" || "$QUORUM_IMAGE" == "2.6.0" ||
       "$QUORUM_IMAGE" == "2.5.0" || "$QUORUM_IMAGE" == "2.4.0" || "$QUORUM_IMAGE" == "2.3.0" ]]; then
   echo qctl update node --gethparams '--raftjoinexisting $NEW_RAFT_ID' $NODE_NAME
   qctl update node --gethparams "--raftjoinexisting $NEW_RAFT_ID" $NODE_NAME

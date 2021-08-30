@@ -11,11 +11,11 @@ quorum:
   quorum:
     # supported: (raft | istanbul)
     consensus: istanbul
-    Quorum_Version: 2.6.0
+    Quorum_Version: 21.7.1
   tm:
     # (tessera|constellation)
     Name: tessera
-    Tm_Version: 0.10.4
+    Tm_Version: 21.7.2
 cakeshop:
   version: 0.12.1
   service:

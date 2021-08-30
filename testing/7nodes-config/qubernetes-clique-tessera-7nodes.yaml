@@ -1,7 +1,7 @@
 genesis:
   consensus: clique
-  Quorum_Version: 20.10.0
-  Tm_Version: 20.10.0
+  Quorum_Version: 21.7.1
+  Tm_Version: 21.7.2
   Chain_Id: 10
 
 config:
@@ -31,69 +31,69 @@ nodes:
      quorum:
        quorum:
          consensus: clique
-         Quorum_Version: 20.10.0
+         Quorum_Version: 21.7.1
        tm:
          Name: tessera
-         Tm_Version: 20.10.0
+         Tm_Version: 21.7.2
 
   -  Node_UserIdent: quorum-node2
      Key_Dir: key2
      quorum:
        quorum:
          consensus: clique
-         Quorum_Version: 20.10.0
+         Quorum_Version: 21.7.1
        tm:
          # (tessera|constellation)
          Name: tessera
-         Tm_Version: 20.10.0
+         Tm_Version: 21.7.2
 
   -  Node_UserIdent: quorum-node3
      Key_Dir: key3
      quorum:
        quorum:
          consensus: clique
-         Quorum_Version: 20.10.0
+         Quorum_Version: 21.7.1
        tm:
          Name: tessera
-         Tm_Version: 20.10.0
+         Tm_Version: 21.7.2
 
   -  Node_UserIdent: quorum-node4
      Key_Dir: key4
      quorum:
        quorum:
          consensus: clique
-         Quorum_Version: 20.10.0
+         Quorum_Version: 21.7.1
        tm:
          Name: tessera
-         Tm_Version: 20.10.0
+         Tm_Version: 21.7.2
 
   -  Node_UserIdent: quorum-node5
      Key_Dir: key5
      quorum:
        quorum:
          consensus: clique
-         Quorum_Version: 20.10.0
+         Quorum_Version: 21.7.1
        tm:
          Name: tessera
-         Tm_Version: 20.10.0
+         Tm_Version: 21.7.2
 
   -  Node_UserIdent: quorum-node6
      Key_Dir: key6
      quorum:
        quorum:
          consensus: clique
-         Quorum_Version: 20.10.0
+         Quorum_Version: 21.7.1
        tm:
          Name: tessera
-         Tm_Version: 20.10.0
+         Tm_Version: 21.7.2
 
   -  Node_UserIdent: quorum-node7
      Key_Dir: key7
      quorum:
        quorum:
          consensus: clique
-         Quorum_Version: 20.10.0
+         Quorum_Version: 21.7.1
        tm:
          Name: tessera
-         Tm_Version: 20.10.0
+         Tm_Version: 21.7.2
 

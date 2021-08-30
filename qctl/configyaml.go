@@ -14,8 +14,8 @@ var (
       # supported: (raft | istanbul)
       consensus: istanbul
       qibftBlock: 0
-      Quorum_Version: 2.6.0
-      Tm_Version: 0.10.4
+      Quorum_Version: 21.7.1
+      Tm_Version: 21.7.2
       Chain_Id: 1000
     nodes:
     `

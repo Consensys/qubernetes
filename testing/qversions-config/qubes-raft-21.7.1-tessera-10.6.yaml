@@ -1,13 +1,9 @@
-k8s:
-  service:
-    # NodePort | ClusterIP
-    type: ClusterIP
-
+# ./quick-start-gen --chain-id=1000   --tm-name=tessera --num-nodes=3 --geth-statrup-params=--rpccorsdomain="*" --consensus=raft --quorum-version=21.7.1  --tm-version=0.10.2
 genesis:
   # supported: (raft | istanbul)
   consensus: raft
   Quorum_Version: 21.7.1
-  Tm_Version: 21.7.2
+  Tm_Version: 0.10.4
   Chain_Id: 1000
 
 # Add as many nodes as you wish below
@@ -21,10 +17,18 @@ nodes:
          # supported: (raft | istanbul)
          consensus: raft
          Quorum_Version: 21.7.1
+         Tm_Version: 0.10.4
+         Docker_Repo:
        tm:
          # (tessera|constellation)
          Name: tessera
-         Tm_Version: 21.7.2
+         Tm_Version: 0.10.6
+         Docker_Repo:
+       geth:
+         network:
+           id: 1000
+         verbosity: 9
+         Geth_Startup_Params: --rpccorsdomain=*
 
   -  Node_UserIdent: quorum-node2
      Key_Dir: key2
@@ -33,10 +37,17 @@ nodes:
          # supported: (raft | istanbul)
          consensus: raft
          Quorum_Version: 21.7.1
+         Docker_Repo:
        tm:
          # (tessera|constellation)
          Name: tessera
-         Tm_Version: 21.7.2
+         Tm_Version: 0.10.6
+         Docker_Repo:
+       geth:
+         network:
+           id: 1000
+         verbosity: 9
+         Geth_Startup_Params: --rpccorsdomain=*
 
   -  Node_UserIdent: quorum-node3
      Key_Dir: key3
@@ -45,7 +56,15 @@ nodes:
          # supported: (raft | istanbul)
          consensus: raft
          Quorum_Version: 21.7.1
+         Docker_Repo:
        tm:
          # (tessera|constellation)
          Name: tessera
-         Tm_Version: 21.7.2
+         Tm_Version: 0.10.6
+         Docker_Repo:
+       geth:
+         network:
+           id: 1000
+         verbosity: 9
+         Geth_Startup_Params: --rpccorsdomain=*
+

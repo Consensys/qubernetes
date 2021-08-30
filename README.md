@@ -238,11 +238,11 @@ nodes:
       quorum:
         # supported: (raft | istanbul)
         consensus: istanbul
-        Quorum_Version: 2.6.0
+        Quorum_Version: 21.7.1
       tm:
         # (tessera|constellation)
         Name: tessera
-        Tm_Version: 0.10.4
+        Tm_Version: 21.7.2
 
   - Node_UserIdent: quorum-node2
     Key_Dir: key2
@@ -250,11 +250,11 @@ nodes:
       quorum:
         # supported: (raft | istanbul)
         consensus: istanbul
-        Quorum_Version: 2.6.0
+        Quorum_Version: 21.7.1
       tm:
         # (tessera|constellation)
         Name: tessera
-        Tm_Version: 0.10.4
+        Tm_Version: 21.7.2
 # add more nodes if you'd like
 #  - Node_UserIdent: quorum-node5
 #    Key_Dir: key5
@@ -262,11 +262,11 @@ nodes:
 #      quorum:
 #        # supported: (raft | istanbul)
 #        consensus: istanbul
-#        Quorum_Version: 2.6.0
+#        Quorum_Version: 21.7.1
 #      tm:
 #        # (tessera|constellation)
 #        Name: tessera
-#        Tm_Version: 0.10.4
+#        Tm_Version: 21.7.2
 ```
 
 * You can also run the `./quick-start-gen` command to generate the core config
@@ -275,14 +275,14 @@ $> ./quick-start-gen --help
 
 Usage: ./quick-start [options]
         --consensus[ACTION]          The consensus to use for the network (raft or istanbul), default istanbul
-    -q, --quorum-version[ACTION]     The version of quorum to deploy, default 2.6.0
-    -t, --tm-version[ACTION]         The version of the transaction manager to deploy, default 0.10.4
+    -q, --quorum-version[ACTION]     The version of quorum to deploy, default 21.7.1
+    -t, --tm-version[ACTION]         The version of the transaction manager to deploy, default 21.7.2
         --tm-name[ACTION]            The transaction manager (tessera|constellation) for the network, default tesera
     -c, --chain_id[ACTION]           The chain id for the network manager deploy, default 1000
     -n, --num-nodes[ACTION]          The number of nodes to deploy, default 4
     -h, --help                       prints this help
 
-$> ./quick-start-gen --chain-id=10 --consensus=raft --quorum-version=2.6.0 --tm-version=0.10.5 --tm-name=tessera --num-nodes=7
+$> ./quick-start-gen --chain-id=10 --consensus=raft --quorum-version=21.7.1 --tm-version=21.7.2 --tm-name=tessera --num-nodes=7
 ```
 
 2. Once you have your core config, e.g. qubernetes.yaml configured with your desired parameters: 

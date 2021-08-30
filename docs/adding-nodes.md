@@ -19,11 +19,11 @@ nodes:
       quorum:
         # supported: (raft | istanbul)
         consensus: istanbul
-        Quorum_Version: 2.6.0
+        Quorum_Version: 21.7.1
       tm:
         # (tessera|constellation)
         Name: tessera
-        Tm_Version: 0.10.4
+        Tm_Version: 21.7.2
 ```
 
 2. Run `./qube-init --action=update qubernetes.yaml` (**note** the `action` flag has changed from `create` to `update`), 
@@ -37,4 +37,3 @@ nodes:
 To add nodes to a raft network, run the steps above with a config enabling raft, e.g. replace `qubernetes.yaml` with `qubernetes-raft.yaml`.
 
 3. If adding a raft node, run `helpers/add_nodes_to_k8s.sh raft`
- 

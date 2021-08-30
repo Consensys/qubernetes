@@ -8,7 +8,7 @@ require 'optparse'
 @quick_start_out_yaml = "quick-start.yaml"
 
 # set up flag options :docker_repo :geth_verbosity :geth_startup_params
-options = {consensus: 'istanbul', quorum_version: '2.6.0', tm_version: '0.10.4', tm_name: 'tessera',
+options = {consensus: 'istanbul', quorum_version: '21.7.1', tm_version: '21.7.2', tm_name: 'tessera',
            chain_id: '1000', num_nodes: 4, docker_repo: '', geth_verbosity: 9, geth_startup_params: '' }
 
 OptionParser.new do |opts|
@@ -20,12 +20,12 @@ OptionParser.new do |opts|
   end
 
   opts.on("-q", "--quorum-version[ACTION]", String,
-          "The version of quorum to deploy, default 2.6.0") do |q|
+          "The version of quorum to deploy, default 21.7.1") do |q|
     options[:quorum_version] = q
   end
 
   opts.on("-t", "--tm-version[ACTION]", String,
-          "The version of the transaction manager to deploy, default 0.10.4") do |tm|
+          "The version of the transaction manager to deploy, default 21.7.2") do |tm|
     options[:tm_version] = tm
   end
 
@@ -60,7 +60,7 @@ OptionParser.new do |opts|
   end
   opts.on("-h", "--help", "prints this help.") do
     puts
-    puts "example: ./quick-start-gen --chain-id=1000 --consensus=istanbul --quorum-version=2.6.0 --tm-version=0.10.4 --tm-name=tessera --num-nodes=4 --geth-statrup-params=--rpccorsdomain=\"*\" --docker-repo=MY-REPO --geth-verobsity=3"
+    puts "example: ./quick-start-gen --chain-id=1000 --consensus=istanbul --quorum-version=21.7.1 --tm-version=21.7.2 --tm-name=tessera --num-nodes=4 --geth-statrup-params=--rpccorsdomain=\"*\" --docker-repo=MY-REPO --geth-verobsity=3"
     puts
     puts opts
     exit

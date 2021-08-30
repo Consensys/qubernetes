@@ -1,8 +1,8 @@
 genesis:
   # supported: (raft | istanbul)
   consensus: istanbul
-  Quorum_Version: 20.10.0
-  Tm_Version: 20.10.0
+  Quorum_Version: 21.7.1
+  Tm_Version: 21.7.2
   Chain_Id: 10
 
 config:
@@ -33,11 +33,11 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 20.10.0
+         Quorum_Version: 21.7.1
        tm:
          # (tessera|constellation)
          Name: tessera
-         Tm_Version: 20.10.0
+         Tm_Version: 21.7.2
 
   -  Node_UserIdent: quorum-node2
      Key_Dir: key2
@@ -45,11 +45,11 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 20.10.0
+         Quorum_Version: 21.7.1
        tm:
          # (tessera|constellation)
          Name: tessera
-         Tm_Version: 20.10.0
+         Tm_Version: 21.7.2
 
   -  Node_UserIdent: quorum-node3
      Key_Dir: key3
@@ -57,11 +57,11 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 20.10.0
+         Quorum_Version: 21.7.1
        tm:
          # (tessera|constellation)
          Name: tessera
-         Tm_Version: 20.10.0
+         Tm_Version: 21.7.2
 
   -  Node_UserIdent: quorum-node4
      Key_Dir: key4
@@ -69,11 +69,11 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 20.10.0
+         Quorum_Version: 21.7.1
        tm:
          # (tessera|constellation)
          Name: tessera
-         Tm_Version: 20.10.0
+         Tm_Version: 21.7.2
 
   -  Node_UserIdent: quorum-node5
      Key_Dir: key5
@@ -81,11 +81,11 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 20.10.0
+         Quorum_Version: 21.7.1
        tm:
          # (tessera|constellation)
          Name: tessera
-         Tm_Version: 20.10.0
+         Tm_Version: 21.7.2
 
   -  Node_UserIdent: quorum-node6
      Key_Dir: key6
@@ -93,11 +93,11 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 20.10.0
+         Quorum_Version: 21.7.1
        tm:
          # (tessera|constellation)
          Name: tessera
-         Tm_Version: 20.10.0
+         Tm_Version: 21.7.2
 
   -  Node_UserIdent: quorum-node7
      Key_Dir: key7
@@ -105,9 +105,9 @@ nodes:
        quorum:
          # supported: (raft | istanbul)
          consensus: istanbul
-         Quorum_Version: 20.10.0
+         Quorum_Version: 21.7.1
        tm:
          # (tessera|constellation)
          Name: tessera
-         Tm_Version: 20.10.0
+         Tm_Version: 21.7.2
 

@@ -128,7 +128,7 @@ end
 
 # if the consensus is an ibft variant, set up the istanbul-validator-config.toml
 # this is used by the genesis template to initial extra data with necessary validator data.
-if @Genesis_Consensus == "istanbul" ||  @Genesis_Consensus  == "qibft"
+if @Genesis_Consensus == "istanbul" ||  @Genesis_Consensus  == "qbft"
   @Istanbul_Validator_Config = @Key_Dir_Base + "/istanbul-validator-config.toml"
   puts(@Istanbul_Validator_Config)
   File.open(@Istanbul_Validator_Config , "w") do |f|

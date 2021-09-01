@@ -1,0 +1,72 @@
+# ./quick-start-gen --chain-id=1000   --tm-name=tessera --num-nodes=3 --geth-statrup-params=--rpccorsdomain="*" --consensus=qbft --quorum-version=21.7.1  --tm-version=21.7.2
+genesis:
+  # supported: (raft | istanbul)
+  consensus: qbft
+  Quorum_Version: 21.7.1
+  Tm_Version: 21.7.2
+  Chain_Id: 1000
+  Test_QBFT_Block: 0
+
+
+# Add as many nodes as you wish below
+# Note:  keys should be set locally.
+nodes:
+    
+  -  Node_UserIdent: quorum-node1
+     Key_Dir: key1
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: qbft
+         Quorum_Version: 21.7.1
+         Docker_Repo: 
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 21.7.2
+         Docker_Repo: 
+       geth:
+         network:
+           id: 1000
+         verbosity: 9
+         Geth_Startup_Params: --rpccorsdomain=*
+    
+  -  Node_UserIdent: quorum-node2
+     Key_Dir: key2
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: qbft
+         Quorum_Version: 21.7.1
+         Docker_Repo: 
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 21.7.2
+         Docker_Repo: 
+       geth:
+         network:
+           id: 1000
+         verbosity: 9
+         Geth_Startup_Params: --rpccorsdomain=*
+    
+  -  Node_UserIdent: quorum-node3
+     Key_Dir: key3
+     quorum:
+       quorum:
+         # supported: (raft | istanbul)
+         consensus: qbft
+         Quorum_Version: 21.7.1
+         Docker_Repo: 
+       tm:
+         # (tessera|constellation)
+         Name: tessera
+         Tm_Version: 21.7.2
+         Docker_Repo: 
+       geth:
+         network:
+           id: 1000
+         verbosity: 9
+         Geth_Startup_Params: --rpccorsdomain=*
+    
+

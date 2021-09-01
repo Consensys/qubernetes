@@ -11,9 +11,9 @@ import (
 var (
 	qubeTemplateYaml = `
     genesis:
-      # supported: (raft | istanbul)
+      # supported: (raft | istanbul | qbft)
       consensus: istanbul
-      qibftBlock: 0
+      Test_QBFT_Block: 0
       Quorum_Version: 21.7.1
       Tm_Version: 21.7.2
       Chain_Id: 1000
@@ -91,7 +91,7 @@ type K8s struct {
 type QConfig struct {
 	Genesis struct {
 		Consensus     string `yaml:"consensus"`
-		QibftBlock    string `yaml:"qibftBlock,omitempty"`
+		TestQBFTBlock string `yaml:"Test_QBFT_Block,omitempty"`
 		QuorumVersion string `yaml:"Quorum_Version"`
 		TmVersion     string `yaml:"Tm_Version"`
 		Chain_Id      string `yaml:"Chain_Id"`

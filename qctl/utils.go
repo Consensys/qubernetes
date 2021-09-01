@@ -16,9 +16,9 @@ var (
 	red   = color.New(color.FgRed)
 	green = color.New(color.FgGreen)
 
-	DefaultQuorumVersion        = "2.7.0"
+	DefaultQuorumVersion        = "21.7.1"
 	DefaultTmName               = "tessera"
-	DefaultTesseraVersion       = "0.10.6"
+	DefaultTesseraVersion       = "21.7.2"
 	DefaultConstellationVersion = "0.3.2"
 	DefaultConesensus           = "istanbul"
 	DefaultNodeNumber           = 4

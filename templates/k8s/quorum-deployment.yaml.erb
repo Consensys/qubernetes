@@ -116,8 +116,12 @@ spec:
            echo DDIR is $DDIR;
            printenv;
 
+          <%- if @Tm_Version >= "21.7.0" -%>
+           TESSERA_VERSION=$$(/tessera/bin/tessera version);
+          <%- else -%>
            TESSERA_VERSION=$(unzip -p /tessera/tessera-app.jar META-INF/MANIFEST.MF | grep Tessera-Version | cut -d\" \" -f2);
            echo \"Tessera version (extracted from manifest file): ${TESSERA_VERSION}\";
+          <%- end -%>
 
            TESSERA_VERSION=\"${TESSERA_VERSION}-suffix\";
            Tess_Ver_First=$(echo ${TESSERA_VERSION} | awk -F. '{print $1}');
@@ -143,7 +147,12 @@ spec:
            if [ \"${Tess_Ver_First}\" -ge \"1\" ] || [ \"${Tess_Ver_Second}\" -ge \"9\" ]; then CONFIG_FINAL=${CONFIG_FINAL_9_0}; fi;
            echo $CONFIG_FINAL >  ${DDIR}/tessera-config-with-hosts.json;
            cat  ${DDIR}/tessera-config-with-hosts.json;
+
+           <%- if @Tm_Version >= "21.7.0" -%>
+           /tessera/bin/tessera -configfile $${DDIR}/tessera-config-with-hosts.json | tee -a ${QHOME}/logs/tessera.log;
+          <%- else -%>
            java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json | tee -a ${QHOME}/logs/tessera.log;
+          <%- end -%>
         "
      <%- end -%>
         ports:

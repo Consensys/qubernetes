@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	// qctl generate config --qversion=2.6.0 --consensus=istanbul --tmversion=0.10.4 --tm=tessera --num=4
-	// qctl generate config --num=5 --qversion=2.7.0
+	// qctl generate config --qversion=21.7.1 --consensus=istanbul --tmversion=21.7.2 --tm=tessera --num=4
+	// qctl generate config --num=5 --qversion=21.7.1
 	initConfigCommand = cli.Command{
 		Name:  "init",
 		Usage: "creates a base qubernetes.yaml file which can be used to create a Quorum network.",

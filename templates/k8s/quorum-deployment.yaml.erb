@@ -234,7 +234,7 @@ spec:
            <%-# --raftdnsenable is need for adding additional nodes with hostnames. Without this node the network will start up fine, but adding nodes with enode host name URL will fail. -%>
            args=\" --gcmode archive --raft  --raftport <%= @Raft_Port %> --raftdnsenable \";
            RPC_APIS=\"$RPC_APIS,raft\";
-         <%- elsif @Consensus == "istanbul" || @Consensus == "qibft" -%>
+         <%- elsif @Consensus == "istanbul" || @Consensus == "qbft" -%>
            args=\" --gcmode archive --istanbul.blockperiod 3 --syncmode full --mine --minerthreads 1 \";
            RPC_APIS=\"$RPC_APIS,istanbul\";
          <%- elsif @Consensus == "clique" -%>
@@ -319,7 +319,7 @@ spec:
           mountPath: <%= @Node_DataDir%>/permission-nodes
         - name: geth-helpers
           mountPath: /geth-helpers
-        <%- if @Consensus == "istanbul" || @Consensus == "qibft" -%>
+        <%- if @Consensus == "istanbul" || @Consensus == "qbft" -%>
         - name: istanbul-validator-config
           mountPath: <%= @Node_DataDir%>/istanbul-validator-config.toml
         - name: node-management
@@ -395,7 +395,7 @@ spec:
             - key: geth-exec.sh
               path: geth-exec.sh
           defaultMode: 0777
-      <%- if @Consensus == "istanbul" || @Consensus == "qibft" -%>
+      <%- if @Consensus == "istanbul" || @Consensus == "qbft" -%>
       - name: istanbul-validator-config
         configMap:
           name: istanbul-validator-config.toml

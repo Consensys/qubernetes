@@ -20,7 +20,7 @@ var (
 	DefaultTmName               = "tessera"
 	DefaultTesseraVersion       = "21.7.2"
 	DefaultConstellationVersion = "0.3.2"
-	DefaultConesensus           = "istanbul"
+	DefaultConsensus            = "istanbul"
 	DefaultNodeNumber           = 4
 	DefaultChainId              = "1000"
 

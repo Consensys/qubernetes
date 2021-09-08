@@ -29,12 +29,12 @@ var (
 			},
 			&cli.StringFlag{
 				Name:  "consensus",
-				Usage: "Consensus to use raft | istanbul | clique.",
-				Value: DefaultConesensus,
+				Usage: "Consensus to use raft | istanbul | clique | qbft.",
+				Value: DefaultConsensus,
 			},
 			&cli.StringFlag{
-				Name:  "qibftblock",
-				Usage: "Blocknumber at which the network will switch over from ibft to qibft.",
+				Name:  "testqbftblock",
+				Usage: "Blocknumber at which the network will switch over from ibft to qbft.",
 				Value: "0",
 			},
 			&cli.StringFlag{
@@ -110,7 +110,7 @@ var (
 			tmVersion := c.String("tmversion")
 			transactionManager := c.String("tm")
 			consensus := c.String("consensus")
-			qibftblock := c.String("qibftblock")
+			testqbftblock := c.String("testqbftblock")
 			chainId := c.String("chainid")
 			qimagefull := c.String("qimagefull")
 			tmImageFull := c.String("tmimagefull")
@@ -159,8 +159,8 @@ var (
 			configYaml.Genesis.QuorumVersion = quorumVersion
 			configYaml.Genesis.TmVersion = tmVersion
 			configYaml.Genesis.Consensus = consensus
-			if consensus == "qibft" { // if --qibftblock=BLOCK_NUM not specified set to default block 0, else the user can specify --qibftblock=BLOCK_NUM
-				configYaml.Genesis.QibftBlock = qibftblock
+			if consensus == "qbft" { // if --testqbftblock=BLOCK_NUM not specified set to default block 0, else the user can specify --testqbftblock=BLOCK_NUM
+				configYaml.Genesis.TestQBFTBlock = testqbftblock
 			}
 			configYaml.Genesis.Chain_Id = chainId
 

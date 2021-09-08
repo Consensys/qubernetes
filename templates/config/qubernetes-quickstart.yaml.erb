@@ -16,6 +16,10 @@ genesis:
   Quorum_Version: <%= @Quorum_Version %>
   Tm_Version: <%= @Tm_Version %>
   Chain_Id: <%= @Chain_Id %>
+  <%- if @consensus == "qbft" -%>
+  Test_QBFT_Block: 0
+  <%- end -%>
+
 
 # Add as many nodes as you wish below
 # Note:  keys should be set locally.

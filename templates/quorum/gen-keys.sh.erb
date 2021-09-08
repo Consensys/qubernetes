@@ -49,7 +49,7 @@ for node_key_dir in "${array[@]}"; do
     bootnode -genkey nodekey
     bootnode  -nodekeyhex $(cat nodekey) -writeaddress > enode
     # Only IBFT / istanbul networks need access to the nodekey address.
-<%- if @Consensus == "istanbul" || @Consensus == "qibft" -%>
+<%- if @Consensus == "istanbul" || @Consensus == "qbft" -%>
     # save nodekey address (used for istanbul-validator-config.toml)
     ethkey generate nodekeyacct.json --passwordfile password.txt --privatekey nodekey | sed 's/Address: //g' | sed 's/}//g' > nodekeyaddress
 <%- end -%>

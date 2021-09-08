@@ -11,10 +11,10 @@ if @config["genesis"] and @config["genesis"]["Chain_Id"]
 end
 ## The genesis consensus and the quorum version must be set in the config file.
 @Genesis_Consensus = @config["genesis"]["consensus"]
-# if the qibftblock is set, the network will switch over to qibft consensus
+# if the testqbftblock is set, the network will switch over to qbft consensus
 # when the specified block number is reached.
-if @config["genesis"]["qibftBlock"]
-  @Qibft_Block = @config["genesis"]["qibftBlock"]
+if @config["genesis"]["Test_QBFT_Block"]
+  @Test_QBFT_Block = @config["genesis"]["Test_QBFT_Block"]
 end
 @Genesis_Quorum_Version = @config["genesis"]["Quorum_Version"]
 @Genesis_Tm_Version = @config["genesis"]["Tm_Version"]
@@ -105,14 +105,15 @@ end
   "parenthash": "0x0000000000000000000000000000000000000000000000000000000000000000",
   "timestamp": "0x00"
 }
-<%- elsif @Genesis_Consensus == "istanbul" ||  @Genesis_Consensus == "qibft" -%>
+<%- elsif @Genesis_Consensus == "istanbul" ||  @Genesis_Consensus == "qbft" -%>
     "isQuorum": true,
     "istanbul": {
-      <%- if @Qibft_Block -%>
-      "qibftBlock": <%= @Qibft_Block %>,
+      <%- if @Genesis_Consensus == "qbft" && @Test_QBFT_Block -%>
+      "testQBFTBlock": <%= @Test_QBFT_Block %>,
       <%- end -%>
       "epoch": 30000,
-      "policy": 0
+      "policy": 0,
+      "ceil2Nby3Block": 0
     }
   },
 
@@ -130,8 +131,16 @@ end
    # To do this, we need to create the istanbul-validator-config.toml from the ethereum nodekey. The istanbul-validator-config.toml
    # is then given as input to the istanbul tool, which will calculate the necessary extradata field.
   %>
+  <%- if @Genesis_Consensus == "istanbul" -%>
+    <%-
+       extraData=`istanbul extra encode --config #{@Istanbul_Validator_Config} | awk '{print $4}'`
+    -%>
+  <%- else -%>
+    <%-
+       extraData=`qbft extra encode --config #{@Istanbul_Validator_Config} | awk '{print $4}'`
+    -%>
+  <%- end -%>
   <%-
-   extraData=`istanbul extra encode --config #{@Istanbul_Validator_Config} | awk '{print $4}'`
    extraData=extraData.strip
    puts("Generated istanbul \"extraData\"=\"" + extraData + "\"")
    -%>

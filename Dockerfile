@@ -15,13 +15,19 @@ RUN apt-get update
 
 # set tzdata non-interactive https://serverfault.com/questions/949991/how-to-install-tzdata-on-a-ubuntu-docker-image
 # for now need musl-dev for geneating account key from the private key
-RUN DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" apt-get install -y ruby-full golang-go git make musl-dev xxd
+RUN DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" apt-get install -y ruby-full golang-go git make musl-dev xxd wget
 RUN gem install colorize
 
-RUN go get github.com/getamis/istanbul-tools/cmd/istanbul
+RUN mkdir -p /root/go/bin
+
 ENV PATH=/root/go/bin:$PATH
 
-RUN go get github.com/getamis/istanbul-tools/cmd/istanbul && git clone https://github.com/ethereum/go-ethereum.git /root/go/src/github.com/ethereum/go-ethereum && \
+RUN cd /root/go/bin && \
+    wget https://artifacts.consensys.net/public/quorum-tools/raw/versions/v1.1.0/istanbul-tools_v1.1.0_linux_amd64.tar.gz &&  \
+    tar -xvf istanbul-tools_v1.1.0_linux_amd64.tar.gz &&  \
+    rm istanbul-tools_v1.1.0_linux_amd64.tar.gz
+
+RUN git clone https://github.com/ethereum/go-ethereum.git /root/go/src/github.com/ethereum/go-ethereum && \
     cd /root/go/src/github.com/ethereum/go-ethereum && git checkout e9ba536d && make all && \
     cp /root/go/src/github.com/ethereum/go-ethereum/build/bin/ethkey /root/go/bin/ && \
     cp /root/go/src/github.com/ethereum/go-ethereum/build/bin/bootnode /root/go/bin/ && \

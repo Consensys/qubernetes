@@ -16,14 +16,14 @@ BASE_DIR=<%= @Key_Dir_Base %>
 <%- else %>
 BASE_DIR=$(pwd)/<%= @Key_Dir_Base %>
 <%- end %>
-
+<%- if @Tm_Name -%>   
 # try to use openSSL to generate tessera keys, used in docker container.
 TESSERA_KEY_GEN_CMD="$(pwd)/templates/quorum/tessera-keygen.sh --keyName tm"
 # however, if TESSERA_JAR env var is set, then use tessera to generate the key, e.g. on mac or other local env.
 if [[ -n  "$TESSERA_JAR" ]]; then
   TESSERA_KEY_GEN_CMD="java -jar ${TESSERA_JAR} keygen --keyout tm"
 fi
-
+<%- end %>
 mkdir -p $BASE_DIR
 IFS=', ' read -r -a array <<< "$NODE_DIRS"
 
@@ -38,11 +38,13 @@ for node_key_dir in "${array[@]}"; do
     shopt -s expand_aliases
     mkdir -p $KEY_DIR
     cd $KEY_DIR
+<%- if @Tm_Name -%>   
     if [[ -n  TESSERA_JAR ]]; then
       echo | $TESSERA_KEY_GEN_CMD
     else
       $TESSERA_KEY_GEN_CMD
     fi
+<%- end %>
     touch password.txt
     #geth account new --keystore $KEY_DIR --password password.txt
     ethkey generate $KEY_DIR/acctkeyfile.json --passwordfile password.txt

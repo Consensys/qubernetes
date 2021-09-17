@@ -101,7 +101,7 @@ spec:
            --verbosity=<%= @Geth_Verbosity%> \
            --othernodes=https://$QUORUM_NODE1_SERVICE_HOST:<%= @Tm_Port %>/ \";
            /usr/local/bin/constellation-node $args  2>&1 | tee -a $QUORUM_HOME/logs/tm.log; "
-     <%- else -%>
+    <%- elsif @Tm_Name != "constellation" && @Tm_Name != "none" -%>
       - name: tessera
         <%- if @TM_Docker_Repo_Full != "" -%>
         image: <%= @TM_Docker_Repo_Full %>
@@ -154,7 +154,6 @@ spec:
            java -Xms128M -Xmx128M -jar /tessera/tessera-app.jar -configfile ${DDIR}/tessera-config-with-hosts.json | tee -a ${QHOME}/logs/tessera.log;
           <%- end -%>
         "
-     <%- end -%>
         ports:
           - containerPort: <%= @Tm_Port %>
         env:
@@ -191,6 +190,7 @@ spec:
           mountPath: <%= @Node_DataDir %>/tm/tessera-config-9.0.json.tmpl
           subPath: tessera-config-9.0.json.tmpl
         <%- end -%>
+        <%- end -%>
       - name: quorum
         <%- if @Quorum_Docker_Repo_Full != "" -%>
         image: <%= @Quorum_Docker_Repo_Full %>
@@ -221,12 +221,9 @@ spec:
  <%- if @Tm_Name == "tessera" -%>
            until $(wget --quiet --tries=1 --spider http://127.0.0.1:<%= @Tm_Port %>/upcheck); do echo 'waiting for transaction manager to start...'; sleep 5; done;
            echo transaction manager is up;
- <%- else -%>
            sleep 5;
            echo slept for 5 to give TM time to start up;
  <%- end -%>
-
-
            touch $QUORUM_DATA_DIR/password.txt;
            NETWORK_ID=<%= @Geth_Network_Id %>
            RPC_APIS=admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum
@@ -279,8 +276,10 @@ spec:
           - containerPort: 6060
         <% end %>
         env:
+        <%- if @Tm_Name != "none" -%>
         - name: PRIVATE_CONFIG
           value: <%= @Node_DataDir %>/tm/tm.ipc
+        <%- end -%>
         - name: QUORUM_DATA_DIR
           value: <%= @Node_DataDir %>/dd
         - name: QUORUM_HOME
@@ -347,6 +346,7 @@ spec:
           items:
           - key: genesis-geth.json
             path: genesis-geth.json
+ <%- if @Tm_Name == "tessera" -%>
       - name: tessera-config
         configMap:
           name: tessera-config
@@ -357,9 +357,11 @@ spec:
             path: tessera-config-enhanced.json.tmpl
           - key: tessera-config-9.0.json.tmpl
             path: tessera-config-9.0.json.tmpl
+ <%- end -%>
       - name: contracts-config
         configMap:
           name: contracts-config
+ <%- if @Tm_Name != "none" -%>
       - name: keystore-tm
         configMap:
           name: <%= @Node_UserIdent %>-tm-key-config
@@ -368,6 +370,7 @@ spec:
             path: tm.pub
           - key: tm.key
             path: tm.key
+ <%- end -%>
       - name: quorum-key-config-persistent-storage
         configMap:
           name: <%= @Node_UserIdent %>-account-key-config

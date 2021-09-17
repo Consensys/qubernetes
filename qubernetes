@@ -24,8 +24,13 @@ def set_node_template_vars(values)
   @Service_Prefix        = (@Node_UserIdent.upcase).gsub("-", "_")
   @Node_Key_Dir          = values["Key_Dir"]
   @Consensus             = values["quorum"]["quorum"]["consensus"]
-  @Tm_Version            = values["quorum"]["tm"]["Tm_Version"]
-  @Tm_Name               = values["quorum"]["tm"]["Name"]
+  if values["quorum"].key?('tm')
+    @Tm_Version            = values["quorum"]["tm"].has_key?('Tm_Version') ?  @config["genesis"]["Tm_Version"] :  values["quorum"]["tm"]["Tm_Version"]
+    @Tm_Name               = values["quorum"]["tm"].has_key?('Name') ?  "none" :  values["quorum"]["tm"]["Name"]
+  else
+    @Tm_Version            = @config["genesis"]["Tm_Version"] 
+    @Tm_Name               = "none"
+  end
   @Quorum_Version        = values["quorum"]["quorum"]["Quorum_Version"]
 
   @Geth_Verbosity = 9

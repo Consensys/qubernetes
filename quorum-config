@@ -27,8 +27,8 @@ def set_node_template_vars(values)
   @Node_UserIdent        = values["Node_UserIdent"]
   @Node_Key_Dir          = values["Key_Dir"]
   @Consensus             = values["quorum"]["quorum"]["consensus"]
-  @Tm_Version            = values["quorum"]["tm"]["Tm_Version"]
-  @Tm_Name               = values["quorum"]["tm"]["Name"]
+  @Tm_Version            = values["quorum"]["tm"].has_key('Tm_Version') ? "21.7.2" : values["quorum"]["tm"]["Tm_Version"]
+  @Tm_Name               = values["quorum"]["tm"].has_key('Name') ?  "none" :  values["quorum"]["tm"]["Name"]
   @Quorum_Version        = values["quorum"]["quorum"]["Quorum_Version"]
 
   @Geth_Network_Id = @Chain_Id
@@ -59,7 +59,7 @@ end
 @config     = YAML.load_file(@config_file)
 @nodes      = @config["nodes"] #YAML.load_file("nodes.yaml")["nodes"]
 @external_nodes = @config["external_nodes"]
-
+@Genesis_Tm_Version = @config["genesis"].has_key?('Tm_Version') ?  @config["genesis"]["Tm_Version"] : "0.0.0"
 ## set defaults for config if not set, else use the values from the config.
 @Genesis_Consensus = @config["genesis"]["consensus"]
 # used by quorum-shared-config.yaml.erb and quorum-keystore.yaml.erb to load keys.

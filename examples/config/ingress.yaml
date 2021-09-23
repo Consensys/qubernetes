@@ -7,6 +7,12 @@ k8s:
       # OneToMany | OneToOne
       Strategy: OneToOne
       Host: "quorum.testnet.com"
+      tls:
+        secretName: "quorum-tls-secret"
+      annotations:
+        nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+        nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+        nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
   # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
   # test locally and on GCP
   # The data dir is persisted here

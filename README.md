@@ -1,5 +1,16 @@
 ## Qubernetes
 
+## ⚠️ Project Deprecation Notice ⚠️
+
+Qubernetes will be deprecated on December 31st 2021, date from when we will stop supporting the project.
+
+From now on, we encourage all users to use [quorum-kubernetes](https://github.com/ConsenSys/quorum-kubernetes) which is a similar tool offering extra compatibility with Quorum products.
+
+We will continue to support Qubernetes in particular fixing bugs until the end of 2021.
+
+If you have any questions or concerns, please reach out to the ConsenSys protocol engineering team on [#Discord](https://chat.consensys.net) or by [email](mailto:quorum@consensys.net).
+
+
 [Quorum](https://github.com/ConsenSys/quorum) on [Kubernetes](https://github.com/kubernetes/kubernetes),
 including: 
 

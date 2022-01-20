@@ -1,0 +1,86 @@
+# see: ./quick-start-gen --help, if you wish to generate this file.
+# ./quick-start-gen --chain-id=1000  --tm-name=tessera --num-nodes=4  --consensus=istanbul --quorum-version=21.7.1  --tm-version=21.7.2
+# This is the core configuration file, at a minimum include:
+#   1. the number of nodes entries
+#   2. quorum's consensus (istanbul IBFT, or Raft)
+#   3. the version of the quorum container and the transaction manager container.
+# Reasonable defaults will be chosen for the rest of the values, ports, associated K8s resources, etc.
+
+k8s:
+  # persistent storage is handled by Persistent Volume Claims (PVC) https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+  # test locally and on GCP
+  # The data dir is persisted here
+  storage:
+    # PVC (Persistent_Volume_Claim - tested with GCP).
+    Type: PVC
+    ## when redeploying cannot be less than previous values
+    Capacity: 200Mi
+
+# In general, all the nodes should have the same consensus and tm as the genesis and as each other.
+genesis:
+  # supported: (raft | istanbul)
+  consensus: istanbul
+  Quorum_Version: 21.7.1
+  Tm_Version: 21.7.2
+  Chain_Id: 1000
+
+nodes:
+
+  - Node_UserIdent: quorum-node1
+    Key_Dir: key1
+    quorum:
+      quorum:
+        # supported: (raft | istanbul)
+        consensus: istanbul
+        Quorum_Version: 21.7.1
+
+  - Node_UserIdent: quorum-node2
+    Key_Dir: key2
+    quorum:
+      quorum:
+        # supported: (raft | istanbul)
+        consensus: istanbul
+        Quorum_Version: 21.7.1
+
+
+  - Node_UserIdent: quorum-node3
+    Key_Dir: key3
+    quorum:
+      quorum:
+        # supported: (raft | istanbul)
+        consensus: istanbul
+        Quorum_Version: 21.7.1
+
+
+  - Node_UserIdent: quorum-node4
+    Key_Dir: key4
+    quorum:
+      quorum:
+        # supported: (raft | istanbul)
+        consensus: istanbul
+        Quorum_Version: 21.7.1
+
+# #add more nodes if you'd like
+#  - Node_UserIdent: quorum-node5
+#    Key_Dir: key5
+#    quorum:
+#      quorum:
+#        # supported: (raft | istanbul)
+#        consensus: istanbul
+#        Quorum_Version: 21.7.1
+#      tm:
+#        # (tessera|constellation)
+#        Name: tessera
+#        Tm_Version: 21.7.2
+#  #add more nodes if you'd like
+#  - Node_UserIdent: quorum-node6
+#    Key_Dir: key6
+#    quorum:
+#      quorum:
+#        # supported: (raft | istanbul)
+#        consensus: istanbul
+#        Quorum_Version: 21.7.1
+#      tm:
+#        # (tessera|constellation)
+#        Name: tessera
+#        Tm_Version: 21.7.2

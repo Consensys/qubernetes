@@ -11,6 +11,14 @@ if @config["k8s"] and @config["k8s"]["service"]["Ingress"] then
    if @config["k8s"]["service"]["Ingress"]["ws"]  then
      @Geth_WS = true
    end
+  @Ingress_Annotations = []
+  if @config["k8s"]["service"]["Ingress"]["annotations"]
+    @Ingress_Annotations = @config["k8s"]["service"]["Ingress"]["annotations"]
+  end
+  @Ingress_tls_secret_name = ""
+  if @config["k8s"]["service"]["Ingress"]["tls"] and @config["k8s"]["service"]["Ingress"]["tls"]["secretName"]
+    @Ingress_tls_secret_name = @config["k8s"]["service"]["Ingress"]["tls"]["secretName"]
+  end
 end
 -%>
 
@@ -21,11 +29,17 @@ end
 <%= set_node_template_vars(node) -%>
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
     <%= @Namespace %>
-  name: <%= @Node_UserIdent %>
+  name: "<%= @Node_UserIdent %>"
+  <%- if ! @Ingress_Annotations.empty? -%>
+  annotations:
+  <%- @Ingress_Annotations.each do |entry| -%>
+    <%= entry[0] %>: "<%= entry[1] %>"
+  <%- end -%>
+  <%- end -%>
 spec:
   rules:
       <%- if @Ingress_Host -%>
@@ -33,30 +47,45 @@ spec:
       http:
         paths:
           - path: /quorum-rpc
+            pathType: Prefix
             backend:
-              serviceName: <%= @Node_UserIdent %>
-              servicePort: <%= @Node_RPCPort %>
+              service:
+                name: <%= @Node_UserIdent %>
+              port:
+                number <%= @Node_RPCPort %>
           <%- if  @Geth_WS -%>
           - path: /quorum-ws
+            pathType: Prefix
             backend:
-              serviceName: <%= @Node_UserIdent %>
-              servicePort: <%= @Node_WSPort %>
+              service:
+                name: <%= @Node_UserIdent %>
+              port:
+                number <%= @Node_WSPort %>
           <%- end -%>
   tls:
     - hosts:
         - "<%= @Node_UserIdent %>.<%= @Ingress_Host %>"
+      <%- if ! @Ingress_tls_secret_name.empty? -%>
+      secretName: <%= @Ingress_tls_secret_name %>
+      <%- end -%>
       <%- else -%>
     - http:
         paths:
           - path: /quorum-rpc
+            pathType: Prefix
             backend:
-              serviceName: <%= @Node_UserIdent %>
-              servicePort: <%= @Node_RPCPort %>
+              service:
+                name: <%= @Node_UserIdent %>
+              port:
+                number <%= @Node_RPCPort %>
           <%- if  @Geth_WS -%>
           - path: /quorum-ws
+            pathType: Prefix
             backend:
-              serviceName: <%= @Node_UserIdent %>
-              servicePort: <%= @Node_WSPort %>
+              service:
+                name: <%= @Node_UserIdent %>
+              port:
+                number <%= @Node_WSPort %>
           <%- end -%>
         <%- end -%> <%# End Host conditional %>
      <% end -%> <%# end this node iteration %>
@@ -67,11 +96,17 @@ spec:
 <%# If an ingresses has been specified with strategy OneToMany, create a single Ingress for all the nodes in the cluster %>
 <% if @Ingress and @IngressStrategy == "OneToMany" %>
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
     <%= @Namespace %>
   name: quorum-ingress
+  <%- if ! @Ingress_Annotations.empty? -%>
+  annotations:
+  <%- @Ingress_Annotations.each do |entry| -%>
+    <%= entry[0] %>: "<%= entry[1] %>"
+  <%- end -%>
+  <%- end -%>
 spec:
   rules:
       <%- if @Ingress_Host -%>
@@ -86,18 +121,25 @@ spec:
             <%- set_node_template_vars(node) -%>
           - path: /<%= @Node_UserIdent %>/quorum-rpc
             backend:
-              serviceName: <%= @Node_UserIdent %>
-              servicePort: <%= @Node_RPCPort %>
+              service
+                name: <%= @Node_UserIdent %>
+              port:
+                number <%= @Node_RPCPort %>
           <%- if  @Geth_WS -%>
           - path: /<%= @Node_UserIdent %>/quorum-ws
             backend:
-              serviceName: <%= @Node_UserIdent %>
-              servicePort: <%= @Node_WSPort %>
+              service
+                name: <%= @Node_UserIdent %>
+              port:
+                number <%= @Node_WSPort %>
           <%- end -%>
          <%- end -%> <%# end setting path for each node %>
  <%- if @Ingress_Host -%>
   tls:
     - hosts:
         - "<%= @Ingress_Host %>"
+      <%- if ! @Ingress_tls_secret_name.empty? -%>
+      secretName: <%= @Ingress_tls_secret_name %>
+      <%- end -%>
  <%- end -%>
 <%- end %> <%# end  Ingress conditional%>
